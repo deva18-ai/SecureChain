@@ -1,0 +1,524 @@
+import { useState } from 'react';
+import { Search, Plus, Eye, Box, Loader2, AlertCircle, ArrowRightLeft, Send, Trash2, Lock, Unlock } from 'lucide-react';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Badge } from '../components/ui/Badge';
+import { Table } from '../components/ui/Table';
+import { Modal } from '../components/ui/Modal';
+import { useAssets, useCreateAsset, useAllocateAsset, useTransferAsset } from '../hooks/useApi';
+import { useUsers } from '../hooks/useApi';
+import { formatAddress, formatDate, getStatusColor, formatTxHash, formatNumber } from '../utils/helpers';
+import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
+
+const ASSET_STATUS_COLORS: Record<string, string> = {
+  ACTIVE: 'success',
+  TRANSFERRED: 'primary',
+  BURNED: 'danger',
+  FROZEN: 'warning',
+};
+
+export default function AssetsPage() {
+  const { user, hasRole } = useAuth();
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+  const [categoryFilter, setCategoryFilter] = useState<string | undefined>(undefined);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedAsset, setSelectedAsset] = useState<any>(null);
+  const [allocatingId, setAllocatingId] = useState<number | null>(null);
+  const [transferringId, setTransferringId] = useState<number | null>(null);
+  const [allocateOwnerId, setAllocateOwnerId] = useState<number | null>(null);
+  const [transferOwnerId, setTransferOwnerId] = useState<number | null>(null);
+
+  const { data: assetsData, isLoading, error, refetch } = useAssets({
+    page,
+    page_size: 20,
+    status: statusFilter,
+    category: categoryFilter,
+    search: search || undefined,
+  });
+  const createAssetMutation = useCreateAsset();
+  const allocateAssetMutation = useAllocateAsset();
+  const transferAssetMutation = useTransferAsset();
+  const { data: usersData } = useUsers({ page_size: 100 });
+
+  const isAdmin = hasRole(['ADMIN']);
+  const isManager = hasRole(['ADMIN', 'MANAGER']);
+  const canCreate = isAdmin;
+  const canAllocate = isManager;
+  const canTransfer = true;
+
+  const handleCreateAsset = async (data: any) => {
+    try {
+      await createAssetMutation.mutateAsync(data);
+      toast.success('Asset minted successfully');
+      setShowCreateModal(false);
+      refetch();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.detail || 'Failed to mint asset');
+    }
+  };
+
+  const handleAllocate = async (assetId: number, newOwnerId: number) => {
+    setAllocatingId(assetId);
+    try {
+      await allocateAssetMutation.mutateAsync({ id: assetId, new_owner_id: newOwnerId });
+      toast.success('Asset allocated successfully');
+      setAllocateOwnerId(null);
+      refetch();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.detail || 'Failed to allocate asset');
+    } finally {
+      setAllocatingId(null);
+    }
+  };
+
+  const handleTransfer = async (assetId: number, newOwnerId: number) => {
+    setTransferringId(assetId);
+    try {
+      await transferAssetMutation.mutateAsync({ id: assetId, new_owner_id: newOwnerId });
+      toast.success('Asset transferred successfully');
+      setTransferOwnerId(null);
+      refetch();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.detail || 'Failed to transfer asset');
+    } finally {
+      setTransferringId(null);
+    }
+  };
+
+  const handleViewAsset = (asset: any) => {
+    setSelectedAsset(asset);
+  };
+
+  const categories = Array.from(new Set(assetsData?.items?.map((a: any) => a.category).filter(Boolean) || []));
+
+  if (isLoading && !assetsData) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-dark-900 dark:text-white">Digital Assets (NFTs)</h1>
+            <p className="text-dark-600 dark:text-dark-400">Manage ERC-721 assets and ownership</p>
+          </div>
+        </div>
+        <Card className="p-6 animate-pulse">
+          <div className="h-4 w-48 bg-dark-200 dark:bg-dark-700 rounded mb-4" />
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-16 bg-dark-100 dark:bg-dark-800 rounded" />
+            ))}
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  const assets = assetsData?.items || [];
+  const total = assetsData?.total || 0;
+  const totalPages = assetsData?.total_pages || 1;
+  const users = usersData?.items || [];
+
+  return (
+    <div className="space-y-6 animate-in">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-dark-900 dark:text-white">Digital Assets (NFTs)</h1>
+          <p className="text-dark-600 dark:text-dark-400">Manage ERC-721 assets and ownership transfers</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={() => refetch()} size="sm">
+            <Loader2 className="h-4 w-4" />
+            Refresh
+          </Button>
+          {canCreate && (
+            <Button onClick={() => setShowCreateModal(true)} size="sm">
+              <Plus className="h-4 w-4" />
+              Mint Asset
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <Card>
+        <div className="p-4 border-b border-dark-200 dark:border-dark-700 flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 max-w-md">
+            <Input
+              placeholder="Search assets..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              leftIcon={<Search className="h-4 w-4" />}
+            />
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <label className="text-sm text-dark-600 dark:text-dark-400">Status:</label>
+            <select
+              value={statusFilter || 'all'}
+              onChange={(e) => { const val = e.target.value; setStatusFilter(val === 'all' ? undefined : val); setPage(1); }}
+              className="px-3 py-2 rounded-lg border border-dark-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-white text-sm"
+            >
+              <option value="all">All</option>
+              <option value="ACTIVE">Active</option>
+              <option value="TRANSFERRED">Transferred</option>
+              <option value="BURNED">Burned</option>
+              <option value="FROZEN">Frozen</option>
+            </select>
+            <label className="text-sm text-dark-600 dark:text-dark-400">Category:</label>
+            <select
+              value={categoryFilter || 'all'}
+              onChange={(e) => { const val = e.target.value; setCategoryFilter(val === 'all' ? undefined : val); setPage(1); }}
+              className="px-3 py-2 rounded-lg border border-dark-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-white text-sm"
+            >
+              <option value="all">All</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <Table>
+            <thead>
+              <tr>
+                <th>Token ID</th>
+                <th>Asset ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Owner</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Blockchain</th>
+                <th className="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {assets.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="text-center py-12 text-dark-500 dark:text-dark-400">
+                    <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No assets found</p>
+                  </td>
+                </tr>
+              ) : (
+                assets.map((asset) => (
+                  <tr key={asset.id}>
+                    <td className="font-mono text-sm">{asset.token_id || '-'}</td>
+                    <td className="font-mono text-sm">{asset.asset_id}</td>
+                    <td className="font-medium text-dark-900 dark:text-white">{asset.name}</td>
+                    <td className="text-sm text-dark-600 dark:text-dark-400">{asset.category}</td>
+                    <td>
+                      {asset.owner ? (
+                        <div>
+                          <p className="font-medium text-dark-900 dark:text-white">{asset.owner.full_name}</p>
+                          <p className="text-xs text-dark-500 dark:text-dark-400 font-mono">{formatAddress(asset.owner.wallet_address || '')}</p>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-dark-500 dark:text-dark-400">Unassigned</span>
+                      )}
+                    </td>
+                    <td>
+                      <Badge variant={ASSET_STATUS_COLORS[asset.status] || 'default'}>
+                        {asset.status}
+                      </Badge>
+                    </td>
+                    <td className="text-sm text-dark-600 dark:text-dark-400">{formatDate(asset.created_at)}</td>
+                    <td>
+                      {asset.blockchain_tx_hash ? (
+                        <span className="font-mono text-xs text-green-600 dark:text-green-400">
+                          {formatTxHash(asset.blockchain_tx_hash)}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-dark-500 dark:text-dark-400">Not on-chain</span>
+                      )}
+                    </td>
+                    <td className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => handleViewAsset(asset)}>
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        {canAllocate && asset.status === 'ACTIVE' && asset.owner_id !== user?.id && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setAllocateOwnerId(asset.id)}
+                            loading={allocatingId === asset.id}
+                          >
+                            <ArrowRightLeft className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {canTransfer && asset.owner_id === user?.id && asset.status !== 'BURNED' && asset.status !== 'FROZEN' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setTransferOwnerId(asset.id)}
+                            loading={transferringId === asset.id}
+                          >
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {isAdmin && asset.status !== 'BURNED' && asset.status !== 'FROZEN' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              // Burn action would go here
+                              toast('Burn functionality coming soon');
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {isAdmin && asset.status !== 'FROZEN' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              // Freeze action would go here
+                              toast('Freeze functionality coming soon');
+                            }}
+                          >
+                            <Lock className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </Table>
+        </div>
+
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-dark-200 dark:border-dark-700 flex items-center justify-between">
+            <p className="text-sm text-dark-600 dark:text-dark-400">
+              Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, total)} of {total} assets
+            </p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
+                Previous
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
+      </Card>
+
+      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Mint New Asset" size="lg">
+        <AssetCreateForm
+          users={users}
+          onSubmit={handleCreateAsset}
+          onCancel={() => setShowCreateModal(false)}
+          isLoading={createAssetMutation.isPending}
+        />
+      </Modal>
+
+      <Modal isOpen={allocateOwnerId !== null} onClose={() => setAllocateOwnerId(null)} title="Allocate Asset" size="lg">
+        <AssetActionForm
+          title="Allocate Asset"
+          users={users.filter(u => u.id !== assets.find((a: any) => a.id === allocateOwnerId)?.owner_id)}
+          onSubmit={(ownerId) => handleAllocate(allocateOwnerId!, ownerId)}
+          onCancel={() => setAllocateOwnerId(null)}
+          isLoading={allocatingId !== null}
+          actionLabel="Allocate"
+        />
+      </Modal>
+
+      <Modal isOpen={transferOwnerId !== null} onClose={() => setTransferOwnerId(null)} title="Transfer Asset" size="lg">
+        <AssetActionForm
+          title="Transfer Asset"
+          users={users}
+          onSubmit={(ownerId) => handleTransfer(transferOwnerId!, ownerId)}
+          onCancel={() => setTransferOwnerId(null)}
+          isLoading={transferringId !== null}
+          actionLabel="Transfer"
+        />
+      </Modal>
+
+      <Modal isOpen={!!selectedAsset} onClose={() => setSelectedAsset(null)} title="Asset Details" size="lg">
+        {selectedAsset && (
+          <AssetDetailView asset={selectedAsset} onClose={() => setSelectedAsset(null)} />
+        )}
+      </Modal>
+    </div>
+  );
+}
+
+function AssetCreateForm({ users, onSubmit, onCancel, isLoading }: any) {
+  const [formData, setFormData] = useState({
+    asset_id: '',
+    name: '',
+    description: '',
+    category: '',
+    metadata_uri: '',
+    initial_owner_id: '',
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      ...formData,
+      initial_owner_id: parseInt(formData.initial_owner_id),
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <Input
+        label="Asset ID"
+        value={formData.asset_id}
+        onChange={(e) => setFormData({ ...formData, asset_id: e.target.value })}
+        placeholder="asset-001"
+        required
+      />
+      <Input
+        label="Name"
+        value={formData.name}
+        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        placeholder="Asset Name"
+        required
+      />
+      <Input
+        label="Description"
+        value={formData.description}
+        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+        placeholder="Asset description"
+        type="textarea"
+        rows={3}
+      />
+      <Input
+        label="Category"
+        value={formData.category}
+        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+        placeholder="Equipment, Vehicle, Document, etc."
+        required
+      />
+      <Input
+        label="Metadata URI (IPFS)"
+        value={formData.metadata_uri}
+        onChange={(e) => setFormData({ ...formData, metadata_uri: e.target.value })}
+        placeholder="ipfs://QmHash..."
+        required
+      />
+      <div>
+        <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1.5">Initial Owner</label>
+        <select
+          value={formData.initial_owner_id}
+          onChange={(e) => setFormData({ ...formData, initial_owner_id: e.target.value })}
+          className="w-full px-4 py-2.5 rounded-lg border border-dark-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+          required
+        >
+          <option value="">Select owner</option>
+          {users.map((u: any) => (
+            <option key={u.id} value={u.id}>{u.full_name} ({u.email})</option>
+          ))}
+        </select>
+      </div>
+      <div className="flex justify-end gap-3 pt-4 border-t border-dark-200 dark:border-dark-700">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>Cancel</Button>
+        <Button type="submit" loading={isLoading}>Mint Asset</Button>
+      </div>
+    </form>
+  );
+}
+
+function AssetActionForm({ title, users, onSubmit, onCancel, isLoading, actionLabel }: any) {
+  const [ownerId, setOwnerId] = useState('');
+
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); if (ownerId) onSubmit(parseInt(ownerId)); }} className="space-y-4">
+      <p className="text-dark-600 dark:text-dark-400">
+        Select the recipient for this {actionLabel.toLowerCase()} action.
+      </p>
+      <div>
+        <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1.5">Recipient</label>
+        <select
+          value={ownerId}
+          onChange={(e) => setOwnerId(e.target.value)}
+          className="w-full px-4 py-2.5 rounded-lg border border-dark-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+          required
+        >
+          <option value="">Select recipient</option>
+          {users.map((u: any) => (
+            <option key={u.id} value={u.id}>{u.full_name} ({u.email}) - {u.wallet_address ? formatAddress(u.wallet_address) : 'No wallet'}</option>
+          ))}
+        </select>
+      </div>
+      <div className="flex justify-end gap-3 pt-4 border-t border-dark-200 dark:border-dark-700">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>Cancel</Button>
+        <Button type="submit" loading={isLoading} disabled={!ownerId}>{actionLabel}</Button>
+      </div>
+    </form>
+  );
+}
+
+function AssetDetailView({ asset, onClose }: any) {
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-sm text-dark-500 dark:text-dark-400">Token ID</p>
+          <p className="font-mono text-lg font-bold text-dark-900 dark:text-white">{asset.token_id || 'Pending'}</p>
+        </div>
+        <div>
+          <p className="text-sm text-dark-500 dark:text-dark-400">Asset ID</p>
+          <p className="font-mono text-sm">{asset.asset_id}</p>
+        </div>
+        <div>
+          <p className="text-sm text-dark-500 dark:text-dark-400">Name</p>
+          <p className="font-medium text-dark-900 dark:text-white">{asset.name}</p>
+        </div>
+        <div>
+          <p className="text-sm text-dark-500 dark:text-dark-400">Category</p>
+          <p className="text-sm text-dark-900 dark:text-white">{asset.category}</p>
+        </div>
+        <div className="col-span-2">
+          <p className="text-sm text-dark-500 dark:text-dark-400">Description</p>
+          <p className="text-sm text-dark-900 dark:text-white">{asset.description || 'No description'}</p>
+        </div>
+        <div className="col-span-2">
+          <p className="text-sm text-dark-500 dark:text-dark-400">Metadata URI</p>
+          <p className="font-mono text-xs break-all">{asset.metadata_uri}</p>
+        </div>
+        <div>
+          <p className="text-sm text-dark-500 dark:text-dark-400">Creator</p>
+          <p className="text-sm text-dark-900 dark:text-white">{asset.creator?.full_name || 'Unknown'}</p>
+        </div>
+        <div>
+          <p className="text-sm text-dark-500 dark:text-dark-400">Owner</p>
+          <p className="text-sm text-dark-900 dark:text-white">{asset.owner?.full_name || 'Unassigned'}</p>
+        </div>
+        <div>
+          <p className="text-sm text-dark-500 dark:text-dark-400">Status</p>
+          <Badge variant={ASSET_STATUS_COLORS[asset.status] || 'default'}>
+            {asset.status}
+          </Badge>
+        </div>
+        <div>
+          <p className="text-sm text-dark-500 dark:text-dark-400">Created</p>
+          <p className="text-sm text-dark-900 dark:text-white">{formatDate(asset.created_at)}</p>
+        </div>
+        {asset.blockchain_tx_hash && (
+          <div className="col-span-2">
+            <p className="text-sm text-dark-500 dark:text-dark-400">Blockchain Transaction</p>
+            <p className="font-mono text-sm text-green-600 dark:text-green-400">{asset.blockchain_tx_hash}</p>
+          </div>
+        )}
+        {asset.blockchain_block_number && (
+          <div>
+            <p className="text-sm text-dark-500 dark:text-dark-400">Block Number</p>
+            <p className="text-sm text-dark-900 dark:text-white">{asset.blockchain_block_number.toLocaleString()}</p>
+          </div>
+        )}
+      </div>
+      <div className="flex justify-end gap-3 pt-4 border-t border-dark-200 dark:border-dark-700">
+        <Button variant="outline" onClick={onClose}>Close</Button>
+      </div>
+    </div>
+  );
+}
