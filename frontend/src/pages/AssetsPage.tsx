@@ -43,8 +43,8 @@ export default function AssetsPage() {
   const revokeAssignmentMutation = useRevokeAssignment();
   const { data: usersData } = useUsers({ page_size: 100 });
 
-  const isAdmin = hasRole(['ADMIN']);
-  const isManager = hasRole(['ADMIN', 'MANAGER']);
+  const isAdmin = hasRole(['OWNER']);
+  const isManager = hasRole(['OWNER', 'MANAGER']);
   const canCreate = isAdmin;
   const canAllocate = isManager;
 

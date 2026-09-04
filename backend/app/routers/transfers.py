@@ -12,7 +12,7 @@ from app.schemas import (
     TransferWithDetails,
     PaginatedResponse,
 )
-from app.auth import get_current_active_user, require_admin, require_admin_or_manager
+from app.auth import get_current_active_user, require_owner, require_owner_or_manager
 from app.services.audit import AuditService
 from app.services.blockchain import BlockchainService
 
@@ -34,7 +34,7 @@ async def list_transfers(
         selectinload(Transfer.recipient),
     )
 
-    if current_user.role not in [UserRole.ADMIN, UserRole.AUDITOR, UserRole.MANAGER]:
+    if current_user.role not in [UserRole.OWNER, UserRole.MANAGER]:
         query = query.where(
             (Transfer.initiator_id == current_user.id)
             | (Transfer.recipient_id == current_user.id)
@@ -83,7 +83,7 @@ async def get_transfer(
         raise HTTPException(status_code=404, detail="Transfer not found")
 
     if (
-        current_user.role not in [UserRole.ADMIN, UserRole.AUDITOR, UserRole.MANAGER]
+        current_user.role not in [UserRole.OWNER, UserRole.MANAGER]
         and transfer.initiator_id != current_user.id
         and transfer.recipient_id != current_user.id
     ):
@@ -106,7 +106,7 @@ async def cancel_transfer(
     if not transfer:
         raise HTTPException(status_code=404, detail="Transfer not found")
 
-    if transfer.initiator_id != current_user.id and current_user.role != UserRole.ADMIN:
+    if transfer.initiator_id != current_user.id and current_user.role != UserRole.OWNER:
         raise HTTPException(status_code=403, detail="Not authorized to cancel this transfer")
 
     if transfer.status != TransferStatus.PENDING:

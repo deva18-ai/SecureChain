@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
 const ROLE_PERMISSIONS: Record<string, string[]> = {
-  ADMIN: [
+  OWNER: [
     'Full system access', 'User management', 'Role assignment', 'Identity creation',
     'Identity verification', 'Asset minting', 'Asset allocation', 'Asset transfer',
     'Asset burning', 'Asset freezing', 'Transfer approval', 'Audit log access',
@@ -22,21 +22,16 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'Asset transfer', 'Transfer creation', 'Transfer read access', 'Transfer approval',
     'Audit log read access', 'Blockchain read access'
   ],
-  AUDITOR: [
-    'User read access', 'DID read access', 'Asset read access', 'Transfer read access',
-    'Audit log read access', 'Blockchain verification', 'Blockchain read access'
-  ],
-  USER: [
+  EMPLOYEE: [
     'Own profile read', 'Own DID read', 'Own asset read', 'Transfer creation',
     'Own transfer read', 'Own activity view'
   ],
 };
 
 const ROLE_DESCRIPTIONS: Record<string, string> = {
-  ADMIN: 'Full system administrator with complete access to all features and user management.',
+  OWNER: 'Full system owner with complete access to all features and user management.',
   MANAGER: 'Manages assets and transfers, can allocate assets and approve transfers.',
-  AUDITOR: 'Read-only access to audit logs and blockchain verification capabilities.',
-  USER: 'Standard user with access to their own identity, assets, and transfer requests.',
+  EMPLOYEE: 'Standard user with access to their own identity, assets, and transfer requests.',
 };
 
 export default function AdminRolesPage() {
@@ -48,7 +43,7 @@ export default function AdminRolesPage() {
   const { data: usersData } = useUsers({ page_size: 100 });
   const users = usersData?.items || [];
 
-  const roles = ['ADMIN', 'MANAGER', 'AUDITOR', 'USER'];
+  const roles = ['OWNER', 'MANAGER', 'EMPLOYEE'];
 
   const handleAssignRole = async () => {
     if (!assignRoleUserId || !assignRoleType) return;
@@ -166,7 +161,7 @@ export default function AdminRolesPage() {
               className="w-full px-4 py-2.5 rounded-lg border border-dark-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="">Select role</option>
-              {roles.filter(r => r !== 'ADMIN').map((r) => (
+              {roles.filter(r => r !== 'OWNER').map((r) => (
                 <option key={r} value={r}>{r}</option>
               ))}
             </select>

@@ -1,6 +1,6 @@
-import { forwardRef, ButtonHTMLAttributes } from 'react';
+import React, { forwardRef, ButtonHTMLAttributes } from 'react';
 import { cn } from '../../utils/helpers';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ChevronDown, MoreVertical } from 'lucide-react';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning' | 'subtle' | 'link';
@@ -156,8 +156,6 @@ export interface SplitButtonProps {
 
 import { ChevronDown, MoreVertical } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
-import { cn } from '../../utils/helpers';
-import { Menu, MenuItem, MenuTrigger, MenuContent, MenuSeparator } from './DropdownMenu';
 
 export function SplitButton({
   label,
@@ -170,11 +168,11 @@ export function SplitButton({
   loading,
 }: SplitButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -183,7 +181,7 @@ export function SplitButton({
   }, []);
 
   return (
-    <div className="relative inline-flex" ref={buttonRef}>
+    <div className="relative inline-flex" ref={containerRef}>
       <Button
         variant={variant}
         size={size}
@@ -268,7 +266,7 @@ function MenuItem({
   disabled,
   danger,
   icon,
-  className,
+  className: customClassName,
 }: {
   children: React.ReactNode;
   onClick: () => void;
@@ -287,15 +285,11 @@ function MenuItem({
           ? 'opacity-50 cursor-not-allowed'
           : 'hover:bg-cyber-elevated focus:outline-none focus:bg-cyber-elevated',
         danger && 'text-cyber-critical hover:bg-cyber-critical/10',
-        className
+        customClassName
       )}
     >
       {icon && <span className="flex-shrink-0 h-4 w-4">{icon}</span>}
       {children}
     </button>
   );
-}
-
-function MenuSeparator() {
-  return <hr className="my-1.5 border-cyber-border" />;
 }

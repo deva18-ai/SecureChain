@@ -53,11 +53,33 @@ export function formatRelativeTime(dateString: string): string {
 
 export function getRoleColor(role: string): string {
   switch (role) {
-    case 'ADMIN': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
+    case 'OWNER': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
     case 'MANAGER': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+    case 'EMPLOYEE': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+    case 'ADMIN': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
     case 'AUDITOR': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
     case 'USER': return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+  }
+}
+
+export function getWalletTypeColor(type: string): string {
+  switch (type) {
+    case 'OWNER': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
+    case 'MANAGER': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+    case 'EMPLOYEE': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+    default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+  }
+}
+
+export function getProposalStatusColor(status: string): string {
+  switch (status) {
+    case 'MINTED': return 'success';
+    case 'APPROVED': return 'primary';
+    case 'PROPOSED': return 'warning';
+    case 'REJECTED': return 'danger';
+    case 'DRAFT': return 'default';
+    default: return 'default';
   }
 }
 

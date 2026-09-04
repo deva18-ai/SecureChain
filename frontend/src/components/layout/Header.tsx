@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '../../utils/helpers';
 import {
@@ -15,10 +15,7 @@ import {
   Database,
   Globe,
   CheckCircle,
-  XCircle,
   Search,
-  Command,
-  Settings,
   HelpCircle,
   AlertTriangle,
   Activity,
@@ -29,77 +26,19 @@ import {
   Blocks,
   BookOpen,
   UserCog,
-  Wifi,
   WifiOff,
-  Zap,
   Lock,
-  Eye,
+  LayoutDashboard,
+  ShieldCheck,
+  Settings,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWallet } from '../../context/WalletContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
-import { formatAddress } from '../../utils/helpers';
 import { useBlockchainStatus } from '../../hooks/useApi';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import { useToast } from '../../context/ToastContext';
-
-const routeLabels: Record<string, string> = {
-  '/dashboard': 'Dashboard',
-  '/security-center': 'Security Center',
-  '/identities': 'Identities',
-  '/identity': 'My Identity',
-  '/assets': 'Digital Assets',
-  '/my-assets': 'My Assets',
-  '/transfers': 'Transfers',
-  '/my-transfers': 'Transfer Requests',
-  '/audit': 'Audit Trail',
-  '/my-activity': 'My Activity',
-  '/blockchain': 'Blockchain Explorer',
-  '/transactions': 'Transactions',
-  '/admin/users': 'User Management',
-  '/admin/roles': 'Roles & Permissions',
-  '/admin/config': 'System Configuration',
-  '/security-resources': 'Cybersecurity Resources',
-  '/settings': 'Settings',
-};
-
-const commandPaletteItems = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, keywords: 'home overview metrics' },
-  { label: 'Security Center', href: '/security-center', icon: ShieldCheck, keywords: 'threats alerts monitoring' },
-  { label: 'Identities', href: '/identities', icon: Key, keywords: 'dids verification manage' },
-  { label: 'My Identity', href: '/identity', icon: Shield, keywords: 'did profile' },
-  { label: 'Digital Assets', href: '/assets', icon: Box, keywords: 'nfts browse mint' },
-  { label: 'My Assets', href: '/my-assets', icon: Wallet, keywords: 'owned nfts' },
-  { label: 'Transfers', href: '/transfers', icon: GitBranch, keywords: 'transfer manage approve' },
-  { label: 'Transfer Requests', href: '/my-transfers', icon: GitBranch, keywords: 'pending requests' },
-  { label: 'Blockchain Explorer', href: '/blockchain', icon: Blocks, keywords: 'blocks transactions explorer' },
-  { label: 'Transactions', href: '/transactions', icon: Activity, keywords: 'history txs' },
-  { label: 'Audit Trail', href: '/audit', icon: FileText, keywords: 'logs immutable verify' },
-  { label: 'My Activity', href: '/my-activity', icon: Activity, keywords: 'personal logs' },
-  { label: 'Users', href: '/admin/users', icon: UserCog, keywords: 'management admin' },
-  { label: 'Roles & Permissions', href: '/admin/roles', icon: Shield, keywords: 'rbac admin' },
-  { label: 'System Configuration', href: '/admin/config', icon: Settings, keywords: 'settings admin' },
-  { label: 'Cybersecurity Resources', href: '/security-resources', icon: BookOpen, keywords: 'guides docs' },
-  { label: 'Settings', href: '/settings', icon: Settings, keywords: 'preferences profile' },
-];
-
-import {
-  LayoutDashboard,
-  ShieldCheck,
-  Key,
-  Shield,
-  Box,
-  Wallet,
-  GitBranch,
-  Blocks,
-  Activity,
-  FileText,
-  Settings,
-  UserCog,
-  BookOpen,
-} from 'lucide-react';
 
 function getBreadcrumbs(pathname: string) {
   const parts = pathname.split('/').filter(Boolean);
@@ -140,8 +79,8 @@ function getServiceStatus(name: string, blockchainStatus: any, isConnected: bool
 const services = ['API', 'Database', 'Blockchain', 'Authentication', 'Audit', 'Wallet'];
 
 export function Header() {
-  const { user, logout, hasRole } = useAuth();
-  const { isConnected, account, connect, disconnect, chainId, balance } = useWallet();
+  const { user, logout } = useAuth();
+  const { isConnected } = useWallet();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
@@ -149,7 +88,6 @@ export function Header() {
   const toast = useToast();
 
   const [profileOpen, setProfileOpen] = useState(false);
-  const [walletOpen, setWalletOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [systemHealthOpen, setSystemHealthOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
@@ -158,7 +96,6 @@ export function Header() {
   const [selectedCommandIndex, setSelectedCommandIndex] = useState(0);
 
   const profileRef = useRef<HTMLDivElement>(null);
-  const walletRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const systemHealthRef = useRef<HTMLDivElement>(null);
   const commandPaletteRef = useRef<HTMLDivElement>(null);
@@ -184,7 +121,6 @@ export function Header() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) setProfileOpen(false);
-      if (walletRef.current && !walletRef.current.contains(event.target as Node)) setWalletOpen(false);
       if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) setNotificationsOpen(false);
       if (systemHealthRef.current && !systemHealthRef.current.contains(event.target as Node)) setSystemHealthOpen(false);
       if (commandPaletteRef.current && !commandPaletteRef.current.contains(event.target as Node)) setCommandPaletteOpen(false);
@@ -238,11 +174,6 @@ export function Header() {
   };
 
   const breadcrumbs = getBreadcrumbs(location.pathname);
-
-  const handleNotificationAction = (action: string) => {
-    toast.info(`${action} clicked`);
-    setNotificationsOpen(false);
-  };
 
   return (
     <header className="sticky top-0 z-30 bg-cyber-panel/80 backdrop-blur-xl border-b border-cyber-border">

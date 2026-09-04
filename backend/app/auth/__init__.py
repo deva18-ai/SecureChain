@@ -102,8 +102,8 @@ def require_role(*allowed_roles: UserRole):
     return role_checker
 
 
-require_admin = require_role(UserRole.ADMIN)
-require_manager = require_role(UserRole.ADMIN, UserRole.MANAGER)
-require_auditor = require_role(UserRole.ADMIN, UserRole.AUDITOR)
-require_admin_or_manager = require_role(UserRole.ADMIN, UserRole.MANAGER)
-require_any_authenticated = require_role(UserRole.ADMIN, UserRole.MANAGER, UserRole.AUDITOR, UserRole.USER)
+require_owner = require_role(UserRole.OWNER)
+require_manager = require_role(UserRole.OWNER, UserRole.MANAGER)
+require_employee = require_role(UserRole.OWNER, UserRole.MANAGER, UserRole.EMPLOYEE)
+require_owner_or_manager = require_role(UserRole.OWNER, UserRole.MANAGER)
+require_any_authenticated = require_role(UserRole.OWNER, UserRole.MANAGER, UserRole.EMPLOYEE)

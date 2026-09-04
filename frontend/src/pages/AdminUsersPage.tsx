@@ -7,6 +7,7 @@ import { Badge } from '../components/ui/Badge';
 import { Table } from '../components/ui/Table';
 import { Modal } from '../components/ui/Modal';
 import { useUsers } from '../hooks/useApi';
+import { usersApi } from '../services/api';
 import { formatAddress, formatDate, getRoleColor } from '../utils/helpers';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -42,10 +43,11 @@ export default function AdminUsersPage() {
       return;
     }
     try {
-      // Delete would be implemented with a delete mutation
-      toast('Delete functionality coming soon');
-    } catch (error) {
-      toast.error('Failed to delete user');
+      await usersApi.delete(userId);
+      toast.success('User deleted successfully');
+      refetch();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.detail || 'Failed to delete user');
     }
   };
 
@@ -111,10 +113,9 @@ export default function AdminUsersPage() {
               className="px-3 py-2 rounded-lg border border-dark-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-white text-sm"
             >
               <option value="all">All Roles</option>
-              <option value="ADMIN">Admin</option>
+              <option value="OWNER">Owner</option>
               <option value="MANAGER">Manager</option>
-              <option value="AUDITOR">Auditor</option>
-              <option value="USER">User</option>
+              <option value="EMPLOYEE">Employee</option>
             </select>
             <label className="text-sm text-dark-600 dark:text-dark-400">Status:</label>
             <select
@@ -231,7 +232,7 @@ function UserCreateForm({ onClose }: any) {
     full_name: '',
     password: '',
     wallet_address: '',
-    role: 'USER',
+    role: 'EMPLOYEE',
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -239,11 +240,17 @@ function UserCreateForm({ onClose }: any) {
     e.preventDefault();
     setIsLoading(true);
     try {
-      // In a real app, this would call the API
-      toast('Create functionality coming soon');
+      await usersApi.register({
+        email: formData.email,
+        full_name: formData.full_name,
+        password: formData.password,
+        wallet_address: formData.wallet_address || undefined,
+        role: formData.role,
+      });
+      toast.success('User created successfully');
       onClose();
-    } catch (error) {
-      toast.error('Failed to create user');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.detail || 'Failed to create user');
     } finally {
       setIsLoading(false);
     }
@@ -287,9 +294,8 @@ function UserCreateForm({ onClose }: any) {
           onChange={(e) => setFormData({ ...formData, role: e.target.value })}
           className="w-full px-4 py-2.5 rounded-lg border border-dark-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
-          <option value="USER">User</option>
+          <option value="EMPLOYEE">Employee</option>
           <option value="MANAGER">Manager</option>
-          <option value="AUDITOR">Auditor</option>
         </select>
       </div>
       <div className="flex justify-end gap-3 pt-4 border-t border-dark-200 dark:border-dark-700">
@@ -313,10 +319,11 @@ function UserEditForm({ user, onClose }: any) {
     e.preventDefault();
     setIsLoading(true);
     try {
-      toast('Update functionality coming soon');
+      await usersApi.update(user.id, formData);
+      toast.success('User updated successfully');
       onClose();
-    } catch (error) {
-      toast.error('Failed to update user');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.detail || 'Failed to update user');
     } finally {
       setIsLoading(false);
     }

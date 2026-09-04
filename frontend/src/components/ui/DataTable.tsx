@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback, ReactNode, forwardRef } from 'react';
+import { useState, useMemo, useCallback, ReactNode, useEffect } from 'react';
 import { cn } from '../../utils/helpers';
-import { ChevronUp, ChevronDown, ChevronsUpDown, Check, CheckCheck, Minus, Loader2 } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronsUpDown, Check, Minus, Loader2 } from 'lucide-react';
 import { Button } from './Button';
 import { Input } from './Input';
 import { Select } from './Input';
@@ -94,7 +94,7 @@ function Pagination({ page, pageSize, total, onPageChange, onPageSizeChange, pag
       <div className="flex items-center gap-3">
         {showPageSizeSelector && (
           <Select
-            value={pageSize}
+            value={String(pageSize)}
             onChange={onPageSizeChange}
             options={pageSizeOptions.map(n => ({ value: String(n), label: `${n} per page` }))}
             className="w-auto"
@@ -161,7 +161,6 @@ export function DataTable<T extends Record<string, unknown>>({
   showPageSizeSelector = true,
   striped = true,
   hoverable = true,
-  bordered = true,
   className,
   rowClassName,
   onRowClick,
@@ -178,8 +177,8 @@ export function DataTable<T extends Record<string, unknown>>({
   const sortedData = useMemo(() => {
     if (!sortConfig || !sortable) return data;
     return [...data].sort((a, b) => {
-      const aVal = a[sortConfig.key];
-      const bVal = b[sortConfig.key];
+      const aVal = a[sortConfig.key] as string | number;
+      const bVal = b[sortConfig.key] as string | number;
       if (aVal === bVal) return 0;
       const direction = sortConfig.direction === 'asc' ? 1 : -1;
       return aVal > bVal ? direction : -direction;
@@ -224,8 +223,8 @@ export function DataTable<T extends Record<string, unknown>>({
 
   const isRowSelected = (rowKey: string) => selectedRows.has(rowKey);
 
-  const handlePageSizeChange = (newSize: string) => {
-    setPageSize(parseInt(newSize, 10));
+  const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setPageSize(parseInt(event.target.value, 10));
     setCurrentPage(1);
   };
 

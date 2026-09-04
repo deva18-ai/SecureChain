@@ -22,7 +22,7 @@ export default function BlockchainPage() {
   const { data: txData, isLoading: txLoading } = useBlockchainTransaction(selectedTxHash || '');
   const { data: assetData, isLoading: assetLoading } = useBlockchainAsset(selectedTokenId || 0);
 
-  const isAuditor = hasRole(['ADMIN', 'AUDITOR']);
+  const isAuditor = hasRole(['OWNER', 'MANAGER']);
 
   const handleViewTx = (txHash: string) => {
     setSelectedTxHash(txHash);

@@ -45,7 +45,7 @@ const features = [
   {
     icon: Users,
     title: 'Role-Based Access Control',
-    description: 'Four-tier permission system (Admin, Manager, Auditor, User) enforced both on-chain and off-chain.',
+    description: 'Three-tier permission system (Owner, Manager, Employee) enforced both on-chain and off-chain.',
     benefits: ['Granular permissions', 'On-chain enforcement', 'Off-chain validation', 'Audit compliance'],
   },
   {
@@ -72,10 +72,9 @@ const techStack = [
 ];
 
 const roles = [
-  { role: 'ADMIN', color: 'bg-purple-500', permissions: ['Full system access', 'User management', 'Role assignment', 'Identity creation', 'Asset minting', 'System config'] },
+  { role: 'OWNER', color: 'bg-purple-500', permissions: ['Full system access', 'User management', 'Role assignment', 'Identity creation', 'Asset minting', 'System config'] },
   { role: 'MANAGER', color: 'bg-blue-500', permissions: ['Asset management', 'Asset allocation', 'Transfer approval', 'Audit viewing'] },
-  { role: 'AUDITOR', color: 'bg-green-500', permissions: ['Read-only audit access', 'Blockchain verification', 'Ownership history', 'Identity proofs'] },
-  { role: 'USER', color: 'bg-gray-500', permissions: ['Own identity', 'Own assets', 'Transfer requests', 'Activity view'] },
+  { role: 'EMPLOYEE', color: 'bg-gray-500', permissions: ['Own identity', 'Own assets', 'Transfer requests', 'Activity view'] },
 ];
 
 export default function LandingPage() {

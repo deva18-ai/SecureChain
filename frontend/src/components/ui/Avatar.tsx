@@ -1,4 +1,6 @@
-import { forwardRef, HTMLAttributes, useMemo } from 'react';
+import { forwardRef, HTMLAttributes, useMemo, useState, useRef, useEffect } from 'react';
+import { X, LogOut, Settings, Shield, User } from 'lucide-react';
+import { Button } from './Button';
 import { cn } from '../../utils/helpers';
 
 export interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
@@ -190,11 +192,6 @@ export interface UserMenuProps {
   trigger?: React.ReactNode;
   align?: 'left' | 'right';
 }
-
-import { useState, useRef, useEffect } from 'react';
-import { X, LogOut, Settings, Shield, User } from 'lucide-react';
-import { Button } from './Button';
-import { cn } from '../../utils/helpers';
 
 export function UserMenu({ user, items, trigger, align = 'right' }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);

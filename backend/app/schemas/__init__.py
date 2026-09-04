@@ -5,10 +5,21 @@ from enum import Enum
 
 
 class UserRole(str, Enum):
-    ADMIN = "ADMIN"
+    OWNER = "OWNER"
     MANAGER = "MANAGER"
-    AUDITOR = "AUDITOR"
-    USER = "USER"
+    EMPLOYEE = "EMPLOYEE"
+
+
+class WalletType(str, Enum):
+    OWNER = "OWNER"
+    MANAGER = "MANAGER"
+    EMPLOYEE = "EMPLOYEE"
+
+
+class BlockchainTxStatus(str, Enum):
+    PENDING = "PENDING"
+    CONFIRMED = "CONFIRMED"
+    FAILED = "FAILED"
 
 
 class UserBase(BaseModel):
@@ -19,7 +30,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field(..., min_length=8, max_length=128)
-    role: UserRole = UserRole.USER
+    role: UserRole = UserRole.EMPLOYEE
 
 
 class UserUpdate(BaseModel):
@@ -72,6 +83,40 @@ class RegisterRequest(UserCreate):
     pass
 
 
+class WalletAssociationBase(BaseModel):
+    wallet_address: str = Field(..., pattern=r"^0x[a-fA-F0-9]{40}$")
+    wallet_type: WalletType
+    did: Optional[str] = None
+
+
+class WalletAssociationCreate(WalletAssociationBase):
+    user_id: int
+
+
+class WalletAssociationUpdate(BaseModel):
+    wallet_address: Optional[str] = Field(None, pattern=r"^0x[a-fA-F0-9]{40}$")
+    wallet_type: Optional[WalletType] = None
+    did: Optional[str] = None
+    is_primary: Optional[bool] = None
+
+
+class WalletAssociationResponse(WalletAssociationBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    user_id: int
+    blockchain_identity_tx_hash: Optional[str] = None
+    blockchain_identity_block_number: Optional[int] = None
+    blockchain_identity_status: BlockchainTxStatus = BlockchainTxStatus.PENDING
+    is_primary: bool = True
+    created_at: datetime
+    updated_at: datetime
+
+
+class WalletAssociationWithUser(WalletAssociationResponse):
+    user: Optional[UserResponse] = None
+
+
 class DIDBase(BaseModel):
     did: str = Field(..., min_length=1, max_length=255)
     wallet_address: str = Field(..., pattern=r"^0x[a-fA-F0-9]{40}$")
@@ -97,6 +142,7 @@ class DIDResponse(DIDBase):
     verified_at: Optional[datetime] = None
     blockchain_tx_hash: Optional[str] = None
     blockchain_block_number: Optional[int] = None
+    blockchain_tx_status: BlockchainTxStatus = BlockchainTxStatus.PENDING
 
 
 class DIDWithUser(DIDResponse):
@@ -142,6 +188,9 @@ class AssetResponse(AssetBase):
     updated_at: datetime
     blockchain_tx_hash: Optional[str] = None
     blockchain_block_number: Optional[int] = None
+    blockchain_tx_status: BlockchainTxStatus = BlockchainTxStatus.PENDING
+    blockchain_network: Optional[str] = None
+    contract_address: Optional[str] = None
 
 
 class AssetWithDetails(AssetResponse):
@@ -186,6 +235,7 @@ class TransferResponse(TransferBase):
     status: TransferStatus
     blockchain_tx_hash: Optional[str] = None
     blockchain_block_number: Optional[int] = None
+    blockchain_tx_status: BlockchainTxStatus = BlockchainTxStatus.PENDING
     error_message: Optional[str] = None
     created_at: datetime
     updated_at: datetime
@@ -384,3 +434,64 @@ class SecurityEventWithDetails(SecurityEventResponse):
 
 class SecurityEventResolve(BaseModel):
     resolution_notes: Optional[str] = None
+
+
+class AIAssetProposalStatus(str, Enum):
+    DRAFT = "DRAFT"
+    PROPOSED = "PROPOSED"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+    MINTED = "MINTED"
+
+
+class AIAssetProposalBase(BaseModel):
+    asset_name: str = Field(..., min_length=1, max_length=255)
+    description: Optional[str] = None
+    category: Optional[str] = Field(None, max_length=100)
+    metadata_uri: Optional[str] = Field(None, max_length=500)
+    suggested_initial_owner_id: Optional[int] = None
+
+
+class AIAssetProposalCreate(AIAssetProposalBase):
+    ai_model: Optional[str] = None
+    ai_prompt: Optional[str] = None
+    ai_response: Optional[str] = None
+
+
+class AIAssetProposalUpdate(BaseModel):
+    asset_name: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = None
+    category: Optional[str] = Field(None, max_length=100)
+    metadata_uri: Optional[str] = Field(None, max_length=500)
+    suggested_initial_owner_id: Optional[int] = None
+    status: Optional[AIAssetProposalStatus] = None
+    review_notes: Optional[str] = None
+
+
+class AIAssetProposalResponse(AIAssetProposalBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    proposed_by: Optional[int] = None
+    ai_model: Optional[str] = None
+    ai_prompt: Optional[str] = None
+    ai_response: Optional[str] = None
+    status: AIAssetProposalStatus
+    reviewed_by: Optional[int] = None
+    reviewed_at: Optional[datetime] = None
+    review_notes: Optional[str] = None
+    minted_asset_id: Optional[int] = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class AIAssetProposalWithDetails(AIAssetProposalResponse):
+    proposer: Optional[UserResponse] = None
+    reviewer: Optional[UserResponse] = None
+    suggested_owner: Optional[UserResponse] = None
+    minted_asset: Optional[AssetResponse] = None
+
+
+class AIAssetProposalReview(BaseModel):
+    action: str = Field(..., pattern="^(approve|reject)$")
+    review_notes: Optional[str] = None

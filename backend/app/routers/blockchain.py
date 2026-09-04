@@ -9,7 +9,7 @@ from app.schemas import (
     BlockchainTransactionResponse,
     PaginatedResponse,
 )
-from app.auth import get_current_active_user, require_auditor
+from app.auth import get_current_active_user, require_employee
 from app.services.blockchain import BlockchainService
 
 router = APIRouter(prefix="/blockchain", tags=["Blockchain"])
@@ -26,7 +26,7 @@ async def get_blockchain_status(
 @router.get("/transaction/{tx_hash}", response_model=BlockchainTransactionResponse)
 async def get_blockchain_transaction(
     tx_hash: str,
-    current_user: User = Depends(require_auditor),
+    current_user: User = Depends(require_employee),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
@@ -81,7 +81,7 @@ async def list_blockchain_transactions(
     page_size: int = Query(20, ge=1, le=100),
     from_address: str = Query(None),
     contract_address: str = Query(None),
-    current_user: User = Depends(require_auditor),
+    current_user: User = Depends(require_employee),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(BlockchainTransaction)

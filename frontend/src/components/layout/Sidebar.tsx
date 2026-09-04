@@ -22,8 +22,6 @@ import {
   ChevronDown,
   LogOut,
   HelpCircle,
-  Bell,
-  Badge as LucideBadge,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWallet } from '../../context/WalletContext';
@@ -56,8 +54,8 @@ const navigation: NavSection[] = [
     icon: ShieldCheck,
     defaultExpanded: true,
     items: [
-      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'AUDITOR', 'USER'], description: 'Security overview & metrics' },
-      { name: 'Security Center', href: '/security-center', icon: ShieldCheck, roles: ['ADMIN', 'MANAGER', 'AUDITOR', 'USER'], description: 'Threat monitoring & alerts' },
+      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['OWNER', 'MANAGER', 'EMPLOYEE'], description: 'Security overview & metrics' },
+      { name: 'Security Center', href: '/security-center', icon: ShieldCheck, roles: ['OWNER', 'MANAGER', 'EMPLOYEE'], description: 'Threat monitoring & alerts' },
     ],
   },
   {
@@ -65,8 +63,8 @@ const navigation: NavSection[] = [
     icon: Key,
     defaultExpanded: true,
     items: [
-      { name: 'Identities', href: '/identities', icon: Key, roles: ['ADMIN', 'MANAGER', 'AUDITOR', 'USER'], description: 'Manage DIDs & verification' },
-      { name: 'My Identity', href: '/identity', icon: Shield, roles: ['USER'], description: 'Your personal DID' },
+      { name: 'Identities', href: '/identities', icon: Key, roles: ['OWNER', 'MANAGER', 'EMPLOYEE'], description: 'Manage DIDs & verification' },
+      { name: 'My Identity', href: '/identity', icon: Shield, roles: ['EMPLOYEE'], description: 'Your personal DID' },
     ],
   },
   {
@@ -74,10 +72,10 @@ const navigation: NavSection[] = [
     icon: Box,
     defaultExpanded: true,
     items: [
-      { name: 'Digital Assets', href: '/assets', icon: Box, roles: ['ADMIN', 'MANAGER', 'AUDITOR', 'USER'], description: 'Browse all NFT assets' },
-      { name: 'My Assets', href: '/my-assets', icon: Wallet, roles: ['USER'], description: 'Your owned assets' },
-      { name: 'Transfers', href: '/transfers', icon: GitBranch, roles: ['ADMIN', 'MANAGER', 'AUDITOR', 'USER'], description: 'Manage transfers' },
-      { name: 'Transfer Requests', href: '/my-transfers', icon: GitBranch, roles: ['USER'], description: 'Your pending requests' },
+      { name: 'Digital Assets', href: '/assets', icon: Box, roles: ['OWNER', 'MANAGER', 'EMPLOYEE'], description: 'Browse all NFT assets' },
+      { name: 'My Assets', href: '/my-assets', icon: Wallet, roles: ['EMPLOYEE'], description: 'Your owned assets' },
+      { name: 'Transfers', href: '/transfers', icon: GitBranch, roles: ['OWNER', 'MANAGER', 'EMPLOYEE'], description: 'Manage transfers' },
+      { name: 'Transfer Requests', href: '/my-transfers', icon: GitBranch, roles: ['EMPLOYEE'], description: 'Your pending requests' },
     ],
   },
   {
@@ -85,8 +83,8 @@ const navigation: NavSection[] = [
     icon: Blocks,
     defaultExpanded: true,
     items: [
-      { name: 'Blockchain Explorer', href: '/blockchain', icon: Blocks, roles: ['ADMIN', 'AUDITOR'], description: 'View blocks & transactions' },
-      { name: 'Transactions', href: '/transactions', icon: Activity, roles: ['ADMIN', 'AUDITOR'], description: 'Transaction history' },
+      { name: 'Blockchain Explorer', href: '/blockchain', icon: Blocks, roles: ['OWNER', 'MANAGER'], description: 'View blocks & transactions' },
+      { name: 'Transactions', href: '/transactions', icon: Activity, roles: ['OWNER', 'MANAGER'], description: 'Transaction history' },
     ],
   },
   {
@@ -94,8 +92,8 @@ const navigation: NavSection[] = [
     icon: FileText,
     defaultExpanded: true,
     items: [
-      { name: 'Audit Trail', href: '/audit', icon: FileText, roles: ['ADMIN', 'AUDITOR'], description: 'Immutable audit logs' },
-      { name: 'My Activity', href: '/my-activity', icon: Activity, roles: ['USER'], description: 'Your activity log' },
+      { name: 'Audit Trail', href: '/audit', icon: FileText, roles: ['OWNER', 'MANAGER'], description: 'Immutable audit logs' },
+      { name: 'My Activity', href: '/my-activity', icon: Activity, roles: ['EMPLOYEE'], description: 'Your activity log' },
     ],
   },
   {
@@ -103,9 +101,9 @@ const navigation: NavSection[] = [
     icon: Settings,
     defaultExpanded: false,
     items: [
-      { name: 'Users', href: '/admin/users', icon: UserCog, roles: ['ADMIN'], description: 'User management' },
-      { name: 'Roles & Permissions', href: '/admin/roles', icon: Shield, roles: ['ADMIN'], description: 'RBAC configuration' },
-      { name: 'System Configuration', href: '/admin/config', icon: Settings, roles: ['ADMIN'], description: 'System settings' },
+      { name: 'Users', href: '/admin/users', icon: UserCog, roles: ['OWNER'], description: 'User management' },
+      { name: 'Roles & Permissions', href: '/admin/roles', icon: Shield, roles: ['OWNER'], description: 'RBAC configuration' },
+      { name: 'System Configuration', href: '/admin/config', icon: Settings, roles: ['OWNER'], description: 'System settings' },
     ],
   },
   {
@@ -113,7 +111,7 @@ const navigation: NavSection[] = [
     icon: BookOpen,
     defaultExpanded: false,
     items: [
-      { name: 'Cybersecurity Resources', href: '/security-resources', icon: BookOpen, roles: ['ADMIN', 'MANAGER', 'AUDITOR', 'USER'], description: 'Guides & best practices' },
+      { name: 'Cybersecurity Resources', href: '/security-resources', icon: BookOpen, roles: ['OWNER', 'MANAGER', 'EMPLOYEE'], description: 'Guides & best practices' },
     ],
   },
 ];
@@ -125,7 +123,7 @@ export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
-  const sidebarRef = useRef<HTMLAsideElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {

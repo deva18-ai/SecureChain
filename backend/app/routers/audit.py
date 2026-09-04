@@ -12,7 +12,7 @@ from app.schemas import (
     VerificationResponse,
     PaginatedResponse,
 )
-from app.auth import get_current_active_user, require_auditor
+from app.auth import get_current_active_user, require_employee, require_owner_or_manager
 from app.services.audit import AuditService
 from app.services.blockchain import BlockchainService
 
@@ -27,7 +27,7 @@ async def list_audit_logs(
     resource_type: Optional[str] = None,
     actor_id: Optional[int] = None,
     blockchain_verified: Optional[bool] = None,
-    current_user: User = Depends(require_auditor),
+    current_user: User = Depends(require_owner_or_manager),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(AuditLog).options(selectinload(AuditLog.actor))
@@ -62,7 +62,7 @@ async def list_audit_logs(
 @router.get("/{log_id}", response_model=AuditLogWithActor)
 async def get_audit_log(
     log_id: int,
-    current_user: User = Depends(require_auditor),
+    current_user: User = Depends(require_owner_or_manager),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
@@ -77,7 +77,7 @@ async def get_audit_log(
 @router.post("/verify", response_model=VerificationResponse)
 async def verify_on_blockchain(
     request: VerificationRequest,
-    current_user: User = Depends(require_auditor),
+    current_user: User = Depends(require_owner_or_manager),
     db: AsyncSession = Depends(get_db),
 ):
     if not request.tx_hash and not request.token_id and not request.did:

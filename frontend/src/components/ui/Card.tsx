@@ -44,7 +44,11 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
 
 Card.displayName = 'Card';
 
-export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+export interface CardHeaderProps extends HTMLAttributes<HTMLDivElement> {
+  action?: React.ReactNode;
+}
+
+export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
   ({ className, children, action, ...props }, ref) => (
     <div
       ref={ref}
@@ -136,14 +140,6 @@ export function StatCard({
   onClick,
   className,
 }: StatCardProps) {
-  const colorClasses = {
-    primary: 'bg-cyber-primary/10 text-cyber-primary border-cyber-primary/20',
-    success: 'bg-cyber-success/10 text-cyber-success border-cyber-success/20',
-    warning: 'bg-cyber-warning/10 text-cyber-warning border-cyber-warning/20',
-    critical: 'bg-cyber-critical/10 text-cyber-critical border-cyber-critical/20',
-    secondary: 'bg-cyber-secondary/10 text-cyber-secondary border-cyber-secondary/20',
-  };
-
   const iconBgClasses = {
     primary: 'bg-cyber-primary/10 text-cyber-primary',
     success: 'bg-cyber-success/10 text-cyber-success',

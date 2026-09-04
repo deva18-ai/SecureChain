@@ -1,15 +1,26 @@
 import enum
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum, Boolean, Text, Index, BigInteger
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum, Boolean, Text, Index, BigInteger, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from app.database import Base
 
 
 class UserRole(str, enum.Enum):
-    ADMIN = "ADMIN"
+    OWNER = "OWNER"
     MANAGER = "MANAGER"
-    AUDITOR = "AUDITOR"
-    USER = "USER"
+    EMPLOYEE = "EMPLOYEE"
+
+
+class WalletType(str, enum.Enum):
+    OWNER = "OWNER"
+    MANAGER = "MANAGER"
+    EMPLOYEE = "EMPLOYEE"
+
+
+class BlockchainTxStatus(str, enum.Enum):
+    PENDING = "PENDING"
+    CONFIRMED = "CONFIRMED"
+    FAILED = "FAILED"
 
 
 class User(Base):
@@ -20,7 +31,7 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     wallet_address: Mapped[str] = mapped_column(String(42), unique=True, index=True, nullable=True)
-    role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.USER, nullable=False)
+    role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.EMPLOYEE, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
@@ -34,6 +45,7 @@ class User(Base):
     transfers_received: Mapped[list["Transfer"]] = relationship("Transfer", back_populates="recipient", foreign_keys="Transfer.recipient_id")
     audit_logs: Mapped[list["AuditLog"]] = relationship("AuditLog", back_populates="actor")
     security_events: Mapped[list["SecurityEvent"]] = relationship("SecurityEvent", back_populates="actor")
+    wallet_associations: Mapped[list["WalletAssociation"]] = relationship("WalletAssociation", back_populates="user", cascade="all, delete-orphan")
 
     __table_args__ = (
         Index("ix_users_email_active", "email", "is_active"),
@@ -55,12 +67,36 @@ class DID(Base):
     verified_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     blockchain_tx_hash: Mapped[str] = mapped_column(String(66), nullable=True)
     blockchain_block_number: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    blockchain_tx_status: Mapped[BlockchainTxStatus] = mapped_column(Enum(BlockchainTxStatus), default=BlockchainTxStatus.PENDING, nullable=False)
 
     user: Mapped["User"] = relationship("User", back_populates="dids")
 
     __table_args__ = (
         Index("ix_dids_user_verified", "user_id", "verified"),
         Index("ix_dids_wallet", "wallet_address"),
+    )
+
+
+class WalletAssociation(Base):
+    __tablename__ = "wallet_associations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    wallet_address: Mapped[str] = mapped_column(String(42), unique=True, index=True, nullable=False)
+    wallet_type: Mapped[WalletType] = mapped_column(Enum(WalletType), nullable=False)
+    did: Mapped[str] = mapped_column(String(255), nullable=True)
+    blockchain_identity_tx_hash: Mapped[str] = mapped_column(String(66), nullable=True)
+    blockchain_identity_block_number: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    blockchain_identity_status: Mapped[BlockchainTxStatus] = mapped_column(Enum(BlockchainTxStatus), default=BlockchainTxStatus.PENDING, nullable=False)
+    is_primary: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    user: Mapped["User"] = relationship("User", back_populates="wallet_associations")
+
+    __table_args__ = (
+        Index("ix_wallet_assoc_user_type", "user_id", "wallet_type"),
+        Index("ix_wallet_assoc_address", "wallet_address"),
     )
 
 
@@ -88,6 +124,9 @@ class Asset(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     blockchain_tx_hash: Mapped[str] = mapped_column(String(66), nullable=True)
     blockchain_block_number: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    blockchain_tx_status: Mapped[BlockchainTxStatus] = mapped_column(Enum(BlockchainTxStatus), default=BlockchainTxStatus.PENDING, nullable=False)
+    blockchain_network: Mapped[str] = mapped_column(String(50), nullable=True)
+    contract_address: Mapped[str] = mapped_column(String(42), nullable=True)
 
     creator: Mapped["User"] = relationship("User", back_populates="created_assets", foreign_keys=[creator_id])
     owner: Mapped["User"] = relationship("User", back_populates="assets", foreign_keys=[owner_id])
@@ -121,6 +160,7 @@ class Transfer(Base):
     status: Mapped[TransferStatus] = mapped_column(Enum(TransferStatus), default=TransferStatus.PENDING, nullable=False)
     blockchain_tx_hash: Mapped[str] = mapped_column(String(66), nullable=True)
     blockchain_block_number: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    blockchain_tx_status: Mapped[BlockchainTxStatus] = mapped_column(Enum(BlockchainTxStatus), default=BlockchainTxStatus.PENDING, nullable=False)
     error_message: Mapped[str] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
@@ -260,4 +300,44 @@ class BlockchainTransaction(Base):
     __table_args__ = (
         Index("ix_blockchain_txs_from_created", "from_address", "created_at"),
         Index("ix_blockchain_txs_contract_created", "contract_address", "created_at"),
+    )
+
+
+class AIAssetProposalStatus(str, enum.Enum):
+    DRAFT = "DRAFT"
+    PROPOSED = "PROPOSED"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+    MINTED = "MINTED"
+
+
+class AIAssetProposal(Base):
+    __tablename__ = "ai_asset_proposals"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    proposed_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    asset_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=True)
+    category: Mapped[str] = mapped_column(String(100), nullable=True)
+    metadata_uri: Mapped[str] = mapped_column(String(500), nullable=True)
+    suggested_initial_owner_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    ai_model: Mapped[str] = mapped_column(String(100), nullable=True)
+    ai_prompt: Mapped[str] = mapped_column(Text, nullable=True)
+    ai_response: Mapped[str] = mapped_column(Text, nullable=True)
+    status: Mapped[AIAssetProposalStatus] = mapped_column(Enum(AIAssetProposalStatus), default=AIAssetProposalStatus.DRAFT, nullable=False)
+    reviewed_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    reviewed_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    review_notes: Mapped[str] = mapped_column(Text, nullable=True)
+    minted_asset_id: Mapped[int] = mapped_column(Integer, ForeignKey("assets.id", ondelete="SET NULL"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    proposer: Mapped["User"] = relationship("User", foreign_keys=[proposed_by])
+    reviewer: Mapped["User"] = relationship("User", foreign_keys=[reviewed_by])
+    suggested_owner: Mapped["User"] = relationship("User", foreign_keys=[suggested_initial_owner_id])
+    minted_asset: Mapped["Asset"] = relationship("Asset", foreign_keys=[minted_asset_id])
+
+    __table_args__ = (
+        Index("ix_ai_proposals_status", "status"),
+        Index("ix_ai_proposals_proposer", "proposed_by"),
     )

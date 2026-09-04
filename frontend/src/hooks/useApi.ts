@@ -4,17 +4,22 @@ import type {
   User, DID, Asset, Transfer, AuditLog, BlockchainStatus,
   BlockchainTransaction, DashboardStats, PaginatedResponse,
   AssetCreate, AssetUpdate, VerificationRequest,
-  UserRole
+  UserRole, WalletAssociation, WalletAssociationCreate,
+  WalletAssociationUpdate, AIAssetProposal, AIAssetProposalCreate,
+  AIAssetProposalUpdate, AIAssetProposalReview
 } from '../types';
 
 const queryKeys = {
   users: (params?: object) => ['users', params] as const,
   user: (id: number) => ['user', id] as const,
+  userWallets: (userId: number) => ['users', userId, 'wallets'] as const,
   dids: (params?: object) => ['dids', params] as const,
   did: (id: number) => ['did', id] as const,
   myDid: () => ['did', 'me'] as const,
   assets: (params?: object) => ['assets', params] as const,
   asset: (id: number) => ['asset', id] as const,
+  assetProposals: (params?: object) => ['assets', 'proposals', params] as const,
+  assetProposal: (id: number) => ['assets', 'proposals', id] as const,
   transfers: (params?: object) => ['transfers', params] as const,
   transfer: (id: number) => ['transfer', id] as const,
   auditLogs: (params?: object) => ['audit', params] as const,
@@ -237,6 +242,100 @@ export function useVerifyDID() {
     mutationFn: (id: number) => api.post<DID>(`/dids/${id}/verify`).then(r => r.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dids'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
+    },
+  });
+}
+
+// Wallet Association hooks
+export function useUserWallets(userId: number) {
+  return useQuery({
+    queryKey: queryKeys.userWallets(userId),
+    queryFn: () => api.get<PaginatedResponse<WalletAssociation>>(`/users/${userId}/wallets`).then(r => r.data),
+    enabled: !!userId,
+  });
+}
+
+export function useCreateWallet() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, data }: { userId: number; data: WalletAssociationCreate }) =>
+      api.post<WalletAssociation>(`/users/${userId}/wallets`, data).then(r => r.data),
+    onSuccess: (_, { userId }) => {
+      queryClient.invalidateQueries({ queryKey: ['users', userId, 'wallets'] });
+    },
+  });
+}
+
+export function useUpdateWallet() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, walletId, data }: { userId: number; walletId: number; data: WalletAssociationUpdate }) =>
+      api.patch<WalletAssociation>(`/users/${userId}/wallets/${walletId}`, data).then(r => r.data),
+    onSuccess: (_, { userId }) => {
+      queryClient.invalidateQueries({ queryKey: ['users', userId, 'wallets'] });
+    },
+  });
+}
+
+export function useDeleteWallet() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, walletId }: { userId: number; walletId: number }) =>
+      api.delete(`/users/${userId}/wallets/${walletId}`),
+    onSuccess: (_, { userId }) => {
+      queryClient.invalidateQueries({ queryKey: ['users', userId, 'wallets'] });
+    },
+  });
+}
+
+// AI Asset Proposal hooks
+export function useAssetProposals(params?: { page?: number; page_size?: number; status?: string }) {
+  return useQuery({
+    queryKey: queryKeys.assetProposals(params),
+    queryFn: () => api.get<PaginatedResponse<AIAssetProposal>>('/assets/proposals', { params }).then(r => r.data),
+  });
+}
+
+export function useAssetProposal(id: number) {
+  return useQuery({
+    queryKey: queryKeys.assetProposal(id),
+    queryFn: () => api.get<AIAssetProposal>(`/assets/proposals/${id}`).then(r => r.data),
+    enabled: !!id,
+  });
+}
+
+export function useCreateAssetProposal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: AIAssetProposalCreate) => api.post<AIAssetProposal>('/assets/proposals', data).then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assets', 'proposals'] });
+    },
+  });
+}
+
+export function useUpdateAssetProposal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: AIAssetProposalUpdate }) =>
+      api.patch<AIAssetProposal>(`/assets/proposals/${id}`, data).then(r => r.data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['assets', 'proposals'] });
+      queryClient.invalidateQueries({ queryKey: ['assets', 'proposals', id] });
+    },
+  });
+}
+
+export function useReviewAssetProposal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: AIAssetProposalReview }) =>
+      api.post<AIAssetProposal>(`/assets/proposals/${id}/review`, data).then(r => r.data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['assets', 'proposals'] });
+      queryClient.invalidateQueries({ queryKey: ['assets', 'proposals', id] });
+      queryClient.invalidateQueries({ queryKey: ['assets'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
     },
   });

@@ -36,7 +36,7 @@ const securitySections = [
     icon: UserCog,
     description: 'Role-based access control enforced at API and blockchain layers',
     controls: [
-      { name: 'Four-Tier Roles', status: 'operational', description: 'Admin, Manager, Auditor, User with distinct permissions' },
+      { name: 'Three-Tier Roles', status: 'operational', description: 'Owner, Manager, Employee with distinct permissions' },
       { name: 'On-Chain Enforcement', status: 'operational', description: 'OpenZeppelin AccessControl for contract-level RBAC' },
       { name: 'Off-Chain Validation', status: 'operational', description: 'Middleware enforces roles on all API endpoints' },
       { name: 'Permission Matrix', status: 'operational', description: 'Granular permissions per resource and action' },
@@ -79,7 +79,7 @@ const securitySections = [
     description: 'On-chain security controls and contract integrity',
     controls: [
       { name: 'OpenZeppelin Contracts', status: 'operational', description: 'ERC721, AccessControl, ReentrancyGuard from audited libs' },
-      { name: 'AccessControl RBAC', status: 'operational', description: 'On-chain role enforcement (ADMIN, MANAGER, MINTER, VERIFIER)' },
+      { name: 'AccessControl RBAC', status: 'operational', description: 'On-chain role enforcement (OWNER, MANAGER, MINTER, VERIFIER)' },
       { name: 'Reentrancy Protection', status: 'operational', description: 'ReentrancyGuard on all state-changing functions' },
       { name: 'Event Logging', status: 'operational', description: 'Comprehensive events for all critical operations' },
       { name: 'Contract Verification', status: 'operational', description: 'Source verified on explorer, reproducible builds' },

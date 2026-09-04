@@ -53,8 +53,8 @@ export default function AuditPage() {
   });
   const verifyMutation = useVerifyOnBlockchain();
 
-  const isAdmin = hasRole(['ADMIN']);
-  const isAuditor = hasRole(['ADMIN', 'AUDITOR']);
+  const isAdmin = hasRole(['OWNER']);
+  const isAuditor = hasRole(['OWNER', 'MANAGER']);
 
   const actions = [
     'IDENTITY_CREATED', 'IDENTITY_VERIFIED', 'ROLE_ASSIGNED', 'ROLE_REVOKED',

@@ -1,4 +1,8 @@
-export type UserRole = 'ADMIN' | 'MANAGER' | 'AUDITOR' | 'USER';
+export type UserRole = 'OWNER' | 'MANAGER' | 'EMPLOYEE';
+
+export type WalletType = 'OWNER' | 'MANAGER' | 'EMPLOYEE';
+
+export type BlockchainTxStatus = 'PENDING' | 'CONFIRMED' | 'FAILED';
 
 export interface User {
   id: number;
@@ -47,6 +51,7 @@ export interface DID {
   verified_at: string | null;
   blockchain_tx_hash: string | null;
   blockchain_block_number: number | null;
+  blockchain_tx_status: BlockchainTxStatus;
   user?: User;
 }
 
@@ -73,6 +78,9 @@ export interface Asset {
   updated_at: string;
   blockchain_tx_hash: string | null;
   blockchain_block_number: number | null;
+  blockchain_tx_status: BlockchainTxStatus;
+  blockchain_network: string | null;
+  contract_address: string | null;
   creator?: User;
   owner?: User;
   transfers_count?: number;
@@ -107,6 +115,7 @@ export interface Transfer {
   status: TransferStatus;
   blockchain_tx_hash: string | null;
   blockchain_block_number: number | null;
+  blockchain_tx_status: BlockchainTxStatus;
   error_message: string | null;
   created_at: string;
   updated_at: string;
@@ -238,4 +247,71 @@ export interface HealthResponse {
   timestamp: string;
   database: string;
   blockchain: string;
+}
+
+export interface WalletAssociation {
+  id: number;
+  user_id: number;
+  wallet_address: string;
+  wallet_type: WalletType;
+  did: string | null;
+  blockchain_identity_tx_hash: string | null;
+  blockchain_identity_block_number: number | null;
+  blockchain_identity_status: BlockchainTxStatus;
+  is_primary: boolean;
+  created_at: string;
+  updated_at: string;
+  user?: User;
+}
+
+export type AIAssetProposalStatus = 'DRAFT' | 'PROPOSED' | 'APPROVED' | 'REJECTED' | 'MINTED';
+
+export interface AIAssetProposal {
+  id: number;
+  proposed_by: number | null;
+  asset_name: string;
+  description: string | null;
+  category: string | null;
+  metadata_uri: string | null;
+  suggested_initial_owner_id: number | null;
+  ai_model: string | null;
+  ai_prompt: string | null;
+  ai_response: string | null;
+  status: AIAssetProposalStatus;
+  reviewed_by: number | null;
+  reviewed_at: string | null;
+  review_notes: string | null;
+  minted_asset_id: number | null;
+  created_at: string;
+  updated_at: string;
+  proposer?: User;
+  reviewer?: User;
+  suggested_owner?: User;
+  minted_asset?: Asset;
+}
+
+export interface AIAssetProposalCreate {
+  asset_name: string;
+  description?: string;
+  category?: string;
+  metadata_uri?: string;
+  suggested_initial_owner_id?: number;
+  ai_model?: string;
+  ai_prompt?: string;
+  ai_response?: string;
+}
+
+export interface AIAssetProposalUpdate {
+  asset_name?: string;
+  description?: string;
+  category?: string;
+  metadata_uri?: string;
+  suggested_initial_owner_id?: number;
+  status?: AIAssetProposalStatus;
+  review_notes?: string;
+}
+
+export interface AIAssetProposalReview {
+  action: 'approve' | 'reject';
+  review_notes?: string;
 }

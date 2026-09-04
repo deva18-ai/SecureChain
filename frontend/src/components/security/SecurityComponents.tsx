@@ -1,11 +1,11 @@
 import { forwardRef } from 'react';
+import { Link } from 'react-router-dom';
 import { cn } from '../../utils/helpers';
 import {
   CheckCircle,
   AlertCircle,
   XCircle,
   Shield,
-  Lock,
   Database,
   Globe,
   Wifi,
@@ -191,7 +191,7 @@ export function SystemHealth({ services, compact = false }: SystemHealthProps) {
             compact && 'px-2 py-1.5'
           )}>
             <div className="flex items-center gap-3">
-              <Icon className="text-cyber-textMuted" />
+              {Icon}
               <div>
                 <p className={cn('font-medium', compact ? 'text-sm' : 'text-base', 'text-cyber-text')}>
                   {service.name}
@@ -458,8 +458,14 @@ const statusIndicatorConfig = {
 export function StatusIndicator({ status, label, animated = true }: StatusIndicatorProps) {
   const config = statusIndicatorConfig[status];
 
+  // Extract the color from the bg class (e.g., 'bg-cyber-success' -> 'cyber-success')
+  const colorClass = config.bg.replace('bg-', '');
+  const bgClass = `bg-${colorClass}/10`;
+  const textClass = `text-${colorClass}`;
+  const borderClass = `border-${colorClass}/30`;
+
   return (
-    <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium', `bg-current/10 text-current border border-current/30`)} style={{ '--current': config.bg.replace('bg-', '') }}>
+    <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium', bgClass, textClass, borderClass)}>
       <span className={cn('w-2 h-2 rounded-full', config.bg, animated && 'animate-pulse')} />
       {label || config.label}
     </span>
@@ -479,8 +485,8 @@ import { Link } from 'react-router-dom';
 
 export function ResourceCard({ name, category, description, icon, url, color = 'cyber-primary' }: ResourceCardProps) {
   return (
-    <a
-      href={url}
+    <Link
+      to={url}
       target="_blank"
       rel="noopener noreferrer"
       className="card-hover p-6 group"
@@ -501,6 +507,6 @@ export function ResourceCard({ name, category, description, icon, url, color = '
           <p className="text-sm text-cyber-textMuted line-clamp-2">{description}</p>
         </div>
       </div>
-    </a>
+    </Link>
   );
 }

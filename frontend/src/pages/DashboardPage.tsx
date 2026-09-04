@@ -32,7 +32,7 @@ const COLORS = ['#22D3EE', '#22C55E', '#3B82F6', '#F59E0B', '#EF4444', '#A855F7'
 
 const securityPostureCategories = [
   { name: 'Authentication', icon: Shield, description: 'JWT-based auth with secure password policies', lastChecked: 'Just now', status: 'operational' as const },
-  { name: 'RBAC', icon: Lock, description: 'Four-tier role enforcement (Admin, Manager, Auditor, User)', lastChecked: 'Just now', status: 'operational' as const },
+  { name: 'RBAC', icon: Lock, description: 'Three-tier role enforcement (Owner, Manager, Employee)', lastChecked: 'Just now', status: 'operational' as const },
   { name: 'API Security', icon: Globe, description: 'Rate limiting, CORS, input validation active', lastChecked: '1 min ago', status: 'operational' as const },
   { name: 'Database', icon: Database, description: 'Encrypted at rest, parameterized queries', lastChecked: 'Just now', status: 'operational' as const },
   { name: 'Blockchain', icon: Blocks, description: 'OpenZeppelin contracts, AccessControl enforced', lastChecked: 'Just now', status: 'operational' as const },

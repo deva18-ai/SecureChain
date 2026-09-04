@@ -42,8 +42,8 @@ export default function TransfersPage() {
   const { data: assetsData } = useAssets({ page_size: 100, status: 'ACTIVE' });
   const { data: usersData } = useUsers({ page_size: 100 });
 
-  const isAdminOrManager = hasRole(['ADMIN', 'MANAGER']);
-  const isAuditor = hasRole(['AUDITOR']);
+  const isAdminOrManager = hasRole(['OWNER', 'MANAGER']);
+  const isAuditor = false; // AUDITOR role no longer exists
 
   const handleCancel = async (transferId: number) => {
     setActionTransferId(transferId);

@@ -54,6 +54,17 @@ export const usersApi = {
   updateRole: (id: number, role: string) =>
     api.patch<import('../types').User>(`/users/${id}/role`, { role }),
   delete: (id: number) => api.delete(`/users/${id}`),
+  // Wallet associations
+  listWallets: (userId: number) =>
+    api.get<import('../types').PaginatedResponse<import('../types').WalletAssociation>>(`/users/${userId}/wallets`),
+  createWallet: (userId: number, data: import('../types').WalletAssociationCreate) =>
+    api.post<import('../types').WalletAssociation>(`/users/${userId}/wallets`, data),
+  getWallet: (userId: number, walletId: number) =>
+    api.get<import('../types').WalletAssociation>(`/users/${userId}/wallets/${walletId}`),
+  updateWallet: (userId: number, walletId: number, data: import('../types').WalletAssociationUpdate) =>
+    api.patch<import('../types').WalletAssociation>(`/users/${userId}/wallets/${walletId}`, data),
+  deleteWallet: (userId: number, walletId: number) =>
+    api.delete(`/users/${userId}/wallets/${walletId}`),
 };
 
 export const didsApi = {
@@ -75,8 +86,18 @@ export const assetsApi = {
     api.patch<import('../types').Asset>(`/assets/${id}`, data),
   allocate: (id: number, new_owner_id: number) =>
     api.post<import('../types').Asset>(`/assets/${id}/allocate`, { new_owner_id }),
-  transfer: (id: number, new_owner_id: number) =>
-    api.post<import('../types').Asset>(`/assets/${id}/transfer`, { new_owner_id }),
+  revoke: (id: number) =>
+    api.post<import('../types').Asset>(`/assets/${id}/revoke`),
+  // AI Asset Proposals
+  listProposals: (params?: { page?: number; page_size?: number; status?: string }) =>
+    api.get<import('../types').PaginatedResponse<import('../types').AIAssetProposal>>('/assets/proposals', { params }),
+  createProposal: (data: import('../types').AIAssetProposalCreate) =>
+    api.post<import('../types').AIAssetProposal>('/assets/proposals', data),
+  getProposal: (id: number) => api.get<import('../types').AIAssetProposal>(`/assets/proposals/${id}`),
+  updateProposal: (id: number, data: import('../types').AIAssetProposalUpdate) =>
+    api.patch<import('../types').AIAssetProposal>(`/assets/proposals/${id}`, data),
+  reviewProposal: (id: number, data: import('../types').AIAssetProposalReview) =>
+    api.post<import('../types').AIAssetProposal>(`/assets/proposals/${id}/review`, data),
 };
 
 export const transfersApi = {

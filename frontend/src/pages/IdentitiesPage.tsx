@@ -30,9 +30,9 @@ export default function IdentitiesPage() {
   const createDIDMutation = useCreateDID();
   const verifyDIDMutation = useVerifyDID();
 
-  const isAdminOrManager = hasRole(['ADMIN', 'MANAGER']);
-  const canCreate = hasRole(['ADMIN']);
-  const canVerify = hasRole(['ADMIN']);
+  const isAdminOrManager = hasRole(['OWNER', 'MANAGER']);
+  const canCreate = hasRole(['OWNER']);
+  const canVerify = hasRole(['OWNER']);
 
   const handleCreateDID = async () => {
     try {

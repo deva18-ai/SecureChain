@@ -222,13 +222,9 @@ interface RadialBarChartProps {
 export function RadialBarChartComponent({ data, height = 250, colors = CHART_COLORS }: RadialBarChartProps) {
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <RadialBarChart>
+      <RadialBarChart cx="50%" cy="50%" innerRadius="60%" outerRadius="80%">
         <RadialBar
           data={data}
-          cx="50%"
-          cy="50%"
-          innerRadius="60%"
-          outerRadius="80%"
           dataKey="value"
           nameKey="name"
         >
@@ -253,14 +249,6 @@ interface MetricCardProps {
   subValue?: string;
   subLabel?: string;
 }
-
-const metricColorClasses = {
-  primary: 'bg-cyber-primary/10 text-cyber-primary border-cyber-primary/20',
-  success: 'bg-cyber-success/10 text-cyber-success border-cyber-success/20',
-  warning: 'bg-cyber-warning/10 text-cyber-warning border-cyber-warning/20',
-  critical: 'bg-cyber-critical/10 text-cyber-critical border-cyber-critical/20',
-  secondary: 'bg-cyber-secondary/10 text-cyber-secondary border-cyber-secondary/20',
-};
 
 const metricIconBgClasses = {
   primary: 'bg-cyber-primary/10 text-cyber-primary',

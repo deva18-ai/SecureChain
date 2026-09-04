@@ -119,7 +119,7 @@ export default function SettingsPage() {
             <p className="font-medium text-dark-900 dark:text-white">Role</p>
             <p className="text-sm text-dark-500 dark:text-dark-400">{user?.role}</p>
           </div>
-          <Badge className={['ADMIN', 'MANAGER', 'AUDITOR', 'USER'].find(r => r === user?.role) 
+          <Badge className={['OWNER', 'MANAGER', 'EMPLOYEE'].find(r => r === user?.role) 
             ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' 
             : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'}>
             {user?.role}

@@ -20,7 +20,7 @@ export default function AdminConfigPage() {
     session_timeout: 60,
     blockchain_rpc_url: 'http://127.0.0.1:8545',
     contract_address: '',
-    default_role: 'USER',
+    default_role: 'EMPLOYEE',
     email_notifications: true,
     audit_retention_days: 365,
   });
@@ -83,9 +83,8 @@ export default function AdminConfigPage() {
             onChange={(e) => setConfig({ ...config, default_role: e.target.value })}
             type="select"
             options={[
-              { value: 'USER', label: 'User' },
+              { value: 'EMPLOYEE', label: 'Employee' },
               { value: 'MANAGER', label: 'Manager' },
-              { value: 'AUDITOR', label: 'Auditor' },
             ]}
           />
           <Input
