@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import init_db, close_db
-from app.routers import auth, users, dids, assets, transfers, audit, blockchain, dashboard
+from app.routers import auth, users, dids, assets, transfers, audit, blockchain, dashboard, security
 
 
 @asynccontextmanager
@@ -38,6 +38,7 @@ app.include_router(transfers.router, prefix=settings.API_V1_PREFIX)
 app.include_router(audit.router, prefix=settings.API_V1_PREFIX)
 app.include_router(blockchain.router, prefix=settings.API_V1_PREFIX)
 app.include_router(dashboard.router, prefix=settings.API_V1_PREFIX)
+app.include_router(security.router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/health")

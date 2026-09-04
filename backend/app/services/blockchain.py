@@ -10,22 +10,26 @@ CONTRACT_ABI = [
     {"inputs": [{"internalType": "string", "name": "did", "type": "string"}, {"internalType": "address", "name": "wallet", "type": "address"}, {"internalType": "bytes32", "name": "identityHash", "type": "bytes32"}], "name": "createIdentity", "outputs": [{"internalType": "bool", "name": "", "type": "bool"}], "stateMutability": "nonpayable", "type": "function"},
     {"inputs": [{"internalType": "string", "name": "did", "type": "string"}], "name": "verifyIdentity", "outputs": [{"internalType": "bool", "name": "", "type": "bool"}], "stateMutability": "nonpayable", "type": "function"},
     {"inputs": [{"internalType": "string", "name": "did", "type": "string"}], "name": "getIdentity", "outputs": [{"components": [{"internalType": "string", "name": "did", "type": "string"}, {"internalType": "address", "name": "wallet", "type": "address"}, {"internalType": "bytes32", "name": "identityHash", "type": "bytes32"}, {"internalType": "bool", "name": "verified", "type": "bool"}, {"internalType": "uint256", "name": "createdAt", "type": "uint256"}, {"internalType": "uint256", "name": "verifiedAt", "type": "uint256"}, {"internalType": "string", "name": "verificationTxHash", "type": "string"}], "internalType": "struct SecureChain.Identity", "name": "", "type": "tuple"}], "stateMutability": "view", "type": "function"},
-    {"inputs": [{"internalType": "string", "name": "assetId", "type": "string"}, {"internalType": "string", "name": "name", "type": "string"}, {"internalType": "string", "name": "description", "type": "string"}, {"internalType": "string", "name": "category", "type": "string"}, {"internalType": "string", "name": "metadataURI", "type": "string"}, {"internalType": "address", "name": "initialOwner", "type": "address"}], "name": "mintAsset", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "nonpayable", "type": "function"},
-    {"inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}, {"internalType": "address", "name": "to", "type": "address"}], "name": "allocateAsset", "outputs": [{"internalType": "bool", "name": "", "type": "bool"}], "stateMutability": "nonpayable", "type": "function"},
-    {"inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}, {"internalType": "address", "name": "to", "type": "address"}], "name": "transferAsset", "outputs": [{"internalType": "bool", "name": "", "type": "bool"}], "stateMutability": "nonpayable", "type": "function"},
+    {"inputs": [{"internalType": "string", "name": "assetId", "type": "string"}, {"internalType": "string", "name": "name", "type": "string"}, {"internalType": "string", "name": "description", "type": "string"}, {"internalType": "string", "name": "category", "type": "string"}, {"internalType": "string", "name": "metadataURI", "type": "string"}, {"internalType": "address", "name": "initialAssignee", "type": "address"}], "name": "mintAsset", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "nonpayable", "type": "function"},
+    {"inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}, {"internalType": "address", "name": "to", "type": "address"}], "name": "assignAsset", "outputs": [{"internalType": "bool", "name": "", "type": "bool"}], "stateMutability": "nonpayable", "type": "function"},
+    {"inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "revokeAssignment", "outputs": [{"internalType": "bool", "name": "", "type": "bool"}], "stateMutability": "nonpayable", "type": "function"},
     {"inputs": [{"internalType": "address", "name": "account", "type": "address"}, {"internalType": "bytes32", "name": "role", "type": "bytes32"}], "name": "assignRole", "outputs": [{"internalType": "bool", "name": "", "type": "bool"}], "stateMutability": "nonpayable", "type": "function"},
     {"inputs": [{"internalType": "address", "name": "account", "type": "address"}, {"internalType": "bytes32", "name": "role", "type": "bytes32"}], "name": "revokeRole", "outputs": [{"internalType": "bool", "name": "", "type": "bool"}], "stateMutability": "nonpayable", "type": "function"},
-    {"inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "getAsset", "outputs": [{"components": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}, {"internalType": "string", "name": "assetId", "type": "string"}, {"internalType": "string", "name": "name", "type": "string"}, {"internalType": "string", "name": "description", "type": "string"}, {"internalType": "string", "name": "category", "type": "string"}, {"internalType": "string", "name": "metadataURI", "type": "string"}, {"internalType": "address", "name": "creator", "type": "address"}, {"internalType": "address", "name": "currentOwner", "type": "address"}, {"internalType": "uint256", "name": "createdAt", "type": "uint256"}, {"internalType": "uint8", "name": "status", "type": "uint8"}, {"internalType": "string", "name": "mintTxHash", "type": "string"}], "internalType": "struct SecureChain.Asset", "name": "", "type": "tuple"}], "stateMutability": "view", "type": "function"},
+    {"inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "getAsset", "outputs": [{"components": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}, {"internalType": "string", "name": "assetId", "type": "string"}, {"internalType": "string", "name": "name", "type": "string"}, {"internalType": "string", "name": "description", "type": "string"}, {"internalType": "string", "name": "category", "type": "string"}, {"internalType": "string", "name": "metadataURI", "type": "string"}, {"internalType": "address", "name": "creator", "type": "address"}, {"internalType": "address", "name": "assignedTo", "type": "address"}, {"internalType": "uint256", "name": "createdAt", "type": "uint256"}, {"internalType": "uint8", "name": "status", "type": "uint8"}, {"internalType": "string", "name": "mintTxHash", "type": "string"}, {"internalType": "uint256", "name": "assignedAt", "type": "uint256"}, {"internalType": "address", "name": "assignedBy", "type": "address"}], "internalType": "struct SecureChain.Asset", "name": "", "type": "tuple"}], "stateMutability": "view", "type": "function"},
+    {"inputs": [{"internalType": "address", "name": "user", "type": "address"}], "name": "getUserAssignedAssets", "outputs": [{"internalType": "uint256[]", "name": "", "type": "uint256[]"}], "stateMutability": "view", "type": "function"},
+    {"inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}], "name": "getAssetAssignmentHistory", "outputs": [{"internalType": "address[]", "name": "", "type": "address[]"}], "stateMutability": "view", "type": "function"},
+    {"inputs": [], "name": "getCustodian", "outputs": [{"internalType": "address", "name": "", "type": "address"}], "stateMutability": "view", "type": "function"},
     {"inputs": [], "name": "name", "outputs": [{"internalType": "string", "name": "", "type": "string"}], "stateMutability": "view", "type": "function"},
     {"inputs": [], "name": "symbol", "outputs": [{"internalType": "string", "name": "", "type": "string"}], "stateMutability": "view", "type": "function"},
-    {"anonymous": False, "inputs": [{"indexed": True, "internalType": "string", "name": "did", "type": "string"}, {"indexed": True, "internalType": "address", "name": "wallet", "type": "address"}, {"indexed": False, "internalType": "bytes32", "name": "identityHash", "type": "bytes32"}, {"indexed": False, "internalType": "uint256", "name": "timestamp", "type": "uint256"}, {"indexed": False, "internalType": "string", "name": "txHash", "type": "string"}], "name": "IdentityCreated", "type": "event"},
-    {"anonymous": False, "inputs": [{"indexed": True, "internalType": "string", "name": "did", "type": "string"}, {"indexed": True, "internalType": "address", "name": "verifier", "type": "address"}, {"indexed": False, "internalType": "uint256", "name": "timestamp", "type": "uint256"}, {"indexed": False, "internalType": "string", "name": "txHash", "type": "string"}], "name": "IdentityVerified", "type": "event"},
-    {"anonymous": False, "inputs": [{"indexed": True, "internalType": "uint256", "name": "tokenId", "type": "uint256"}, {"indexed": True, "internalType": "string", "name": "assetId", "type": "string"}, {"indexed": True, "internalType": "address", "name": "creator", "type": "address"}, {"indexed": True, "internalType": "address", "name": "owner", "type": "address"}, {"indexed": False, "internalType": "string", "name": "name", "type": "string"}, {"indexed": False, "internalType": "uint256", "name": "timestamp", "type": "uint256"}, {"indexed": False, "internalType": "string", "name": "txHash", "type": "string"}], "name": "AssetMinted", "type": "event"},
-    {"anonymous": False, "inputs": [{"indexed": True, "internalType": "uint256", "name": "tokenId", "type": "uint256"}, {"indexed": True, "internalType": "address", "name": "from", "type": "address"}, {"indexed": True, "internalType": "address", "name": "to", "type": "address"}, {"indexed": False, "internalType": "uint256", "name": "timestamp", "type": "uint256"}, {"indexed": False, "internalType": "string", "name": "txHash", "type": "string"}], "name": "AssetAllocated", "type": "event"},
-    {"anonymous": False, "inputs": [{"indexed": True, "internalType": "uint256", "name": "tokenId", "type": "uint256"}, {"indexed": True, "internalType": "address", "name": "from", "type": "address"}, {"indexed": True, "internalType": "address", "name": "to", "type": "address"}, {"indexed": False, "internalType": "uint256", "name": "timestamp", "type": "uint256"}, {"indexed": False, "internalType": "string", "name": "txHash", "type": "string"}], "name": "AssetTransferred", "type": "event"},
-    {"anonymous": False, "inputs": [{"indexed": True, "internalType": "address", "name": "account", "type": "address"}, {"indexed": True, "internalType": "bytes32", "name": "role", "type": "bytes32"}, {"indexed": True, "internalType": "address", "name": "assigner", "type": "address"}, {"indexed": False, "internalType": "uint256", "name": "timestamp", "type": "uint256"}, {"indexed": False, "internalType": "string", "name": "txHash", "type": "string"}], "name": "RoleAssigned", "type": "event"},
-    {"anonymous": False, "inputs": [{"indexed": True, "internalType": "address", "name": "account", "type": "address"}, {"indexed": True, "internalType": "bytes32", "name": "role", "type": "bytes32"}, {"indexed": True, "internalType": "address", "name": "revoker", "type": "address"}, {"indexed": False, "internalType": "uint256", "name": "timestamp", "type": "uint256"}, {"indexed": False, "internalType": "string", "name": "txHash", "type": "string"}], "name": "RoleRevoked", "type": "event"},
-    {"anonymous": False, "inputs": [{"indexed": True, "internalType": "uint256", "name": "auditId", "type": "uint256"}, {"indexed": True, "internalType": "address", "name": "actor", "type": "address"}, {"indexed": False, "internalType": "string", "name": "action", "type": "string"}, {"indexed": False, "internalType": "string", "name": "resourceType", "type": "string"}, {"indexed": False, "internalType": "string", "name": "resourceId", "type": "string"}, {"indexed": False, "internalType": "bytes32", "name": "role", "type": "bytes32"}, {"indexed": False, "internalType": "string", "name": "txHash", "type": "string"}, {"indexed": False, "internalType": "uint256", "name": "blockNumber", "type": "uint256"}, {"indexed": False, "internalType": "uint256", "name": "timestamp", "type": "uint256"}], "name": "AuditRecorded", "type": "event"},
+    {"anonymous": False, "inputs": [{"indexed": True, "internalType": "string", "name": "did", "type": "string"}, {"indexed": True, "internalType": "address", "name": "wallet", "type": "address"}, {"indexed": False, "internalType": "bytes32", "name": "identityHash", "type": "bytes32"}, {"indexed": False, "internalType": "uint256", "name": "timestamp", "type": "uint256"}], "name": "IdentityCreated", "type": "event"},
+    {"anonymous": False, "inputs": [{"indexed": True, "internalType": "string", "name": "did", "type": "string"}, {"indexed": True, "internalType": "address", "name": "verifier", "type": "address"}, {"indexed": False, "internalType": "uint256", "name": "timestamp", "type": "uint256"}], "name": "IdentityVerified", "type": "event"},
+    {"anonymous": False, "inputs": [{"indexed": True, "internalType": "uint256", "name": "tokenId", "type": "uint256"}, {"indexed": True, "internalType": "string", "name": "assetId", "type": "string"}, {"indexed": True, "internalType": "address", "name": "creator", "type": "address"}, {"indexed": True, "internalType": "address", "name": "assignedTo", "type": "address"}, {"indexed": False, "internalType": "string", "name": "name", "type": "string"}, {"indexed": False, "internalType": "uint256", "name": "timestamp", "type": "uint256"}], "name": "AssetMinted", "type": "event"},
+    {"anonymous": False, "inputs": [{"indexed": True, "internalType": "uint256", "name": "tokenId", "type": "uint256"}, {"indexed": True, "internalType": "address", "name": "from", "type": "address"}, {"indexed": True, "internalType": "address", "name": "to", "type": "address"}, {"indexed": True, "internalType": "address", "name": "assignedBy", "type": "address"}, {"indexed": False, "internalType": "uint256", "name": "timestamp", "type": "uint256"}], "name": "AssetAssigned", "type": "event"},
+    {"anonymous": False, "inputs": [{"indexed": True, "internalType": "address", "name": "account", "type": "address"}, {"indexed": True, "internalType": "bytes32", "name": "role", "type": "bytes32"}, {"indexed": True, "internalType": "address", "name": "assigner", "type": "address"}, {"indexed": False, "internalType": "uint256", "name": "timestamp", "type": "uint256"}], "name": "RoleAssigned", "type": "event"},
+    {"anonymous": False, "inputs": [{"indexed": True, "internalType": "address", "name": "account", "type": "address"}, {"indexed": True, "internalType": "bytes32", "name": "role", "type": "bytes32"}, {"indexed": True, "internalType": "address", "name": "revoker", "type": "address"}, {"indexed": False, "internalType": "uint256", "name": "timestamp", "type": "uint256"}], "name": "RoleRevokedCustom", "type": "event"},
+    {"anonymous": False, "inputs": [{"indexed": True, "internalType": "uint256", "name": "auditId", "type": "uint256"}, {"indexed": True, "internalType": "address", "name": "actor", "type": "address"}, {"indexed": False, "internalType": "string", "name": "action", "type": "string"}, {"indexed": False, "internalType": "string", "name": "resourceType", "type": "string"}, {"indexed": False, "internalType": "string", "name": "resourceId", "type": "string"}, {"indexed": False, "internalType": "bytes32", "name": "role", "type": "bytes32"}, {"indexed": False, "internalType": "uint256", "name": "blockNumber", "type": "uint256"}, {"indexed": False, "internalType": "uint256", "name": "timestamp", "type": "uint256"}], "name": "AuditRecorded", "type": "event"},
+    {"anonymous": False, "inputs": [{"indexed": True, "internalType": "uint256", "name": "alertId", "type": "uint256"}, {"indexed": True, "internalType": "address", "name": "actor", "type": "address"}, {"indexed": False, "internalType": "string", "name": "action", "type": "string"}, {"indexed": False, "internalType": "string", "name": "resourceType", "type": "string"}, {"indexed": False, "internalType": "string", "name": "resourceId", "type": "string"}, {"indexed": False, "internalType": "string", "name": "reason", "type": "string"}, {"indexed": False, "internalType": "uint256", "name": "timestamp", "type": "uint256"}], "name": "SecurityAlert", "type": "event"},
+    {"anonymous": False, "inputs": [{"indexed": True, "internalType": "address", "name": "oldCustodian", "type": "address"}, {"indexed": True, "internalType": "address", "name": "newCustodian", "type": "address"}], "name": "CustodianUpdated", "type": "event"},
 ]
 
 
@@ -116,7 +120,7 @@ class BlockchainService:
                 "gasPrice": self.w3.eth.gas_price,
             })
             signed_tx = self.account.sign_transaction(tx)
-            tx_hash = self.w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            tx_hash = self.w3.eth.send_raw_transaction(signed_tx.raw_transaction)
             return tx_hash.hex()
         except Exception as e:
             print(f"Create identity failed: {e}")
@@ -135,7 +139,7 @@ class BlockchainService:
                 "gasPrice": self.w3.eth.gas_price,
             })
             signed_tx = self.account.sign_transaction(tx)
-            tx_hash = self.w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            tx_hash = self.w3.eth.send_raw_transaction(signed_tx.raw_transaction)
             return tx_hash.hex()
         except Exception as e:
             print(f"Verify identity failed: {e}")
@@ -148,7 +152,7 @@ class BlockchainService:
         description: str,
         category: str,
         metadata_uri: str,
-        initial_owner: str,
+        initial_assignee: str,
     ) -> Optional[int]:
         self._initialize()
         if not self.contract or not self.account:
@@ -157,7 +161,7 @@ class BlockchainService:
         try:
             tx = self.contract.functions.mintAsset(
                 asset_id, name, description, category, metadata_uri,
-                Web3.to_checksum_address(initial_owner)
+                Web3.to_checksum_address(initial_assignee)
             ).build_transaction({
                 "from": self.account.address,
                 "nonce": self.w3.eth.get_transaction_count(self.account.address),
@@ -165,7 +169,7 @@ class BlockchainService:
                 "gasPrice": self.w3.eth.gas_price,
             })
             signed_tx = self.account.sign_transaction(tx)
-            tx_hash = self.w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            tx_hash = self.w3.eth.send_raw_transaction(signed_tx.raw_transaction)
             receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
 
             logs = self.contract.events.AssetMinted().process_receipt(receipt)
@@ -176,13 +180,13 @@ class BlockchainService:
             print(f"Mint asset failed: {e}")
             return None
 
-    async def allocate_asset(self, token_id: int, to_address: str) -> Optional[str]:
+    async def assign_asset(self, token_id: int, to_address: str) -> Optional[str]:
         self._initialize()
         if not self.contract or not self.account:
             return None
 
         try:
-            tx = self.contract.functions.allocateAsset(
+            tx = self.contract.functions.assignAsset(
                 token_id, Web3.to_checksum_address(to_address)
             ).build_transaction({
                 "from": self.account.address,
@@ -191,22 +195,20 @@ class BlockchainService:
                 "gasPrice": self.w3.eth.gas_price,
             })
             signed_tx = self.account.sign_transaction(tx)
-            tx_hash = self.w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            tx_hash = self.w3.eth.send_raw_transaction(signed_tx.raw_transaction)
             return tx_hash.hex()
         except Exception as e:
-            print(f"Allocate asset failed: {e}")
+            print(f"Assign asset failed: {e}")
             return None
 
-    async def transfer_asset(
-        self, token_id: int, from_address: str, to_address: str
-    ) -> Optional[str]:
+    async def revoke_assignment(self, token_id: int) -> Optional[str]:
         self._initialize()
         if not self.contract or not self.account:
             return None
 
         try:
-            tx = self.contract.functions.transferAsset(
-                token_id, Web3.to_checksum_address(to_address)
+            tx = self.contract.functions.revokeAssignment(
+                token_id
             ).build_transaction({
                 "from": self.account.address,
                 "nonce": self.w3.eth.get_transaction_count(self.account.address),
@@ -214,10 +216,10 @@ class BlockchainService:
                 "gasPrice": self.w3.eth.gas_price,
             })
             signed_tx = self.account.sign_transaction(tx)
-            tx_hash = self.w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            tx_hash = self.w3.eth.send_raw_transaction(signed_tx.raw_transaction)
             return tx_hash.hex()
         except Exception as e:
-            print(f"Transfer asset failed: {e}")
+            print(f"Revoke assignment failed: {e}")
             return None
 
     async def assign_role(self, account: str, role: str) -> Optional[str]:
@@ -236,7 +238,7 @@ class BlockchainService:
                 "gasPrice": self.w3.eth.gas_price,
             })
             signed_tx = self.account.sign_transaction(tx)
-            tx_hash = self.w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            tx_hash = self.w3.eth.send_raw_transaction(signed_tx.raw_transaction)
             return tx_hash.hex()
         except Exception as e:
             print(f"Assign role failed: {e}")
@@ -276,11 +278,48 @@ class BlockchainService:
                 "category": asset[4],
                 "metadataURI": asset[5],
                 "creator": asset[6],
-                "currentOwner": asset[7],
+                "assignedTo": asset[7],
                 "createdAt": asset[8],
                 "status": asset[9],
                 "mintTxHash": asset[10],
+                "assignedAt": asset[11],
+                "assignedBy": asset[12],
             }
+        except Exception:
+            return None
+
+    async def get_user_assigned_assets(self, user_address: str) -> Optional[List[int]]:
+        self._initialize()
+        if not self.contract:
+            return None
+
+        try:
+            assets = self.contract.functions.getUserAssignedAssets(
+                Web3.to_checksum_address(user_address)
+            ).call()
+            return [int(a) for a in assets]
+        except Exception:
+            return None
+
+    async def get_asset_assignment_history(self, token_id: int) -> Optional[List[str]]:
+        self._initialize()
+        if not self.contract:
+            return None
+
+        try:
+            history = self.contract.functions.getAssetAssignmentHistory(token_id).call()
+            return [Web3.to_checksum_address(a) for a in history]
+        except Exception:
+            return None
+
+    async def get_custodian(self) -> Optional[str]:
+        self._initialize()
+        if not self.contract:
+            return None
+
+        try:
+            custodian = self.contract.functions.getCustodian().call()
+            return Web3.to_checksum_address(custodian)
         except Exception:
             return None
 
@@ -328,7 +367,7 @@ class BlockchainService:
             if not receipt:
                 return []
             logs = []
-            for event_name in ["IdentityCreated", "IdentityVerified", "AssetMinted", "AssetAllocated", "AssetTransferred", "RoleAssigned", "RoleRevoked", "AuditRecorded"]:
+            for event_name in ["IdentityCreated", "IdentityVerified", "AssetMinted", "AssetAssigned", "RoleAssigned", "RoleRevokedCustom", "AuditRecorded", "SecurityAlert", "CustodianUpdated"]:
                 try:
                     event = getattr(self.contract.events, event_name)
                     processed = event().process_receipt(receipt)

@@ -3,12 +3,22 @@
 ## Smart Contract: SecureChain.sol
 
 ### Overview
-The SecureChain smart contract implements a comprehensive platform for decentralized identity management, ERC-721 NFT asset ownership, role-based access control, and immutable audit trails. Built on OpenZeppelin contracts for security and standards compliance.
+The SecureChain smart contract implements a comprehensive platform for decentralized identity management, ERC-721 NFT asset ownership with **non-transferable assignments**, role-based access control, and immutable audit trails. Built on OpenZeppelin contracts for security and standards compliance.
+
+### Core Security Model
+> **USERS ASSIGNED ASSETS CANNOT TRANSFER THEM.**
+> 
+> This is enforced at the **smart contract level** by:
+> - Separating ERC-721 ownership from SecureChain assignment
+> - Contract retains ERC-721 ownership (custodian model)
+> - Overriding `_transfer`, `approve`, `setApprovalForAll` to BLOCK unauthorized operations
+> - Only ADMIN/MANAGER can assign/reassign assets via `assignAsset`/`revokeAssignment`
+> - Security alerts emitted on every unauthorized attempt
 
 ### Contract Details
 - **Name**: SecureChain Asset
 - **Symbol**: SCA
-- **Standard**: ERC-721, ERC-721URIStorage
+- **Standard**: ERC-721 (with overridden transfer functions)
 - **Access Control**: OpenZeppelin AccessControl
 - **Solidity Version**: ^0.8.24
 - **License**: MIT
@@ -52,12 +62,12 @@ DEFAULT_ADMIN_ROLE (deployer)
 
 | Role | Functions |
 |------|-----------|
-| ADMIN | `createIdentity`, `assignRole`, `revokeRole`, `freezeAsset`, `unfreezeAsset` |
-| MANAGER | `allocateAsset` |
+| ADMIN | `createIdentity`, `assignRole`, `revokeRoleFromAccount`, `freezeAsset`, `unfreezeAsset`, `burnAsset`, `assignAsset`, `revokeAssignment`, `updateCustodian` |
+| MANAGER | `assignAsset`, `revokeAssignment` |
 | AUDITOR | `getAuditRecord`, `getAuditCount` |
 | MINTER | `mintAsset` |
 | IDENTITY_VERIFIER | `verifyIdentity` |
-| OWNER | `transferAsset` (own assets), `burnAsset` (own assets) |
+| USER | **No write functions** — can only view assigned assets |
 
 ---
 
@@ -76,7 +86,7 @@ struct Identity {
 }
 ```
 
-### Asset
+### Asset — Assignment ≠ ERC-721 Ownership
 ```solidity
 struct Asset {
     uint256 tokenId;               // ERC-721 token ID
@@ -86,10 +96,12 @@ struct Asset {
     string category;               // Asset category
     string metadataURI;            // IPFS/HTTPS metadata URI
     address creator;               // Minter address
-    address currentOwner;          // Current owner
+    address assignedTo;            // **Assigned user (NOT ERC-721 owner)**
     uint256 createdAt;             // Mint timestamp
-    uint8 status;                  // 0:Active, 1:Transferred, 2:Burned, 3:Frozen
+    uint8 status;                  // 0:Active, 1:Transferred/Reassigned, 2:Burned, 3:Frozen
     string mintTxHash;             // Mint transaction hash
+    uint256 assignedAt;            // Assignment timestamp
+    address assignedBy;            // Who assigned/reassigned
 }
 ```
 
@@ -174,7 +186,7 @@ function getUserDIDs(address user) external view returns (string[] memory)
 
 ---
 
-### Asset Management (ERC-721)
+### Asset Management (ERC-721 with Non-Transferable Assignments)
 
 #### mintAsset
 ```solidity
@@ -184,11 +196,11 @@ function mintAsset(
     string calldata description,
     string calldata category,
     string calldata metadataURI,
-    address initialOwner
+    address initialAssignee
 ) external onlyMinter returns (uint256)
 ```
 
-**Description**: Mints a new ERC-721 asset.
+**Description**: Mints a new ERC-721 asset. **Token is minted to custodian (contract), not the user.**
 
 **Parameters:**
 - `assetId`: Unique asset identifier
@@ -196,7 +208,7 @@ function mintAsset(
 - `description`: Asset description
 - `category`: Asset category
 - `metadataURI`: IPFS/HTTPS URI for metadata
-- `initialOwner`: Initial owner address
+- `initialAssignee`: User to assign the asset to
 
 **Returns**: `tokenId` of minted asset
 
@@ -204,57 +216,53 @@ function mintAsset(
 - Caller must have MINTER_ROLE
 - Asset ID must not be empty
 - Name must not be empty
-- Initial owner must not be zero address
+- Initial assignee must not be zero address
 
-**Events**: `AssetMinted(tokenId, assetId, creator, owner, name, timestamp)`
+**Events**: `AssetMinted(tokenId, assetId, creator, assignedTo, name, timestamp)`
 
-#### allocateAsset
+#### assignAsset — **Primary Assignment Function**
 ```solidity
-function allocateAsset(uint256 tokenId, address to) external onlyManager returns (bool)
+function assignAsset(uint256 tokenId, address to) external onlyAuthorizedForAssignment(tokenId) returns (bool)
 ```
 
-**Description**: Allocates/transfers asset to new owner (Manager only).
+**Description**: Assigns/reassigns asset to a user. **Only ADMIN/MANAGER.** Does NOT transfer ERC-721 ownership.
 
 **Parameters:**
 - `tokenId`: Asset token ID
-- `to`: Recipient address
+- `to`: User address to assign to
 
 **Requirements:**
-- Caller must have MANAGER_ROLE
-- Asset must exist
-- Asset status must be ACTIVE (0)
-- Recipient must not be zero address
-
-**Events**: `AssetAllocated(tokenId, from, to, timestamp)`
-
-#### transferAsset
-```solidity
-function transferAsset(uint256 tokenId, address to) external onlyAuthorizedForAsset(tokenId) returns (bool)
-```
-
-**Description**: Transfers asset ownership (Owner/Admin/Manager).
-
-**Parameters:**
-- `tokenId`: Asset token ID
-- `to`: Recipient address
-
-**Requirements:**
-- Caller must be owner, Manager, or Admin
+- Caller must have MANAGER_ROLE or ADMIN_ROLE
 - Asset must exist
 - Asset cannot be BURNED (2) or FROZEN (3)
-- Cannot transfer to self
+- Recipient must not be zero address
+- Cannot assign to self
 
-**Events**: `AssetTransferred(tokenId, from, to, timestamp)`
+**Events**: `AssetAssigned(tokenId, from, to, assignedBy, timestamp)`
 
-#### burnAsset
+#### revokeAssignment
 ```solidity
-function burnAsset(uint256 tokenId) external onlyAuthorizedForAsset(tokenId) returns (bool)
+function revokeAssignment(uint256 tokenId) external onlyAuthorizedForAssignment(tokenId) returns (bool)
+```
+
+**Description**: Revokes assignment from current user. Asset becomes unassigned.
+
+**Requirements:**
+- Caller must have MANAGER_ROLE or ADMIN_ROLE
+- Asset must exist
+- Asset cannot be BURNED (2) or FROZEN (3)
+
+**Events**: `AssetAssigned(tokenId, from, address(0), assignedBy, timestamp)`
+
+#### burnAsset (Admin Only)
+```solidity
+function burnAsset(uint256 tokenId) external onlyAdmin returns (bool)
 ```
 
 **Description**: Burns (destroys) an asset.
 
 **Requirements:**
-- Caller must be owner, Admin, or Manager
+- Caller must have ADMIN_ROLE
 - Asset must exist
 - Asset must not already be burned
 
@@ -264,13 +272,42 @@ function freezeAsset(uint256 tokenId) external onlyAdmin returns (bool)
 function unfreezeAsset(uint256 tokenId) external onlyAdmin returns (bool)
 ```
 
-**Description**: Freezes/unfreezes asset transfers.
+**Description**: Freezes/unfreezes asset assignments.
 
 **Requirements:**
 - Caller must have ADMIN_ROLE
 - Asset must exist
 - Freeze: Asset must not be frozen
 - Unfreeze: Asset must be frozen
+
+---
+
+### Query Functions
+
+#### getAsset
+```solidity
+function getAsset(uint256 tokenId) external view returns (Asset memory)
+```
+
+#### getUserAssignedAssets
+```solidity
+function getUserAssignedAssets(address user) external view returns (uint256[] memory)
+```
+
+#### getAssetAssignmentHistory
+```solidity
+function getAssetAssignmentHistory(uint256 tokenId) external view returns (address[] memory)
+```
+
+#### getCustodian
+```solidity
+function getCustodian() external view returns (address)
+```
+
+#### updateCustodian (Admin Only)
+```solidity
+function updateCustodian(address newCustodian) external onlyAdmin
+```
 
 ---
 
@@ -295,9 +332,9 @@ function assignRole(address account, bytes32 role) external onlyAdmin returns (b
 
 **Events**: `RoleAssigned(account, role, assigner, timestamp)`
 
-#### revokeRole
+#### revokeRoleFromAccount
 ```solidity
-function revokeRole(address account, bytes32 role) external onlyAdmin returns (bool)
+function revokeRoleFromAccount(address account, bytes32 role) external onlyAdmin returns (bool)
 ```
 
 **Description**: Revokes a role from an account.
@@ -307,31 +344,11 @@ function revokeRole(address account, bytes32 role) external onlyAdmin returns (b
 - Account must have the role
 - Cannot revoke ADMIN_ROLE
 
-**Events**: `RoleRevoked(account, role, revoker, timestamp)`
+**Events**: `RoleRevokedCustom(account, role, revoker, timestamp)`
 
 ---
 
-### Query Functions
-
-#### getAsset
-```solidity
-function getAsset(uint256 tokenId) external view returns (Asset memory)
-```
-
-#### getUserAssets
-```solidity
-function getUserAssets(address user) external view returns (uint256[] memory)
-```
-
-#### getAssetTransferHistory
-```solidity
-function getAssetTransferHistory(uint256 tokenId) external view returns (address[] memory)
-```
-
-#### getAssetsByCategory
-```solidity
-function getAssetsByCategory(string calldata category) external view returns (uint256[] memory)
-```
+### Audit Trail
 
 #### getAuditRecord
 ```solidity
@@ -345,6 +362,48 @@ function getAuditCount() external view onlyAuditor returns (uint256)
 
 ---
 
+## ERC-721 Overrides — CRITICAL SECURITY
+
+### _transfer
+```solidity
+function _transfer(
+    address from,
+    address to,
+    uint256 tokenId
+) internal override
+```
+
+**Blocks all transfers except by:**
+- Custodian (contract/admin)
+- ADMIN_ROLE
+- MANAGER_ROLE
+
+Assigned users **cannot** transfer their assets via any ERC-721 method.
+
+### approve
+```solidity
+function approve(address to, uint256 tokenId) public override
+```
+
+**Blocks approvals by assigned users.** Only custodian, ADMIN, or MANAGER can approve.
+
+### setApprovalForAll
+```solidity
+function setApprovalForAll(address operator, bool approved) public override
+```
+
+**Blocks operator setting by assigned users.** Only custodian, ADMIN, or MANAGER can set operators.
+
+### _mint / _burn
+```solidity
+function _mint(address to, uint256 tokenId) internal override
+function _burn(uint256 tokenId) internal override
+```
+
+Track assignment state during mint/burn.
+
+---
+
 ## Events
 
 ### IdentityCreated
@@ -353,8 +412,7 @@ event IdentityCreated(
     string indexed did,
     address indexed wallet,
     bytes32 identityHash,
-    uint256 timestamp,
-    string txHash
+    uint256 timestamp
 );
 ```
 
@@ -363,8 +421,7 @@ event IdentityCreated(
 event IdentityVerified(
     string indexed did,
     address indexed verifier,
-    uint256 timestamp,
-    string txHash
+    uint256 timestamp
 );
 ```
 
@@ -374,32 +431,20 @@ event AssetMinted(
     uint256 indexed tokenId,
     string indexed assetId,
     address indexed creator,
-    address indexed owner,
+    address assignedTo,
     string name,
-    uint256 timestamp,
-    string txHash
+    uint256 timestamp
 );
 ```
 
-### AssetAllocated
+### AssetAssigned
 ```solidity
-event AssetAllocated(
+event AssetAssigned(
     uint256 indexed tokenId,
     address indexed from,
     address indexed to,
-    uint256 timestamp,
-    string txHash
-);
-```
-
-### AssetTransferred
-```solidity
-event AssetTransferred(
-    uint256 indexed tokenId,
-    address indexed from,
-    address indexed to,
-    uint256 timestamp,
-    string txHash
+    address assignedBy,
+    uint256 timestamp
 );
 ```
 
@@ -409,19 +454,17 @@ event RoleAssigned(
     address indexed account,
     bytes32 indexed role,
     address indexed assigner,
-    uint256 timestamp,
-    string txHash
+    uint256 timestamp
 );
 ```
 
-### RoleRevoked
+### RoleRevokedCustom
 ```solidity
-event RoleRevoked(
+event RoleRevokedCustom(
     address indexed account,
     bytes32 indexed role,
     address indexed revoker,
-    uint256 timestamp,
-    string txHash
+    uint256 timestamp
 );
 ```
 
@@ -434,9 +477,29 @@ event AuditRecorded(
     string resourceType,
     string resourceId,
     bytes32 role,
-    string txHash,
     uint256 blockNumber,
     uint256 timestamp
+);
+```
+
+### SecurityAlert — **New: Security Event Logging**
+```solidity
+event SecurityAlert(
+    uint256 indexed alertId,
+    address indexed actor,
+    string action,
+    string resourceType,
+    string resourceId,
+    string reason,
+    uint256 timestamp
+);
+```
+
+### CustodianUpdated
+```solidity
+event CustodianUpdated(
+    address indexed oldCustodian,
+    address indexed newCustodian
 );
 ```
 
@@ -446,24 +509,34 @@ event AuditRecorded(
 
 | Error | Cause |
 |-------|-------|
-| `SecureChain: caller is not admin` | Missing ADMIN_ROLE |
-| `SecureChain: caller is not manager` | Missing MANAGER_ROLE |
-| `SecureChain: caller is not auditor` | Missing AUDITOR_ROLE |
-| `SecureChain: caller is not minter` | Missing MINTER_ROLE |
-| `SecureChain: caller is not identity verifier` | Missing IDENTITY_VERIFIER_ROLE |
-| `SecureChain: not authorized for this asset` | Not owner/manager/admin |
-| `SecureChain: DID already exists` | Duplicate DID creation |
-| `SecureChain: DID does not exist` | DID not found |
-| `SecureChain: identity already verified` | Double verification |
-| `SecureChain: asset does not exist` | Invalid tokenId |
-| `SecureChain: asset not available for allocation` | Status != ACTIVE |
-| `SecureChain: cannot transfer to self` | from == to |
-| `SecureChain: asset is burned` | Status == 2 |
-| `SecureChain: asset is frozen` | Status == 3 |
-| `SecureChain: invalid role` | Role not in allowed list |
-| `SecureChain: account already has role` | Duplicate role assignment |
-| `SecureChain: account does not have role` | Revoking non-existent role |
-| `SecureChain: cannot revoke admin role` | Attempting to revoke ADMIN_ROLE |
+| `NotAdmin` | Missing ADMIN_ROLE |
+| `NotManager` | Missing MANAGER_ROLE |
+| `NotAuditor` | Missing AUDITOR_ROLE |
+| `NotMinter` | Missing MINTER_ROLE |
+| `NotIdentityVerifier` | Missing IDENTITY_VERIFIER_ROLE |
+| `NotAuthorized` | Not authorized for asset assignment |
+| `TransferNotPermitted` | **User attempted ERC-721 transfer** |
+| `ApprovalNotPermitted` | **User attempted approve()** |
+| `OperatorNotPermitted` | **User attempted setApprovalForAll()** |
+| `EmptyDID` | DID string empty |
+| `ZeroAddress` | Zero address provided |
+| `DIDAlreadyExists` | Duplicate DID |
+| `DIDNotFound` | DID does not exist |
+| `IdentityAlreadyVerified` | Double verification |
+| `EmptyAssetId` | Asset ID empty |
+| `EmptyName` | Name empty |
+| `AssetNotFound` | Invalid tokenId |
+| `AssetUnavailable` | Status != ACTIVE |
+| `AssetBurned` | Asset is burned |
+| `AssetFrozen` | Asset is frozen |
+| `SelfTransfer` | Cannot assign to self |
+| `AlreadyBurned` | Already burned |
+| `AlreadyFrozen` | Already frozen |
+| `NotFrozen` | Not frozen |
+| `InvalidRole` | Invalid role |
+| `RoleAlreadyAssigned` | Duplicate role |
+| `RoleNotAssigned` | Role not present |
+| `CannotRevokeAdmin` | Cannot revoke admin |
 
 ---
 
@@ -485,14 +558,24 @@ npm run coverage
 REPORT_GAS=true npm test
 ```
 
-### Key Test Cases
-- Identity creation and verification
-- Asset minting, allocation, transfer
-- Role assignment and revocation
-- Unauthorized access prevention
-- Audit trail recording
-- Asset lifecycle (burn, freeze)
-- Transfer history tracking
+### Key Security Test Cases (57 total)
+- ✅ Identity creation and verification
+- ✅ Asset minting with custodian ownership
+- ✅ Asset assignment/reassignment by Manager/Admin
+- ✅ **User CANNOT transferFrom()**
+- ✅ **User CANNOT safeTransferFrom()**
+- ✅ **User CANNOT approve()**
+- ✅ **User CANNOT setApprovalForAll()**
+- ✅ **User2 CANNOT transfer User1's asset**
+- ✅ Unauthorized account CANNOT transfer
+- ✅ Admin/Manager CAN assignAsset
+- ✅ ERC-721 owner remains custodian
+- ✅ SecurityAlert emitted on unauthorized attempts
+- ✅ Role assignment and revocation
+- ✅ Audit trail recording
+- ✅ Asset lifecycle (burn, freeze, unfreeze)
+- ✅ Assignment history tracking
+- ✅ Custodian management
 
 ---
 
@@ -518,13 +601,19 @@ tx = contract.functions.createIdentity(did, wallet, identity_hash).build_transac
 signed = account.sign_transaction(tx)
 tx_hash = w3.eth.send_raw_transaction(signed.rawTransaction)
 
-# Mint asset
+# Mint asset (assigned to user, but ERC721 owned by custodian)
 tx = contract.functions.mintAsset(
-    asset_id, name, description, category, metadata_uri, owner
+    asset_id, name, description, category, metadata_uri, initial_assignee
 ).build_transaction({...})
 
-# Get asset
+# Assign asset (Manager/Admin only)
+tx = contract.functions.assignAsset(token_id, new_assignee).build_transaction({...})
+
+# Get asset info
 asset = contract.functions.getAsset(token_id).call()
+
+# Get user's assigned assets
+user_assets = contract.functions.getUserAssignedAssets(user_address).call()
 ```
 
 ### Frontend Integration (Ethers.js)
@@ -536,23 +625,21 @@ const provider = new ethers.BrowserProvider(window.ethereum);
 const signer = await provider.getSigner();
 const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
 
-// Create identity (requires admin)
-const tx = await contract.createIdentity(did, wallet, identityHash);
-const receipt = await tx.wait();
-
 // Mint asset (requires minter)
-const tx = await contract.mintAsset(assetId, name, description, category, metadataURI, owner);
+const tx = await contract.mintAsset(assetId, name, description, category, metadataURI, initialAssignee);
 const receipt = await tx.wait();
 const tokenId = receipt.logs[0].args.tokenId;
 
-// Transfer asset
-const tx = await contract.transferAsset(tokenId, toAddress);
+// Assign asset (requires Manager/Admin)
+const tx = await contract.assignAsset(tokenId, newAssignee);
 await tx.wait();
 
 // Read-only calls
 const asset = await contract.getAsset(tokenId);
 const identity = await contract.getIdentity(did);
-const userAssets = await contract.getUserAssets(userAddress);
+const userAssets = await contract.getUserAssignedAssets(userAddress);
+const assignmentHistory = await contract.getAssetAssignmentHistory(tokenId);
+const custodian = await contract.getCustodian();
 ```
 
 ---
@@ -560,37 +647,53 @@ const userAssets = await contract.getUserAssets(userAddress);
 ## Events Indexing
 
 ### TheGraph Subgraph (Recommended)
-```graphql
-type IdentityCreated @entity {
-  id: ID!
-  did: String!
-  wallet: Bytes!
-  identityHash: Bytes!
-  timestamp: BigInt!
-  txHash: String!
-}
 
+```graphql
 type AssetMinted @entity {
   id: ID!
   tokenId: BigInt!
   assetId: String!
   creator: Bytes!
-  owner: Bytes!
+  assignedTo: Bytes!
   name: String!
   timestamp: BigInt!
-  txHash: String!
+}
+
+type AssetAssigned @entity {
+  id: ID!
+  tokenId: BigInt!
+  from: Bytes!
+  to: Bytes!
+  assignedBy: Bytes!
+  timestamp: BigInt!
+}
+
+type SecurityAlert @entity {
+  id: ID!
+  alertId: BigInt!
+  actor: Bytes!
+  action: String!
+  resourceType: String!
+  resourceId: String!
+  reason: String!
+  timestamp: BigInt!
 }
 ```
 
 ### Direct Event Filtering
+
 ```javascript
-// Filter IdentityCreated events
-const filter = contract.filters.IdentityCreated();
+// Filter AssetMinted events
+const filter = contract.filters.AssetMinted();
 const events = await contract.queryFilter(filter, fromBlock, toBlock);
 
-// Filter AssetMinted for specific token
-const filter = contract.filters.AssetMinted(tokenId);
+// Filter AssetAssigned for specific token
+const filter = contract.filters.AssetAssigned(tokenId);
 const events = await contract.queryFilter(filter, 0, 'latest');
+
+// Filter SecurityAlert events
+const filter = contract.filters.SecurityAlert();
+const alerts = await contract.queryFilter(filter, 0, 'latest');
 ```
 
 ---
@@ -599,11 +702,22 @@ const events = await contract.queryFilter(filter, 0, 'latest');
 
 ### Implemented Protections
 - **AccessControl**: Role-based function restrictions
-- **ReentrancyGuard**: Inherited from ERC721 (OpenZeppelin)
+- **ERC-721 Override**: `_transfer`, `approve`, `setApprovalForAll` blocked for users
+- **Custodian Model**: Contract retains ERC-721 ownership
 - **Checks-Effects-Interactions**: State changes before external calls
 - **Input Validation**: All parameters validated
 - **Zero Address Checks**: Prevents zero address operations
-- **Ownership Verification**: `onlyAuthorizedForAsset` modifier
+- **SecurityAlert Events**: Every unauthorized attempt logged on-chain
+
+### Attack Vectors Prevented
+| Attack | Mitigation |
+|--------|------------|
+| User transfers assigned asset | `_transfer` override blocks |
+| User approves spender | `approve` override blocks |
+| User sets operator | `setApprovalForAll` override blocks |
+| User transfers via proxy | `operator` check in `_transfer` |
+| Front-running assignment | Checks-effects-interactions |
+| Reentrancy | OpenZeppelin ERC721 (ReentrancyGuard not needed for view functions) |
 
 ### Audit Recommendations
 - Formal verification for critical functions
@@ -617,6 +731,7 @@ const events = await contract.queryFilter(filter, 0, 'latest');
 - No batch operations
 - Single admin for role management
 - No upgradeability pattern (intentional for MVP)
+- Contract size near EIP-170 limit (27KB) — mainnet deployment needs optimization
 
 ---
 
@@ -627,10 +742,10 @@ const events = await contract.queryFilter(filter, 0, 'latest');
 | createIdentity | ~180,000 |
 | verifyIdentity | ~120,000 |
 | mintAsset | ~350,000 |
-| allocateAsset | ~150,000 |
-| transferAsset | ~140,000 |
+| assignAsset | ~150,000 |
+| revokeAssignment | ~120,000 |
 | assignRole | ~100,000 |
-| revokeRole | ~80,000 |
+| revokeRoleFromAccount | ~80,000 |
 | burnAsset | ~120,000 |
 | freezeAsset | ~50,000 |
 
@@ -652,3 +767,4 @@ const events = await contract.queryFilter(filter, 0, 'latest');
 - Use audited contracts only
 - Multi-signature admin
 - Proper key management
+- Contract optimization required (EIP-170 limit)

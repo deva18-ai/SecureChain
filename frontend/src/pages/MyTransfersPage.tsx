@@ -6,7 +6,7 @@ import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 import { Table } from '../components/ui/Table';
 import { Modal } from '../components/ui/Modal';
-import { useTransfers, useCreateTransfer, useCancelTransfer } from '../hooks/useApi';
+import { useTransfers, useCancelTransfer } from '../hooks/useApi';
 import { useAssets } from '../hooks/useApi';
 import { useUsers } from '../hooks/useApi';
 import { formatAddress, formatDate, formatTxHash, formatRelativeTime } from '../utils/helpers';
@@ -27,7 +27,6 @@ export default function MyTransfersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedTransfer, setSelectedTransfer] = useState<any>(null);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
 
@@ -36,21 +35,9 @@ export default function MyTransfersPage() {
     page_size: 20,
     status: statusFilter,
   });
-  const createTransferMutation = useCreateTransfer();
   const cancelTransferMutation = useCancelTransfer();
   const { data: assetsData } = useAssets({ page_size: 100, status: 'ACTIVE', owner_id: user?.id });
   const { data: usersData } = useUsers({ page_size: 100 });
-
-  const handleCreateTransfer = async (data: any) => {
-    try {
-      await createTransferMutation.mutateAsync(data);
-      toast.success('Transfer request created');
-      setShowCreateModal(false);
-      refetch();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.detail || 'Failed to create transfer');
-    }
-  };
 
   const handleCancel = async (transferId: number) => {
     if (!confirm('Are you sure you want to cancel this transfer request?')) return;
@@ -70,15 +57,12 @@ export default function MyTransfersPage() {
     setSelectedTransfer(transfer);
   };
 
-  const myAssets = assetsData?.items || [];
-  const allUsers = usersData?.items || [];
-
   if (isLoading && !transfersData) {
     return (
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-dark-900 dark:text-white">My Transfers</h1>
-          <p className="text-dark-600 dark:text-dark-400">View and manage your transfer requests</p>
+          <p className="text-dark-600 dark:text-dark-400">View your asset assignment history</p>
         </div>
         <Card className="p-6 animate-pulse">
           <div className="h-4 w-48 bg-dark-200 dark:bg-dark-700 rounded mb-4" />
@@ -101,226 +85,176 @@ export default function MyTransfersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-dark-900 dark:text-white">My Transfers</h1>
-          <p className="text-dark-600 dark:text-dark-400">View and manage your transfer requests</p>
+          <p className="text-dark-600 dark:text-dark-400">View your asset assignment history</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => refetch()} size="sm">
-            <Loader2 className="h-4 w-4" />
-            Refresh
-          </Button>
-          <Button onClick={() => setShowCreateModal(true)} size="sm">
-            <Send className="h-4 w-4" />
-            New Transfer
-          </Button>
-        </div>
+        <Button variant="outline" onClick={() => refetch()} size="sm">
+          <Loader2 className="h-4 w-4" />
+          Refresh
+        </Button>
       </div>
 
-      {transfers.length === 0 ? (
-        <Card className="p-8 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-4">
-            <Send className="h-8 w-8 text-primary-600 dark:text-primary-400" />
+      <Card>
+        <div className="p-4 border-b border-dark-200 dark:border-dark-700">
+          <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+            <p className="text-sm font-medium text-blue-700 dark:text-blue-400 mb-1">Security Model</p>
+            <p className="text-sm text-blue-600 dark:text-blue-500">
+              You cannot create transfer requests for your assigned assets. 
+              All asset assignments and reassignments are performed by Administrators and Managers only. 
+              This page shows the history of assignment changes involving your assets.
+            </p>
           </div>
-          <h3 className="text-xl font-semibold text-dark-900 dark:text-white mb-2">No Transfers Yet</h3>
-          <p className="text-dark-600 dark:text-dark-400 mb-6 max-w-md mx-auto">
-            You haven't initiated any transfer requests. Create one to transfer an asset to another user.
-          </p>
-          <Button onClick={() => setShowCreateModal(true)} size="lg">
-            <Send className="h-4 w-4" />
-            Create Transfer
-          </Button>
-        </Card>
-      ) : (
-        <>
-          <Card>
-            <div className="p-4 border-b border-dark-200 dark:border-dark-700 flex flex-col sm:flex-row gap-4">
-              <div className="flex-1 max-w-md">
-                <Input
-                  placeholder="Search transfers..."
-                  value={search}
-                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                  leftIcon={<Search className="h-4 w-4" />}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-dark-600 dark:text-dark-400">Status:</label>
-                <select
-                  value={statusFilter || 'all'}
-                  onChange={(e) => { const val = e.target.value; setStatusFilter(val === 'all' ? undefined : val); setPage(1); }}
-                  className="px-3 py-2 rounded-lg border border-dark-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-white text-sm"
-                >
-                  <option value="all">All</option>
-                  <option value="PENDING">Pending</option>
-                  <option value="APPROVED">Approved</option>
-                  <option value="COMPLETED">Completed</option>
-                  <option value="REJECTED">Rejected</option>
-                  <option value="CANCELLED">Cancelled</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <Table>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Asset</th>
-                    <th>To Address</th>
-                    <th>Status</th>
-                    <th>Initiated</th>
-                    <th>Completed</th>
-                    <th>Blockchain</th>
-                    <th className="text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transfers.map((transfer) => (
-                    <tr key={transfer.id}>
-                      <td className="font-mono text-sm">#{transfer.id}</td>
-                      <td>
-                        {transfer.asset ? (
-                          <div>
-                            <p className="font-medium text-dark-900 dark:text-white">{transfer.asset.name}</p>
-                            <p className="text-xs text-dark-500 dark:text-dark-400 font-mono">{transfer.asset.asset_id}</p>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-dark-500 dark:text-dark-400">Unknown</span>
-                        )}
-                      </td>
-                      <td className="font-mono text-sm">{formatAddress(transfer.to_address)}</td>
-                      <td>
-                        <Badge variant={TRANSFER_STATUS_COLORS[transfer.status] || 'default'}>
-                          {transfer.status}
-                        </Badge>
-                      </td>
-                      <td className="text-sm text-dark-600 dark:text-dark-400">{formatRelativeTime(transfer.created_at)}</td>
-                      <td className="text-sm text-dark-600 dark:text-dark-400">{transfer.completed_at ? formatRelativeTime(transfer.completed_at) : '-'}</td>
-                      <td>
-                        {transfer.blockchain_tx_hash ? (
-                          <span className="font-mono text-xs text-green-600 dark:text-green-400">
-                            {formatTxHash(transfer.blockchain_tx_hash)}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-dark-500 dark:text-dark-400">Pending</span>
-                        )}
-                      </td>
-                      <td className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleViewTransfer(transfer)}>
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          {transfer.status === 'PENDING' && (
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              onClick={() => handleCancel(transfer.id)}
-                              loading={cancellingId === transfer.id}
-                            >
-                              Cancel
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </div>
-
-            {totalPages > 1 && (
-              <div className="p-4 border-t border-dark-200 dark:border-dark-700 flex items-center justify-between">
-                <p className="text-sm text-dark-600 dark:text-dark-400">
-                  Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, total)} of {total} transfers
-                </p>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
-                    Previous
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
-                    Next
-                  </Button>
-                </div>
-              </div>
-            )}
-          </Card>
-
-          <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Create Transfer Request" size="lg">
-            <TransferCreateForm
-              assets={myAssets}
-              users={allUsers.filter(u => u.id !== user?.id && u.wallet_address)}
-              onSubmit={handleCreateTransfer}
-              onCancel={() => setShowCreateModal(false)}
-              isLoading={createTransferMutation.isPending}
-            />
-          </Modal>
-
-          <Modal isOpen={!!selectedTransfer} onClose={() => setSelectedTransfer(null)} title="Transfer Details" size="lg">
-            {selectedTransfer && (
-              <TransferDetailView transfer={selectedTransfer} onClose={() => setSelectedTransfer(null)} />
-            )}
-          </Modal>
-        </>
-      )}
-    </div>
-  );
-}
-
-function TransferCreateForm({ assets, users, onSubmit, onCancel, isLoading }: any) {
-  const [formData, setFormData] = useState({
-    asset_id: '',
-    to_address: '',
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit({
-      asset_id: parseInt(formData.asset_id),
-      to_address: formData.to_address,
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {assets.length === 0 ? (
-        <div className="p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400">
-          You don't have any transferable assets. Assets must be in ACTIVE status and owned by you.
         </div>
-      ) : (
-        <>
-          <div>
-            <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1.5">Asset</label>
+
+        <div className="p-4 border-b border-dark-200 dark:border-dark-700 flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 max-w-md">
+            <Input
+              placeholder="Search transfers..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              leftIcon={<Search className="h-4 w-4" />}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-dark-600 dark:text-dark-400">Status:</label>
             <select
-              value={formData.asset_id}
-              onChange={(e) => setFormData({ ...formData, asset_id: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-lg border border-dark-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-              required
+              value={statusFilter || 'all'}
+              onChange={(e) => { const val = e.target.value; setStatusFilter(val === 'all' ? undefined : val); setPage(1); }}
+              className="px-3 py-2 rounded-lg border border-dark-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-white text-sm"
             >
-              <option value="">Select asset</option>
-              {assets.map((a: any) => (
-                <option key={a.id} value={a.id}>{a.name} ({a.asset_id}) - Token #{a.token_id}</option>
-              ))}
+              <option value="all">All</option>
+              <option value="PENDING">Pending</option>
+              <option value="APPROVED">Approved</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="REJECTED">Rejected</option>
+              <option value="CANCELLED">Cancelled</option>
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1.5">Recipient Wallet Address</label>
-            <select
-              value={formData.to_address}
-              onChange={(e) => setFormData({ ...formData, to_address: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-lg border border-dark-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-              required
-            >
-              <option value="">Select recipient</option>
-              {users.map((u: any) => (
-                <option key={u.id} value={u.wallet_address}>{u.full_name} ({u.email}) - {formatAddress(u.wallet_address)}</option>
-              ))}
-            </select>
+        </div>
+
+        <div className="overflow-x-auto">
+          <Table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Asset</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Assigned By</th>
+                <th>Status</th>
+                <th>Initiated</th>
+                <th>Completed</th>
+                <th>Blockchain</th>
+                <th className="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {transfers.length === 0 ? (
+                <tr>
+                  <td colSpan={10} className="text-center py-12 text-dark-500 dark:text-dark-400">
+                    <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No assignment records found</p>
+                  </td>
+                </tr>
+              ) : (
+                transfers.map((transfer) => (
+                  <tr key={transfer.id}>
+                    <td className="font-mono text-sm">#{transfer.id}</td>
+                    <td>
+                      {transfer.asset ? (
+                        <div>
+                          <p className="font-medium text-dark-900 dark:text-white">{transfer.asset.name}</p>
+                          <p className="text-xs text-dark-500 dark:text-dark-400 font-mono">{transfer.asset.asset_id}</p>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-dark-500 dark:text-dark-400">Unknown</span>
+                      )}
+                    </td>
+                    <td>
+                      <p className="text-sm font-mono">{formatAddress(transfer.from_address)}</p>
+                      {transfer.initiator && (
+                        <p className="text-xs text-dark-500 dark:text-dark-400">{transfer.initiator.full_name}</p>
+                      )}
+                    </td>
+                    <td>
+                      <p className="text-sm font-mono">{formatAddress(transfer.to_address)}</p>
+                      {transfer.recipient && (
+                        <p className="text-xs text-dark-500 dark:text-dark-400">{transfer.recipient.full_name}</p>
+                      )}
+                    </td>
+                    <td>
+                      {transfer.asset?.creator ? (
+                        <p className="text-sm text-dark-900 dark:text-white">{transfer.asset.creator.full_name}</p>
+                      ) : (
+                        <span className="text-sm text-dark-500 dark:text-dark-400">System</span>
+                      )}
+                    </td>
+                    <td>
+                      <Badge variant={TRANSFER_STATUS_COLORS[transfer.status] || 'default'}>
+                        {transfer.status}
+                      </Badge>
+                    </td>
+                    <td className="text-sm text-dark-600 dark:text-dark-400">
+                      {formatRelativeTime(transfer.created_at)}
+                    </td>
+                    <td className="text-sm text-dark-600 dark:text-dark-400">
+                      {transfer.completed_at ? formatRelativeTime(transfer.completed_at) : '-'}
+                    </td>
+                    <td>
+                      {transfer.blockchain_tx_hash ? (
+                        <span className="font-mono text-xs text-green-600 dark:text-green-400">
+                          {formatTxHash(transfer.blockchain_tx_hash)}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-dark-500 dark:text-dark-400">Pending</span>
+                      )}
+                    </td>
+                    <td className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => handleViewTransfer(transfer)}>
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        {transfer.status === 'PENDING' && (
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleCancel(transfer.id)}
+                            loading={cancellingId === transfer.id}
+                          >
+                            Cancel
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </Table>
+        </div>
+
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-dark-200 dark:border-dark-700 flex items-center justify-between">
+            <p className="text-sm text-dark-600 dark:text-dark-400">
+              Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, total)} of {total} transfers
+            </p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
+                Previous
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+                Next
+              </Button>
+            </div>
           </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-dark-200 dark:border-dark-700">
-            <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>Cancel</Button>
-            <Button type="submit" loading={isLoading} disabled={assets.length === 0}>Create Transfer</Button>
-          </div>
-        </>
-      )}
-    </form>
+        )}
+      </Card>
+
+      <Modal isOpen={!!selectedTransfer} onClose={() => setSelectedTransfer(null)} title="Transfer Details" size="lg">
+        {selectedTransfer && (
+          <TransferDetailView transfer={selectedTransfer} onClose={() => setSelectedTransfer(null)} />
+        )}
+      </Modal>
+    </div>
   );
 }
 
@@ -350,10 +284,20 @@ function TransferDetailView({ transfer, onClose }: any) {
         <div>
           <p className="text-sm text-dark-500 dark:text-dark-400">From Address</p>
           <p className="font-mono text-sm">{formatAddress(transfer.from_address)}</p>
+          {transfer.initiator && <p className="text-xs text-dark-500 dark:text-dark-400">{transfer.initiator.full_name}</p>}
         </div>
         <div>
           <p className="text-sm text-dark-500 dark:text-dark-400">To Address</p>
           <p className="font-mono text-sm">{formatAddress(transfer.to_address)}</p>
+          {transfer.recipient && <p className="text-xs text-dark-500 dark:text-dark-400">{transfer.recipient.full_name}</p>}
+        </div>
+        <div>
+          <p className="text-sm text-dark-500 dark:text-dark-400">Assigned By</p>
+          {transfer.asset?.creator ? (
+            <p className="text-sm text-dark-900 dark:text-white">{transfer.asset.creator.full_name}</p>
+          ) : (
+            <p className="text-sm text-dark-500 dark:text-dark-400">System</p>
+          )}
         </div>
         <div>
           <p className="text-sm text-dark-500 dark:text-dark-400">Initiated</p>

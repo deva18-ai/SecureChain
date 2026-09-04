@@ -63,7 +63,7 @@ CREATE INDEX ix_assets_owner_status ON assets (owner_id, status);
 CREATE INDEX ix_assets_category_status ON assets (category, status);
 CREATE INDEX ix_assets_creator ON assets (creator_id);
 
--- Transfers table
+-- Transfers table (assignment history)
 CREATE TABLE transfers (
     id SERIAL PRIMARY KEY,
     asset_id INTEGER NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
@@ -91,7 +91,7 @@ CREATE TABLE audit_logs (
     actor_address VARCHAR(42),
     action VARCHAR(50) NOT NULL CHECK (action IN (
         'IDENTITY_CREATED', 'IDENTITY_VERIFIED', 'ROLE_ASSIGNED', 'ROLE_REVOKED',
-        'ASSET_MINTED', 'ASSET_ALLOCATED', 'ASSET_TRANSFERRED', 'ASSET_BURNED',
+        'ASSET_MINTED', 'ASSET_ALLOCATED', 'ASSET_ASSIGNED', 'ASSET_REVOKED', 'ASSET_TRANSFERRED', 'ASSET_BURNED',
         'ASSET_FROZEN', 'ASSET_UNFROZEN', 'USER_CREATED', 'USER_UPDATED', 'LOGIN', 'LOGOUT'
     )),
     resource_type VARCHAR(50) NOT NULL,
@@ -110,6 +110,46 @@ CREATE INDEX ix_audit_logs_actor_created ON audit_logs (actor_id, created_at);
 CREATE INDEX ix_audit_logs_action_created ON audit_logs (action, created_at);
 CREATE INDEX ix_audit_logs_resource ON audit_logs (resource_type, resource_id);
 CREATE INDEX ix_audit_logs_blockchain_verified ON audit_logs (blockchain_verified);
+
+-- Security Events table (for unauthorized attempts, alerts, etc.)
+CREATE TABLE security_events (
+    id SERIAL PRIMARY KEY,
+    event_type VARCHAR(50) NOT NULL CHECK (event_type IN (
+        'UNAUTHORIZED_TRANSFER_ATTEMPT',
+        'UNAUTHORIZED_APPROVE_ATTEMPT',
+        'UNAUTHORIZED_OPERATOR_ATTEMPT',
+        'SUSPICIOUS_ACTIVITY',
+        'REPEATED_FAILED_AUTH',
+        'UNAUTHORIZED_API_ACCESS',
+        'ASSET_ASSIGNMENT_CHANGED',
+        'ASSET_STATUS_CHANGED',
+        'ROLE_ESCALATION_ATTEMPT'
+    )),
+    severity VARCHAR(20) NOT NULL DEFAULT 'MEDIUM' CHECK (severity IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
+    actor_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    actor_address VARCHAR(42),
+    actor_role VARCHAR(20),
+    resource_type VARCHAR(50),
+    resource_id VARCHAR(100),
+    reason TEXT,
+    blockchain_tx_hash VARCHAR(66),
+    blockchain_block_number BIGINT,
+    ip_address VARCHAR(45),
+    user_agent VARCHAR(500),
+    request_path VARCHAR(500),
+    request_method VARCHAR(10),
+    resolved BOOLEAN NOT NULL DEFAULT FALSE,
+    resolved_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    resolved_at TIMESTAMP WITHOUT TIME ZONE,
+    resolution_notes TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX ix_security_events_actor_created ON security_events (actor_id, created_at);
+CREATE INDEX ix_security_events_type_created ON security_events (event_type, created_at);
+CREATE INDEX ix_security_events_severity_created ON security_events (severity, created_at);
+CREATE INDEX ix_security_events_resolved ON security_events (resolved, created_at);
+CREATE INDEX ix_security_events_resource ON security_events (resource_type, resource_id);
 
 -- Blockchain Transactions table
 CREATE TABLE blockchain_transactions (
@@ -163,7 +203,8 @@ INSERT INTO permissions (name, description, resource_type, action) VALUES
     ('asset.read', 'Read asset information', 'ASSET', 'READ'),
     ('asset.update', 'Update asset metadata', 'ASSET', 'UPDATE'),
     ('asset.allocate', 'Allocate assets to users', 'ASSET', 'ALLOCATE'),
-    ('asset.transfer', 'Transfer asset ownership', 'ASSET', 'TRANSFER'),
+    ('asset.assign', 'Assign/reassign assets to users', 'ASSET', 'ASSIGN'),
+    ('asset.revoke', 'Revoke asset assignments', 'ASSET', 'REVOKE'),
     ('asset.burn', 'Burn assets', 'ASSET', 'BURN'),
     ('asset.freeze', 'Freeze/unfreeze assets', 'ASSET', 'FREEZE'),
     ('transfer.create', 'Initiate transfers', 'TRANSFER', 'CREATE'),
@@ -171,6 +212,8 @@ INSERT INTO permissions (name, description, resource_type, action) VALUES
     ('transfer.approve', 'Approve/reject transfers', 'TRANSFER', 'APPROVE'),
     ('audit.read', 'Read audit logs', 'AUDIT', 'READ'),
     ('audit.verify', 'Verify transactions on blockchain', 'AUDIT', 'VERIFY'),
+    ('security.read', 'Read security events', 'SECURITY', 'READ'),
+    ('security.manage', 'Manage security events', 'SECURITY', 'MANAGE'),
     ('blockchain.read', 'Read blockchain data', 'BLOCKCHAIN', 'READ'),
     ('system.configure', 'Configure system settings', 'SYSTEM', 'CONFIGURE')
 ON CONFLICT (name) DO NOTHING;
@@ -182,20 +225,20 @@ ON CONFLICT DO NOTHING;
 
 INSERT INTO role_permissions (role, permission_id)
 SELECT 'MANAGER', id FROM permissions WHERE name IN (
-    'user.read', 'did.read', 'asset.read', 'asset.allocate', 'asset.transfer',
-    'transfer.create', 'transfer.read', 'transfer.approve', 'audit.read', 'blockchain.read'
+    'user.read', 'did.read', 'asset.read', 'asset.allocate', 'asset.assign', 'asset.revoke',
+    'transfer.read', 'transfer.approve', 'audit.read', 'blockchain.read', 'security.read'
 )
 ON CONFLICT DO NOTHING;
 
 INSERT INTO role_permissions (role, permission_id)
 SELECT 'AUDITOR', id FROM permissions WHERE name IN (
-    'user.read', 'did.read', 'asset.read', 'transfer.read', 'audit.read', 'audit.verify', 'blockchain.read'
+    'user.read', 'did.read', 'asset.read', 'transfer.read', 'audit.read', 'audit.verify', 'blockchain.read', 'security.read'
 )
 ON CONFLICT DO NOTHING;
 
 INSERT INTO role_permissions (role, permission_id)
 SELECT 'USER', id FROM permissions WHERE name IN (
-    'user.read', 'did.read', 'asset.read', 'transfer.create', 'transfer.read'
+    'user.read', 'did.read', 'asset.read', 'transfer.read'
 )
 ON CONFLICT DO NOTHING;
 

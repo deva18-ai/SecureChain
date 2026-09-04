@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Search, Eye, Loader2, AlertCircle, Box, ArrowRightLeft, Send, Hash } from 'lucide-react';
+import { Search, Eye, Loader2, Box, Hash } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 import { Table } from '../components/ui/Table';
 import { Modal } from '../components/ui/Modal';
-import { useAssets, useTransferAsset } from '../hooks/useApi';
+import { useAssets } from '../hooks/useApi';
 import { formatAddress, formatDate, formatTxHash, getStatusColor } from '../utils/helpers';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -24,8 +24,6 @@ export default function MyAssetsPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
   const [selectedAsset, setSelectedAsset] = useState<any>(null);
-  const [transferringId, setTransferringId] = useState<number | null>(null);
-  const [transferOwnerId, setTransferOwnerId] = useState<number | null>(null);
 
   const { data: assetsData, isLoading, error, refetch } = useAssets({
     page,
@@ -34,21 +32,6 @@ export default function MyAssetsPage() {
     owner_id: user?.id,
     search: search || undefined,
   });
-  const transferAssetMutation = useTransferAsset();
-
-  const handleTransfer = async (assetId: number, newOwnerId: number) => {
-    setTransferringId(assetId);
-    try {
-      await transferAssetMutation.mutateAsync({ id: assetId, new_owner_id: newOwnerId });
-      toast.success('Asset transferred successfully');
-      setTransferOwnerId(null);
-      refetch();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.detail || 'Failed to transfer asset');
-    } finally {
-      setTransferringId(null);
-    }
-  };
 
   const handleViewAsset = (asset: any) => {
     setSelectedAsset(asset);
@@ -59,7 +42,7 @@ export default function MyAssetsPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-dark-900 dark:text-white">My Assets</h1>
-          <p className="text-dark-600 dark:text-dark-400">View and manage your digital assets</p>
+          <p className="text-dark-600 dark:text-dark-400">View your assigned digital assets</p>
         </div>
         <Card className="p-6 animate-pulse">
           <div className="h-4 w-48 bg-dark-200 dark:bg-dark-700 rounded mb-4" />
@@ -82,7 +65,7 @@ export default function MyAssetsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-dark-900 dark:text-white">My Assets</h1>
-          <p className="text-dark-600 dark:text-dark-400">View and manage your digital assets (NFTs)</p>
+          <p className="text-dark-600 dark:text-dark-400">View your assigned digital assets (NFTs)</p>
         </div>
         <Button variant="outline" onClick={() => refetch()} size="sm">
           <Loader2 className="h-4 w-4" />
@@ -97,8 +80,12 @@ export default function MyAssetsPage() {
           </div>
           <h3 className="text-xl font-semibold text-dark-900 dark:text-white mb-2">No Assets Found</h3>
           <p className="text-dark-600 dark:text-dark-400 mb-6 max-w-md mx-auto">
-            You don't own any digital assets yet. Assets will appear here when they are allocated to you.
+            You don't have any digital assets assigned to you yet. Assets will appear here when they are allocated to you by an administrator.
           </p>
+          <div className="p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400 text-sm">
+            <strong>Security Note:</strong> As an assigned user, you cannot transfer or reassign these assets. 
+            Only administrators and managers can change asset assignments.
+          </div>
         </Card>
       ) : (
         <>
@@ -169,16 +156,6 @@ export default function MyAssetsPage() {
                           <Button variant="ghost" size="sm" onClick={() => handleViewAsset(asset)}>
                             <Eye className="h-4 w-4" />
                           </Button>
-                          {asset.status !== 'BURNED' && asset.status !== 'FROZEN' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setTransferOwnerId(asset.id)}
-                              loading={transferringId === asset.id}
-                            >
-                              <Send className="h-4 w-4" />
-                            </Button>
-                          )}
                         </div>
                       </td>
                     </tr>
@@ -204,15 +181,6 @@ export default function MyAssetsPage() {
             )}
           </Card>
 
-          <Modal isOpen={transferOwnerId !== null} onClose={() => setTransferOwnerId(null)} title="Transfer Asset" size="lg">
-            <AssetTransferForm
-              asset={assets.find((a: any) => a.id === transferOwnerId)}
-              onSubmit={(ownerId) => handleTransfer(transferOwnerId!, ownerId)}
-              onCancel={() => setTransferOwnerId(null)}
-              isLoading={transferringId !== null}
-            />
-          </Modal>
-
           <Modal isOpen={!!selectedAsset} onClose={() => setSelectedAsset(null)} title="Asset Details" size="lg">
             {selectedAsset && (
               <AssetDetailView asset={selectedAsset} onClose={() => setSelectedAsset(null)} />
@@ -221,36 +189,6 @@ export default function MyAssetsPage() {
         </>
       )}
     </div>
-  );
-}
-
-function AssetTransferForm({ asset, onSubmit, onCancel, isLoading }: any) {
-  const [ownerId, setOwnerId] = useState('');
-
-  return (
-    <form onSubmit={(e) => { e.preventDefault(); if (ownerId) onSubmit(parseInt(ownerId)); }} className="space-y-4">
-      {asset && (
-        <div className="p-4 rounded-lg bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800">
-          <p className="font-medium text-dark-900 dark:text-white">{asset.name}</p>
-          <p className="text-sm text-dark-600 dark:text-dark-400">{asset.asset_id} • Token #{asset.token_id}</p>
-        </div>
-      )}
-      <div>
-        <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1.5">Recipient Wallet Address</label>
-        <Input
-          value={ownerId}
-          onChange={(e) => setOwnerId(e.target.value)}
-          placeholder="0x1234...abcd"
-          pattern="^0x[a-fA-F0-9]{40}$"
-          required
-        />
-        <p className="text-xs text-dark-500 dark:text-dark-400 mt-1">Enter the Ethereum address of the recipient</p>
-      </div>
-      <div className="flex justify-end gap-3 pt-4 border-t border-dark-200 dark:border-dark-700">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>Cancel</Button>
-        <Button type="submit" loading={isLoading} disabled={!ownerId}>Transfer</Button>
-      </div>
-    </form>
   );
 }
 
@@ -308,6 +246,13 @@ function AssetDetailView({ asset, onClose }: any) {
             <p className="text-sm text-dark-900 dark:text-white">{asset.blockchain_block_number.toLocaleString()}</p>
           </div>
         )}
+        <div className="col-span-2 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+          <p className="text-sm font-medium text-blue-700 dark:text-blue-400 mb-1">Security Notice</p>
+          <p className="text-sm text-blue-600 dark:text-blue-500">
+            This asset is assigned to you. You cannot transfer, reassign, or approve transfers of this asset. 
+            Only administrators and managers can change asset assignments.
+          </p>
+        </div>
       </div>
       <div className="flex justify-end gap-3 pt-4 border-t border-dark-200 dark:border-dark-700">
         <Button variant="outline" onClick={onClose}>Close</Button>

@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, NavLink } from 'react-router-dom';
 import { cn } from '../../utils/helpers';
 import {
   LayoutDashboard,
-  Users,
   Shield,
+  Key,
   Box,
   GitBranch,
   FileText,
@@ -17,175 +17,341 @@ import {
   ChevronRight,
   Activity,
   Wallet,
-  Key,
-  Lock,
+  BookOpen,
+  ChevronLeft,
+  ChevronDown,
+  LogOut,
+  HelpCircle,
+  Bell,
+  Badge as LucideBadge,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWallet } from '../../context/WalletContext';
+import { Badge } from '../ui/Badge';
+import { Button } from '../ui/Button';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'AUDITOR', 'USER'] },
-  { name: 'Identities', href: '/identities', icon: Key, roles: ['ADMIN', 'MANAGER', 'AUDITOR', 'USER'] },
-  { name: 'Assets', href: '/assets', icon: Box, roles: ['ADMIN', 'MANAGER', 'AUDITOR', 'USER'] },
-  { name: 'Transfers', href: '/transfers', icon: GitBranch, roles: ['ADMIN', 'MANAGER', 'AUDITOR', 'USER'] },
-  { name: 'Roles & Permissions', href: '/roles', icon: UserCog, roles: ['ADMIN'] },
-  { name: 'Audit Trail', href: '/audit', icon: FileText, roles: ['ADMIN', 'AUDITOR'] },
-  { name: 'Blockchain', href: '/blockchain', icon: Blocks, roles: ['ADMIN', 'AUDITOR'] },
-];
+interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  roles: string[];
+  badge?: string | number;
+  badgeVariant?: 'primary' | 'success' | 'warning' | 'critical';
+  description?: string;
+  external?: boolean;
+}
 
-const userNavigation = [
-  { name: 'My Identity', href: '/identity', icon: Shield, roles: ['USER'] },
-  { name: 'My Assets', href: '/my-assets', icon: Wallet, roles: ['USER'] },
-  { name: 'Transfer Requests', href: '/my-transfers', icon: GitBranch, roles: ['USER'] },
-  { name: 'My Activity', href: '/my-activity', icon: Activity, roles: ['USER'] },
-];
+interface NavSection {
+  label: string;
+  items: NavItem[];
+  icon?: React.ComponentType<{ className?: string }>;
+  collapsible?: boolean;
+  defaultExpanded?: boolean;
+}
 
-const adminNavigation = [
-  { name: 'User Management', href: '/admin/users', icon: Users, roles: ['ADMIN'] },
-  { name: 'Role Management', href: '/admin/roles', icon: UserCog, roles: ['ADMIN'] },
-  { name: 'System Config', href: '/admin/config', icon: Settings, roles: ['ADMIN'] },
+const navigation: NavSection[] = [
+  {
+    label: 'Security Infrastructure',
+    icon: ShieldCheck,
+    defaultExpanded: true,
+    items: [
+      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'AUDITOR', 'USER'], description: 'Security overview & metrics' },
+      { name: 'Security Center', href: '/security-center', icon: ShieldCheck, roles: ['ADMIN', 'MANAGER', 'AUDITOR', 'USER'], description: 'Threat monitoring & alerts' },
+    ],
+  },
+  {
+    label: 'Identity',
+    icon: Key,
+    defaultExpanded: true,
+    items: [
+      { name: 'Identities', href: '/identities', icon: Key, roles: ['ADMIN', 'MANAGER', 'AUDITOR', 'USER'], description: 'Manage DIDs & verification' },
+      { name: 'My Identity', href: '/identity', icon: Shield, roles: ['USER'], description: 'Your personal DID' },
+    ],
+  },
+  {
+    label: 'Assets',
+    icon: Box,
+    defaultExpanded: true,
+    items: [
+      { name: 'Digital Assets', href: '/assets', icon: Box, roles: ['ADMIN', 'MANAGER', 'AUDITOR', 'USER'], description: 'Browse all NFT assets' },
+      { name: 'My Assets', href: '/my-assets', icon: Wallet, roles: ['USER'], description: 'Your owned assets' },
+      { name: 'Transfers', href: '/transfers', icon: GitBranch, roles: ['ADMIN', 'MANAGER', 'AUDITOR', 'USER'], description: 'Manage transfers' },
+      { name: 'Transfer Requests', href: '/my-transfers', icon: GitBranch, roles: ['USER'], description: 'Your pending requests' },
+    ],
+  },
+  {
+    label: 'Blockchain',
+    icon: Blocks,
+    defaultExpanded: true,
+    items: [
+      { name: 'Blockchain Explorer', href: '/blockchain', icon: Blocks, roles: ['ADMIN', 'AUDITOR'], description: 'View blocks & transactions' },
+      { name: 'Transactions', href: '/transactions', icon: Activity, roles: ['ADMIN', 'AUDITOR'], description: 'Transaction history' },
+    ],
+  },
+  {
+    label: 'Audit',
+    icon: FileText,
+    defaultExpanded: true,
+    items: [
+      { name: 'Audit Trail', href: '/audit', icon: FileText, roles: ['ADMIN', 'AUDITOR'], description: 'Immutable audit logs' },
+      { name: 'My Activity', href: '/my-activity', icon: Activity, roles: ['USER'], description: 'Your activity log' },
+    ],
+  },
+  {
+    label: 'Administration',
+    icon: Settings,
+    defaultExpanded: false,
+    items: [
+      { name: 'Users', href: '/admin/users', icon: UserCog, roles: ['ADMIN'], description: 'User management' },
+      { name: 'Roles & Permissions', href: '/admin/roles', icon: Shield, roles: ['ADMIN'], description: 'RBAC configuration' },
+      { name: 'System Configuration', href: '/admin/config', icon: Settings, roles: ['ADMIN'], description: 'System settings' },
+    ],
+  },
+  {
+    label: 'Resources',
+    icon: BookOpen,
+    defaultExpanded: false,
+    items: [
+      { name: 'Cybersecurity Resources', href: '/security-resources', icon: BookOpen, roles: ['ADMIN', 'MANAGER', 'AUDITOR', 'USER'], description: 'Guides & best practices' },
+    ],
+  },
 ];
 
 export function Sidebar() {
   const { user, hasRole } = useAuth();
-  const { isConnected, connect } = useWallet();
+  const { isConnected, connect, disconnect } = useWallet();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  const sidebarRef = useRef<HTMLAsideElement>(null);
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
 
-  const filteredNav = navigation.filter(item => hasRole(item.roles));
-  const filteredUserNav = userNavigation.filter(item => hasRole(item.roles));
-  const filteredAdminNav = adminNavigation.filter(item => hasRole(item.roles));
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useKeyboardShortcuts({
+    shortcuts: [
+      { key: 'b', ctrl: true, description: 'Toggle sidebar', action: () => setIsCollapsed(!isCollapsed), global: true },
+      { key: '/', ctrl: true, description: 'Focus search', action: () => {}, global: true },
+    ],
+    enabled: true,
+  });
+
+  const filteredNavigation = navigation.map(section => ({
+    ...section,
+    items: section.items.filter(item => hasRole(item.roles as any)),
+  })).filter(section => section.items.length > 0);
+
+  const toggleSection = (label: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [label]: !prev[label],
+    }));
+  };
+
+  const isSectionExpanded = (label: string) => expandedSections[label] ?? true;
+
+  const handleMobileItemClick = () => {
+    if (window.innerWidth < 1024) {
+      setIsOpen(false);
+    }
+  };
 
   return (
     <>
       <button
+        ref={mobileMenuButtonRef}
         className="lg:hidden fixed top-4 left-4 z-50 btn-secondary"
         onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? 'Close menu' : 'Open menu'}
         aria-expanded={isOpen}
+        aria-controls="sidebar"
       >
         {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
 
       <aside
+        ref={sidebarRef}
+        id="sidebar"
         className={cn(
-          'fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white dark:bg-dark-900 border-r border-dark-200 dark:border-dark-700 transform transition-transform duration-300 ease-in-out flex flex-col',
+          'fixed lg:static inset-y-0 left-0 z-40 bg-cyber-panel border-r border-cyber-border flex flex-col transition-all duration-300 ease-in-out',
+          isCollapsed ? 'w-20' : 'w-64',
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
         aria-label="Main navigation"
       >
-        <div className="flex items-center justify-between h-16 px-4 border-b border-dark-200 dark:border-dark-700">
+        <div className="flex items-center justify-between h-16 px-4 border-b border-cyber-border">
           <Link to="/dashboard" className="flex items-center gap-2" aria-label="SecureChain Home">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-600 to-blue-600 flex items-center justify-center">
-              <ShieldCheck className="h-5 w-5 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyber-primary to-cyber-secondary flex items-center justify-center flex-shrink-0">
+              <ShieldCheck className="h-5 w-5 text-cyber-bg" />
             </div>
-            <span className="font-bold text-lg text-dark-900 dark:text-white">SecureChain</span>
+            {!isCollapsed && (
+              <span className="font-heading font-bold text-lg text-cyber-text">SecureChain</span>
+            )}
           </Link>
-          <button className="lg:hidden btn-ghost p-1" onClick={() => setIsOpen(false)} aria-label="Close sidebar">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1" aria-label="Main">
-          <div className="px-3 py-2">
-            <h3 className="text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wider">Main</h3>
-          </div>
-          {filteredNav.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.href || location.pathname.startsWith(item.href + '/');
-            return (
-              <NavLink
-                key={item.name}
-                to={item.href}
-                className={({ isActive }) => cn(
-                  'sidebar-link',
-                  isActive && 'sidebar-link-active'
-                )}
-                end={item.href === '/dashboard'}
-                aria-current={isActive ? 'page' : undefined}
+          <div className="flex items-center gap-1">
+            <button
+              className="lg:hidden btn-ghost p-1"
+              onClick={() => setIsOpen(false)}
+              aria-label="Close sidebar"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            {!isCollapsed && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                className="p-1.5"
               >
-                <Icon className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
-                <span>{item.name}</span>
-              </NavLink>
-            );
-          })}
-
-          {filteredUserNav.length > 0 && (
-            <>
-              <div className="px-3 py-2 mt-2">
-                <h3 className="text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wider">My Account</h3>
-              </div>
-              {filteredUserNav.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.href || location.pathname.startsWith(item.href + '/');
-                return (
-                  <NavLink
-                    key={item.name}
-                    to={item.href}
-                    className={({ isActive }) => cn(
-                      'sidebar-link',
-                      isActive && 'sidebar-link-active'
-                    )}
-                    aria-current={isActive ? 'page' : undefined}
-                  >
-                    <Icon className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
-                    <span>{item.name}</span>
-                  </NavLink>
-                );
-              })}
-            </>
-          )}
-
-          {filteredAdminNav.length > 0 && (
-            <>
-              <div className="px-3 py-2 mt-2">
-                <h3 className="text-xs font-semibold text-dark-500 dark:text-dark-400 uppercase tracking-wider">Administration</h3>
-              </div>
-              {filteredAdminNav.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.href || location.pathname.startsWith(item.href + '/');
-                return (
-                  <NavLink
-                    key={item.name}
-                    to={item.href}
-                    className={({ isActive }) => cn(
-                      'sidebar-link',
-                      isActive && 'sidebar-link-active'
-                    )}
-                    aria-current={isActive ? 'page' : undefined}
-                  >
-                    <Icon className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
-                    <span>{item.name}</span>
-                  </NavLink>
-                );
-              })}
-            </>
-          )}
-        </nav>
-
-        <div className="p-4 border-t border-dark-200 dark:border-dark-700">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-dark-50 dark:bg-dark-800/50">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-600 to-blue-600 flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-medium text-sm">
-                {user?.full_name?.charAt(0).toUpperCase() || 'U'}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-dark-900 dark:text-white truncate">{user?.full_name}</p>
-              <p className="text-xs text-dark-500 dark:text-dark-400 capitalize">{user?.role?.toLowerCase()}</p>
-            </div>
-          </div>
-          <div className="mt-3 flex items-center gap-2">
-            <span className={cn('flex-1 text-xs px-2 py-1 rounded', isConnected ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400')}>
-              {isConnected ? 'Wallet Connected' : 'Wallet Disconnected'}
-            </span>
-            {!isConnected && (
-              <Button variant="outline" size="sm" onClick={connect} className="w-full">
-                Connect
+                {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
               </Button>
             )}
           </div>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1" aria-label="Main">
+          {filteredNavigation.map((section) => {
+            const isExpanded = isSectionExpanded(section.label);
+            const SectionIcon = section.icon;
+
+            return (
+              <div key={section.label} className="group">
+                <button
+                  className={cn(
+                    'w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-cyber-textDim hover:text-cyber-text transition-colors',
+                    isCollapsed && 'justify-center'
+                  )}
+                  onClick={() => !isCollapsed && section.collapsible !== false && toggleSection(section.label)}
+                  aria-expanded={isExpanded}
+                  disabled={isCollapsed || section.collapsible === false}
+                  aria-label={isCollapsed ? 'Expand sidebar to view section' : `Toggle ${section.label} section`}
+                >
+                  {!isCollapsed && SectionIcon && (
+                    <SectionIcon className="h-4 w-4 flex-shrink-0 text-cyber-textDim" aria-hidden="true" />
+                  )}
+                  <span className={cn('truncate', isCollapsed && 'hidden')}>
+                    {isCollapsed ? section.label.charAt(0) : section.label}
+                  </span>
+                  {!isCollapsed && section.collapsible !== false && (
+                    <ChevronDown
+                      className={cn(
+                        'h-4 w-4 text-cyber-textDim transition-transform flex-shrink-0',
+                        isExpanded ? 'rotate-180' : ''
+                      )}
+                      aria-hidden="true"
+                    />
+                  )}
+                </button>
+
+                {!isCollapsed && (section.collapsible === false || isExpanded) && (
+                  <div className="mt-1 space-y-0.5 animate-in">
+                    {section.items.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = location.pathname === item.href || location.pathname.startsWith(item.href + '/');
+
+                      return (
+                        <NavLink
+                          key={item.name}
+                          to={item.href}
+                          onClick={handleMobileItemClick}
+                          className={({ isActive: navActive }) => cn(
+                            'sidebar-link relative group',
+                            navActive && 'sidebar-link-active',
+                            item.badge && 'pr-8'
+                          )}
+                          end={item.href === '/dashboard'}
+                          aria-current={isActive ? 'page' : undefined}
+                          title={isCollapsed ? item.name : undefined}
+                        >
+                          <Icon className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
+                          <span className="truncate">{item.name}</span>
+                          {item.badge && !isCollapsed && (
+                            <Badge
+                              variant={item.badgeVariant || 'primary'}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-1.5 py-0.5"
+                            >
+                              {item.badge}
+                            </Badge>
+                          )}
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </nav>
+
+        <div className="p-4 border-t border-cyber-border space-y-3">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-cyber-elevated/50">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyber-primary to-cyber-secondary flex items-center justify-center flex-shrink-0">
+              <span className="text-cyber-bg font-medium text-sm">
+                {user?.full_name?.charAt(0).toUpperCase() || 'U'}
+              </span>
+            </div>
+            {!isCollapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-cyber-text truncate">{user?.full_name}</p>
+                <p className="text-xs text-cyber-textDim capitalize">{user?.role?.toLowerCase()}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {!isCollapsed && (
+              <div className="flex-1 flex items-center gap-2">
+                <span className={cn(
+                  'flex-1 text-xs px-2 py-1 rounded border',
+                  isConnected
+                    ? 'bg-cyber-success/10 text-cyber-success border-cyber-success/30'
+                    : 'bg-cyber-warning/10 text-cyber-warning border-cyber-warning/30'
+                )}>
+                  <span className="flex items-center gap-1">
+                    <span className={cn('w-1.5 h-1.5 rounded-full', isConnected ? 'bg-cyber-success' : 'bg-cyber-warning')} />
+                    {isConnected ? 'Connected' : 'Disconnected'}
+                  </span>
+                </span>
+              </div>
+            )}
+            {!isConnected ? (
+              !isCollapsed && (
+                <Button variant="outline" size="sm" onClick={connect} className="w-full">
+                  Connect Wallet
+                </Button>
+              )
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={disconnect}
+                className={cn('w-full justify-start', isCollapsed && 'justify-center px-2')}
+                leftIcon={<LogOut className="h-4 w-4" />}
+              >
+                {!isCollapsed && 'Disconnect'}
+              </Button>
+            )}
+          </div>
+
+          {!isCollapsed && (
+            <div className="pt-3 border-t border-cyber-border">
+              <div className="flex items-center gap-2 text-xs text-cyber-textDim">
+                <HelpCircle className="h-4 w-4 flex-shrink-0" />
+                <span>Press <kbd className="px-1.5 py-0.5 bg-cyber-elevated rounded text-cyber-text font-mono">Ctrl+B</kbd> to toggle sidebar</span>
+              </div>
+            </div>
+          )}
         </div>
       </aside>
 

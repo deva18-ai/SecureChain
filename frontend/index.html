@@ -1,15 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="SecureChain - Decentralized Identity, NFT Asset Ownership & Immutable Audit Platform" />
-    <meta name="theme-color" content="#0ea5e9" />
-    <title>SecureChain - Decentralized Identity & NFT Asset Platform</title>
+    <meta name="theme-color" content="#06080D" />
+    <title>SecureChain - Trust Infrastructure for Digital Assets</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --font-sans: 'Inter', system-ui, sans-serif;
+        --font-heading: 'Space Grotesk', system-ui, sans-serif;
+        --font-mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+      }
+      * { @apply border-cyber-border; }
+      body { @apply bg-cyber-bg text-cyber-text font-sans antialiased; font-feature-settings: "cv02", "cv03", "cv04", "cv11"; }
+      html { scroll-behavior: smooth; }
+    </style>
   </head>
   <body>
     <div id="root"></div>

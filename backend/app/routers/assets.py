@@ -61,7 +61,7 @@ async def create_asset(
             description=asset.description or "",
             category=asset.category,
             metadata_uri=asset.metadata_uri,
-            initial_owner=owner.wallet_address or "0x" + "0" * 40,
+            initial_assignee=owner.wallet_address or "0x" + "0" * 40,
         )
         if token_id:
             asset.token_id = token_id
@@ -241,7 +241,7 @@ async def update_asset(
         db=db,
         actor_id=current_user.id,
         actor_address=current_user.wallet_address,
-        action="ASSET_ALLOCATED",
+        action="ASSET_UPDATED",
         resource_type="ASSET",
         resource_id=str(asset.token_id),
         role=current_user.role.value,
@@ -289,7 +289,7 @@ async def allocate_asset(
     blockchain_block_number = None
     try:
         blockchain_service = BlockchainService()
-        tx_hash = await blockchain_service.allocate_asset(
+        tx_hash = await blockchain_service.assign_asset(
             token_id=asset.token_id,
             to_address=new_owner.wallet_address,
         )
@@ -299,7 +299,7 @@ async def allocate_asset(
             if receipt:
                 blockchain_block_number = receipt.blockNumber
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Blockchain allocation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Blockchain assignment failed: {str(e)}")
 
     asset.owner_id = new_owner_id
     asset.status = AssetStatus.TRANSFERRED
@@ -326,11 +326,10 @@ async def allocate_asset(
     return asset
 
 
-@router.post("/{asset_id}/transfer", response_model=AssetResponse)
-async def transfer_asset(
+@router.post("/{asset_id}/revoke", response_model=AssetResponse)
+async def revoke_assignment(
     asset_id: int,
-    new_owner_id: int,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_admin_or_manager),
     db: AsyncSession = Depends(get_db),
     http_request: Request = None,
 ):
@@ -339,33 +338,26 @@ async def transfer_asset(
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
 
-    if asset.owner_id != current_user.id and current_user.role not in [UserRole.ADMIN, UserRole.MANAGER]:
-        raise HTTPException(status_code=403, detail="Not authorized to transfer this asset")
-
     if asset.status in [AssetStatus.BURNED, AssetStatus.FROZEN]:
-        raise HTTPException(status_code=400, detail="Asset cannot be transferred in current state")
+        raise HTTPException(status_code=400, detail="Asset cannot be revoked in current state")
 
-    result = await db.execute(select(User).where(User.id == new_owner_id))
-    new_owner = result.scalar_one_or_none()
-    if not new_owner:
-        raise HTTPException(status_code=404, detail="Recipient not found")
+    if asset.owner_id is None:
+        raise HTTPException(status_code=400, detail="Asset is not currently assigned")
 
-    if not new_owner.wallet_address:
-        raise HTTPException(status_code=400, detail="Recipient has no wallet address")
-
-    if not current_user.wallet_address:
-        raise HTTPException(status_code=400, detail="You have no wallet address")
-
-    old_owner_address = current_user.wallet_address
+    old_owner_id = asset.owner_id
+    old_owner_address = None
+    if old_owner_id:
+        old_owner = await db.execute(select(User).where(User.id == old_owner_id))
+        old_owner = old_owner.scalar_one_or_none()
+        if old_owner:
+            old_owner_address = old_owner.wallet_address
 
     blockchain_tx_hash = None
     blockchain_block_number = None
     try:
         blockchain_service = BlockchainService()
-        tx_hash = await blockchain_service.transfer_asset(
+        tx_hash = await blockchain_service.revoke_assignment(
             token_id=asset.token_id,
-            from_address=current_user.wallet_address,
-            to_address=new_owner.wallet_address,
         )
         blockchain_tx_hash = tx_hash
         if tx_hash:
@@ -373,10 +365,10 @@ async def transfer_asset(
             if receipt:
                 blockchain_block_number = receipt.blockNumber
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Blockchain transfer failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Blockchain revocation failed: {str(e)}")
 
-    asset.owner_id = new_owner_id
-    asset.status = AssetStatus.TRANSFERRED
+    asset.owner_id = None
+    asset.status = AssetStatus.ACTIVE
     asset.blockchain_tx_hash = blockchain_tx_hash
     asset.blockchain_block_number = blockchain_block_number
     await db.commit()
@@ -386,13 +378,13 @@ async def transfer_asset(
         db=db,
         actor_id=current_user.id,
         actor_address=current_user.wallet_address,
-        action="ASSET_TRANSFERRED",
+        action="ASSET_REVOKED",
         resource_type="ASSET",
         resource_id=str(asset.token_id),
         role=current_user.role.value,
         blockchain_tx_hash=blockchain_tx_hash,
         blockchain_block_number=blockchain_block_number,
-        details=f"Transferred asset {asset.name} to {new_owner.email}",
+        details=f"Revoked asset {asset.name} from user {old_owner_id}",
         ip_address=http_request.client.host if http_request and http_request.client else None,
         user_agent=http_request.headers.get("user-agent") if http_request else None,
     )

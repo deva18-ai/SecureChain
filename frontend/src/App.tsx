@@ -1,19 +1,36 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Suspense, lazy, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useWallet } from './context/WalletContext';
 import { MainLayout, AuthLayout, LandingLayout } from './components/layout/MainLayout';
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
+import { PageLoadingFallback, getLazyPage } from './lib/lazyLoad';
+
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const DashboardPage = getLazyPage('DashboardPage', { preload: true });
+const IdentitiesPage = getLazyPage('IdentitiesPage');
+const AssetsPage = getLazyPage('AssetsPage');
+const TransfersPage = getLazyPage('TransfersPage');
+const AuditPage = getLazyPage('AuditPage');
+const BlockchainPage = getLazyPage('BlockchainPage');
+const MyIdentityPage = getLazyPage('MyIdentityPage');
+const MyAssetsPage = getLazyPage('MyAssetsPage');
+const MyTransfersPage = getLazyPage('MyTransfersPage');
+const MyActivityPage = getLazyPage('MyActivityPage');
+const AdminUsersPage = getLazyPage('AdminUsersPage');
+const AdminRolesPage = getLazyPage('AdminRolesPage');
+const AdminConfigPage = getLazyPage('AdminConfigPage');
+const SettingsPage = getLazyPage('SettingsPage');
+const SecurityCenterPage = getLazyPage('SecurityCenterPage');
+const SecurityResourcesPage = getLazyPage('SecurityResourcesPage');
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
   const { user, isLoading, isAuthenticated, hasRole } = useAuth();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-50 dark:bg-dark-950">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+      <div className="min-h-screen flex items-center justify-center bg-cyber-bg">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyber-primary" />
       </div>
     );
   }
@@ -34,8 +51,8 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-50 dark:bg-dark-950">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+      <div className="min-h-screen flex items-center justify-center bg-cyber-bg">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyber-primary" />
       </div>
     );
   }
@@ -48,93 +65,39 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  const { isConnected, connect } = useWallet();
-
   return (
-    <Routes>
-      <Route path="/" element={<LandingLayout><LandingPage /></LandingLayout>} />
-      <Route path="/login" element={<AuthLayout><PublicRoute><LoginPage /></PublicRoute></AuthLayout>} />
-      <Route path="/register" element={<AuthLayout><PublicRoute><RegisterPage /></PublicRoute></AuthLayout>} />
+    <Suspense fallback={<PageLoadingFallback />}>
+      <Routes>
+        <Route path="/" element={<LandingLayout><LandingPage /></LandingLayout>} />
+        <Route path="/login" element={<AuthLayout><PublicRoute><LoginPage /></PublicRoute></AuthLayout>} />
+        <Route path="/register" element={<AuthLayout><PublicRoute><RegisterPage /></PublicRoute></AuthLayout>} />
 
-      <Route element={<MainLayout />}>
-        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-        <Route path="/identities" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'AUDITOR']}><IdentitiesPage /></ProtectedRoute>} />
-        <Route path="/assets" element={<ProtectedRoute><AssetsPage /></ProtectedRoute>} />
-        <Route path="/transfers" element={<ProtectedRoute><TransfersPage /></ProtectedRoute>} />
-        <Route path="/audit" element={<ProtectedRoute allowedRoles={['ADMIN', 'AUDITOR']}><AuditPage /></ProtectedRoute>} />
-        <Route path="/blockchain" element={<ProtectedRoute allowedRoles={['ADMIN', 'AUDITOR']}><BlockchainPage /></ProtectedRoute>} />
-        <Route path="/roles" element={<ProtectedRoute allowedRoles={['ADMIN']}><RolesPage /></ProtectedRoute>} />
+        <Route element={<MainLayout />}>
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/security-center" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'AUDITOR', 'USER']}><SecurityCenterPage /></ProtectedRoute>} />
+          <Route path="/security-resources" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'AUDITOR', 'USER']}><SecurityResourcesPage /></ProtectedRoute>} />
 
-        <Route path="/identity" element={<ProtectedRoute allowedRoles={['USER']}><MyIdentityPage /></ProtectedRoute>} />
-        <Route path="/my-assets" element={<ProtectedRoute allowedRoles={['USER']}><MyAssetsPage /></ProtectedRoute>} />
-        <Route path="/my-transfers" element={<ProtectedRoute allowedRoles={['USER']}><MyTransfersPage /></ProtectedRoute>} />
-        <Route path="/my-activity" element={<ProtectedRoute allowedRoles={['USER']}><MyActivityPage /></ProtectedRoute>} />
+          <Route path="/identities" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'AUDITOR', 'USER']}><IdentitiesPage /></ProtectedRoute>} />
+          <Route path="/assets" element={<ProtectedRoute><AssetsPage /></ProtectedRoute>} />
+          <Route path="/transfers" element={<ProtectedRoute><TransfersPage /></ProtectedRoute>} />
+          <Route path="/audit" element={<ProtectedRoute allowedRoles={['ADMIN', 'AUDITOR']}><AuditPage /></ProtectedRoute>} />
+          <Route path="/blockchain" element={<ProtectedRoute allowedRoles={['ADMIN', 'AUDITOR']}><BlockchainPage /></ProtectedRoute>} />
 
-        <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminUsersPage /></ProtectedRoute>} />
-        <Route path="/admin/roles" element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminRolesPage /></ProtectedRoute>} />
-        <Route path="/admin/config" element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminConfigPage /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-      </Route>
+          <Route path="/identity" element={<ProtectedRoute allowedRoles={['USER']}><MyIdentityPage /></ProtectedRoute>} />
+          <Route path="/my-assets" element={<ProtectedRoute allowedRoles={['USER']}><MyAssetsPage /></ProtectedRoute>} />
+          <Route path="/my-transfers" element={<ProtectedRoute allowedRoles={['USER']}><MyTransfersPage /></ProtectedRoute>} />
+          <Route path="/my-activity" element={<ProtectedRoute allowedRoles={['USER']}><MyActivityPage /></ProtectedRoute>} />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+          <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminUsersPage /></ProtectedRoute>} />
+          <Route path="/admin/roles" element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminRolesPage /></ProtectedRoute>} />
+          <Route path="/admin/config" element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminConfigPage /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
-}
-
-function IdentitiesPage() {
-  return <div className="text-center py-12"><h2 className="text-2xl font-bold text-dark-900 dark:text-white">Identities Page - Coming Soon</h2></div>;
-}
-
-function AssetsPage() {
-  return <div className="text-center py-12"><h2 className="text-2xl font-bold text-dark-900 dark:text-white">Assets Page - Coming Soon</h2></div>;
-}
-
-function TransfersPage() {
-  return <div className="text-center py-12"><h2 className="text-2xl font-bold text-dark-900 dark:text-white">Transfers Page - Coming Soon</h2></div>;
-}
-
-function AuditPage() {
-  return <div className="text-center py-12"><h2 className="text-2xl font-bold text-dark-900 dark:text-white">Audit Page - Coming Soon</h2></div>;
-}
-
-function BlockchainPage() {
-  return <div className="text-center py-12"><h2 className="text-2xl font-bold text-dark-900 dark:text-white">Blockchain Page - Coming Soon</h2></div>;
-}
-
-function RolesPage() {
-  return <div className="text-center py-12"><h2 className="text-2xl font-bold text-dark-900 dark:text-white">Roles Page - Coming Soon</h2></div>;
-}
-
-function MyIdentityPage() {
-  return <div className="text-center py-12"><h2 className="text-2xl font-bold text-dark-900 dark:text-white">My Identity Page - Coming Soon</h2></div>;
-}
-
-function MyAssetsPage() {
-  return <div className="text-center py-12"><h2 className="text-2xl font-bold text-dark-900 dark:text-white">My Assets Page - Coming Soon</h2></div>;
-}
-
-function MyTransfersPage() {
-  return <div className="text-center py-12"><h2 className="text-2xl font-bold text-dark-900 dark:text-white">My Transfers Page - Coming Soon</h2></div>;
-}
-
-function MyActivityPage() {
-  return <div className="text-center py-12"><h2 className="text-2xl font-bold text-dark-900 dark:text-white">My Activity Page - Coming Soon</h2></div>;
-}
-
-function AdminUsersPage() {
-  return <div className="text-center py-12"><h2 className="text-2xl font-bold text-dark-900 dark:text-white">Admin Users Page - Coming Soon</h2></div>;
-}
-
-function AdminRolesPage() {
-  return <div className="text-center py-12"><h2 className="text-2xl font-bold text-dark-900 dark:text-white">Admin Roles Page - Coming Soon</h2></div>;
-}
-
-function AdminConfigPage() {
-  return <div className="text-center py-12"><h2 className="text-2xl font-bold text-dark-900 dark:text-white">Admin Config Page - Coming Soon</h2></div>;
-}
-
-function SettingsPage() {
-  return <div className="text-center py-12"><h2 className="text-2xl font-bold text-dark-900 dark:text-white">Settings Page - Coming Soon</h2></div>;
 }
 
 export default App;

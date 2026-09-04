@@ -32,10 +32,12 @@ export declare namespace SecureChain {
     category: string;
     metadataURI: string;
     creator: AddressLike;
-    currentOwner: AddressLike;
+    assignedTo: AddressLike;
     createdAt: BigNumberish;
     status: BigNumberish;
     mintTxHash: string;
+    assignedAt: BigNumberish;
+    assignedBy: AddressLike;
   };
 
   export type AssetStructOutput = [
@@ -46,10 +48,12 @@ export declare namespace SecureChain {
     category: string,
     metadataURI: string,
     creator: string,
-    currentOwner: string,
+    assignedTo: string,
     createdAt: bigint,
     status: bigint,
-    mintTxHash: string
+    mintTxHash: string,
+    assignedAt: bigint,
+    assignedBy: string
   ] & {
     tokenId: bigint;
     assetId: string;
@@ -58,10 +62,12 @@ export declare namespace SecureChain {
     category: string;
     metadataURI: string;
     creator: string;
-    currentOwner: string;
+    assignedTo: string;
     createdAt: bigint;
     status: bigint;
     mintTxHash: string;
+    assignedAt: bigint;
+    assignedBy: string;
   };
 
   export type AuditRecordStruct = {
@@ -139,10 +145,10 @@ export interface SecureChainInterface extends Interface {
       | "IDENTITY_VERIFIER_ROLE"
       | "MANAGER_ROLE"
       | "MINTER_ROLE"
-      | "allocateAsset"
       | "approve"
-      | "assetTransferHistory"
+      | "assetAssignmentHistory"
       | "assets"
+      | "assignAsset"
       | "assignRole"
       | "auditRecords"
       | "balanceOf"
@@ -152,13 +158,13 @@ export interface SecureChainInterface extends Interface {
       | "freezeAsset"
       | "getApproved"
       | "getAsset"
-      | "getAssetTransferHistory"
-      | "getAssetsByCategory"
+      | "getAssetAssignmentHistory"
       | "getAuditCount"
       | "getAuditRecord"
+      | "getCustodian"
       | "getIdentity"
       | "getRoleAdmin"
-      | "getUserAssets"
+      | "getUserAssignedAssets"
       | "getUserDIDs"
       | "grantRole"
       | "hasRole"
@@ -168,6 +174,7 @@ export interface SecureChainInterface extends Interface {
       | "name"
       | "ownerOf"
       | "renounceRole"
+      | "revokeAssignment"
       | "revokeRole"
       | "revokeRoleFromAccount"
       | "safeTransferFrom(address,address,uint256)"
@@ -176,10 +183,10 @@ export interface SecureChainInterface extends Interface {
       | "supportsInterface"
       | "symbol"
       | "tokenURI"
-      | "transferAsset"
       | "transferFrom"
       | "unfreezeAsset"
-      | "userAssets"
+      | "updateCustodian"
+      | "userAssignedAssets"
       | "userDIDs"
       | "verifyIdentity"
   ): FunctionFragment;
@@ -188,19 +195,18 @@ export interface SecureChainInterface extends Interface {
     nameOrSignatureOrTopic:
       | "Approval"
       | "ApprovalForAll"
-      | "AssetAllocated"
+      | "AssetAssigned"
       | "AssetMinted"
-      | "AssetTransferred"
       | "AuditRecorded"
-      | "BatchMetadataUpdate"
+      | "CustodianUpdated"
       | "IdentityCreated"
       | "IdentityVerified"
-      | "MetadataUpdate"
       | "RoleAdminChanged"
       | "RoleAssigned"
       | "RoleGranted"
       | "RoleRevoked"
       | "RoleRevokedCustom"
+      | "SecurityAlert"
       | "Transfer"
   ): EventFragment;
 
@@ -229,20 +235,20 @@ export interface SecureChainInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "allocateAsset",
-    values: [BigNumberish, AddressLike]
-  ): string;
-  encodeFunctionData(
     functionFragment: "approve",
     values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "assetTransferHistory",
+    functionFragment: "assetAssignmentHistory",
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "assets",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "assignAsset",
+    values: [BigNumberish, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "assignRole",
@@ -278,12 +284,8 @@ export interface SecureChainInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getAssetTransferHistory",
+    functionFragment: "getAssetAssignmentHistory",
     values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getAssetsByCategory",
-    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "getAuditCount",
@@ -293,13 +295,17 @@ export interface SecureChainInterface extends Interface {
     functionFragment: "getAuditRecord",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "getCustodian",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "getIdentity", values: [string]): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
     values: [BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "getUserAssets",
+    functionFragment: "getUserAssignedAssets",
     values: [AddressLike]
   ): string;
   encodeFunctionData(
@@ -333,6 +339,10 @@ export interface SecureChainInterface extends Interface {
     values: [BytesLike, AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "revokeAssignment",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "revokeRole",
     values: [BytesLike, AddressLike]
   ): string;
@@ -362,10 +372,6 @@ export interface SecureChainInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "transferAsset",
-    values: [BigNumberish, AddressLike]
-  ): string;
-  encodeFunctionData(
     functionFragment: "transferFrom",
     values: [AddressLike, AddressLike, BigNumberish]
   ): string;
@@ -374,7 +380,11 @@ export interface SecureChainInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "userAssets",
+    functionFragment: "updateCustodian",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "userAssignedAssets",
     values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
@@ -407,16 +417,16 @@ export interface SecureChainInterface extends Interface {
     functionFragment: "MINTER_ROLE",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "allocateAsset",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "assetTransferHistory",
+    functionFragment: "assetAssignmentHistory",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "assets", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "assignAsset",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "assignRole", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "auditRecords",
@@ -439,11 +449,7 @@ export interface SecureChainInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "getAsset", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "getAssetTransferHistory",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getAssetsByCategory",
+    functionFragment: "getAssetAssignmentHistory",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -455,6 +461,10 @@ export interface SecureChainInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getCustodian",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getIdentity",
     data: BytesLike
   ): Result;
@@ -463,7 +473,7 @@ export interface SecureChainInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getUserAssets",
+    functionFragment: "getUserAssignedAssets",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -482,6 +492,10 @@ export interface SecureChainInterface extends Interface {
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceRole",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "revokeAssignment",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
@@ -508,10 +522,6 @@ export interface SecureChainInterface extends Interface {
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "transferAsset",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "transferFrom",
     data: BytesLike
   ): Result;
@@ -519,7 +529,14 @@ export interface SecureChainInterface extends Interface {
     functionFragment: "unfreezeAsset",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "userAssets", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "updateCustodian",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "userAssignedAssets",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "userDIDs", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "verifyIdentity",
@@ -567,23 +584,26 @@ export namespace ApprovalForAllEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace AssetAllocatedEvent {
+export namespace AssetAssignedEvent {
   export type InputTuple = [
     tokenId: BigNumberish,
     from: AddressLike,
     to: AddressLike,
+    assignedBy: AddressLike,
     timestamp: BigNumberish
   ];
   export type OutputTuple = [
     tokenId: bigint,
     from: string,
     to: string,
+    assignedBy: string,
     timestamp: bigint
   ];
   export interface OutputObject {
     tokenId: bigint;
     from: string;
     to: string;
+    assignedBy: string;
     timestamp: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
@@ -597,7 +617,7 @@ export namespace AssetMintedEvent {
     tokenId: BigNumberish,
     assetId: string,
     creator: AddressLike,
-    owner: AddressLike,
+    assignedTo: AddressLike,
     name: string,
     timestamp: BigNumberish
   ];
@@ -605,7 +625,7 @@ export namespace AssetMintedEvent {
     tokenId: bigint,
     assetId: string,
     creator: string,
-    owner: string,
+    assignedTo: string,
     name: string,
     timestamp: bigint
   ];
@@ -613,33 +633,8 @@ export namespace AssetMintedEvent {
     tokenId: bigint;
     assetId: string;
     creator: string;
-    owner: string;
+    assignedTo: string;
     name: string;
-    timestamp: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace AssetTransferredEvent {
-  export type InputTuple = [
-    tokenId: BigNumberish,
-    from: AddressLike,
-    to: AddressLike,
-    timestamp: BigNumberish
-  ];
-  export type OutputTuple = [
-    tokenId: bigint,
-    from: string,
-    to: string,
-    timestamp: bigint
-  ];
-  export interface OutputObject {
-    tokenId: bigint;
-    from: string;
-    to: string;
     timestamp: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
@@ -685,15 +680,15 @@ export namespace AuditRecordedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace BatchMetadataUpdateEvent {
+export namespace CustodianUpdatedEvent {
   export type InputTuple = [
-    _fromTokenId: BigNumberish,
-    _toTokenId: BigNumberish
+    oldCustodian: AddressLike,
+    newCustodian: AddressLike
   ];
-  export type OutputTuple = [_fromTokenId: bigint, _toTokenId: bigint];
+  export type OutputTuple = [oldCustodian: string, newCustodian: string];
   export interface OutputObject {
-    _fromTokenId: bigint;
-    _toTokenId: bigint;
+    oldCustodian: string;
+    newCustodian: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -737,18 +732,6 @@ export namespace IdentityVerifiedEvent {
     did: string;
     verifier: string;
     timestamp: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace MetadataUpdateEvent {
-  export type InputTuple = [_tokenId: BigNumberish];
-  export type OutputTuple = [_tokenId: bigint];
-  export interface OutputObject {
-    _tokenId: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -864,6 +847,40 @@ export namespace RoleRevokedCustomEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
+export namespace SecurityAlertEvent {
+  export type InputTuple = [
+    alertId: BigNumberish,
+    actor: AddressLike,
+    action: string,
+    resourceType: string,
+    resourceId: string,
+    reason: string,
+    timestamp: BigNumberish
+  ];
+  export type OutputTuple = [
+    alertId: bigint,
+    actor: string,
+    action: string,
+    resourceType: string,
+    resourceId: string,
+    reason: string,
+    timestamp: bigint
+  ];
+  export interface OutputObject {
+    alertId: bigint;
+    actor: string;
+    action: string;
+    resourceType: string;
+    resourceId: string;
+    reason: string;
+    timestamp: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export namespace TransferEvent {
   export type InputTuple = [
     from: AddressLike,
@@ -937,19 +954,13 @@ export interface SecureChain extends BaseContract {
 
   MINTER_ROLE: TypedContractMethod<[], [string], "view">;
 
-  allocateAsset: TypedContractMethod<
-    [tokenId: BigNumberish, to: AddressLike],
-    [boolean],
-    "nonpayable"
-  >;
-
   approve: TypedContractMethod<
     [to: AddressLike, tokenId: BigNumberish],
     [void],
     "nonpayable"
   >;
 
-  assetTransferHistory: TypedContractMethod<
+  assetAssignmentHistory: TypedContractMethod<
     [arg0: BigNumberish, arg1: BigNumberish],
     [string],
     "view"
@@ -969,6 +980,8 @@ export interface SecureChain extends BaseContract {
         string,
         bigint,
         bigint,
+        string,
+        bigint,
         string
       ] & {
         tokenId: bigint;
@@ -978,13 +991,21 @@ export interface SecureChain extends BaseContract {
         category: string;
         metadataURI: string;
         creator: string;
-        currentOwner: string;
+        assignedTo: string;
         createdAt: bigint;
         status: bigint;
         mintTxHash: string;
+        assignedAt: bigint;
+        assignedBy: string;
       }
     ],
     "view"
+  >;
+
+  assignAsset: TypedContractMethod<
+    [tokenId: BigNumberish, to: AddressLike],
+    [boolean],
+    "nonpayable"
   >;
 
   assignRole: TypedContractMethod<
@@ -1053,15 +1074,9 @@ export interface SecureChain extends BaseContract {
     "view"
   >;
 
-  getAssetTransferHistory: TypedContractMethod<
+  getAssetAssignmentHistory: TypedContractMethod<
     [tokenId: BigNumberish],
     [string[]],
-    "view"
-  >;
-
-  getAssetsByCategory: TypedContractMethod<
-    [category: string],
-    [bigint[]],
     "view"
   >;
 
@@ -1073,6 +1088,8 @@ export interface SecureChain extends BaseContract {
     "view"
   >;
 
+  getCustodian: TypedContractMethod<[], [string], "view">;
+
   getIdentity: TypedContractMethod<
     [did: string],
     [SecureChain.IdentityStructOutput],
@@ -1081,7 +1098,11 @@ export interface SecureChain extends BaseContract {
 
   getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
 
-  getUserAssets: TypedContractMethod<[user: AddressLike], [bigint[]], "view">;
+  getUserAssignedAssets: TypedContractMethod<
+    [user: AddressLike],
+    [bigint[]],
+    "view"
+  >;
 
   getUserDIDs: TypedContractMethod<[user: AddressLike], [string[]], "view">;
 
@@ -1126,7 +1147,7 @@ export interface SecureChain extends BaseContract {
       description: string,
       category: string,
       metadataURI: string,
-      initialOwner: AddressLike
+      initialAssignee: AddressLike
     ],
     [bigint],
     "nonpayable"
@@ -1139,6 +1160,12 @@ export interface SecureChain extends BaseContract {
   renounceRole: TypedContractMethod<
     [role: BytesLike, account: AddressLike],
     [void],
+    "nonpayable"
+  >;
+
+  revokeAssignment: TypedContractMethod<
+    [tokenId: BigNumberish],
+    [boolean],
     "nonpayable"
   >;
 
@@ -1187,12 +1214,6 @@ export interface SecureChain extends BaseContract {
 
   tokenURI: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
 
-  transferAsset: TypedContractMethod<
-    [tokenId: BigNumberish, to: AddressLike],
-    [boolean],
-    "nonpayable"
-  >;
-
   transferFrom: TypedContractMethod<
     [from: AddressLike, to: AddressLike, tokenId: BigNumberish],
     [void],
@@ -1205,7 +1226,13 @@ export interface SecureChain extends BaseContract {
     "nonpayable"
   >;
 
-  userAssets: TypedContractMethod<
+  updateCustodian: TypedContractMethod<
+    [newCustodian: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  userAssignedAssets: TypedContractMethod<
     [arg0: AddressLike, arg1: BigNumberish],
     [bigint],
     "view"
@@ -1242,13 +1269,6 @@ export interface SecureChain extends BaseContract {
     nameOrSignature: "MINTER_ROLE"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: "allocateAsset"
-  ): TypedContractMethod<
-    [tokenId: BigNumberish, to: AddressLike],
-    [boolean],
-    "nonpayable"
-  >;
-  getFunction(
     nameOrSignature: "approve"
   ): TypedContractMethod<
     [to: AddressLike, tokenId: BigNumberish],
@@ -1256,7 +1276,7 @@ export interface SecureChain extends BaseContract {
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "assetTransferHistory"
+    nameOrSignature: "assetAssignmentHistory"
   ): TypedContractMethod<
     [arg0: BigNumberish, arg1: BigNumberish],
     [string],
@@ -1278,6 +1298,8 @@ export interface SecureChain extends BaseContract {
         string,
         bigint,
         bigint,
+        string,
+        bigint,
         string
       ] & {
         tokenId: bigint;
@@ -1287,13 +1309,22 @@ export interface SecureChain extends BaseContract {
         category: string;
         metadataURI: string;
         creator: string;
-        currentOwner: string;
+        assignedTo: string;
         createdAt: bigint;
         status: bigint;
         mintTxHash: string;
+        assignedAt: bigint;
+        assignedBy: string;
       }
     ],
     "view"
+  >;
+  getFunction(
+    nameOrSignature: "assignAsset"
+  ): TypedContractMethod<
+    [tokenId: BigNumberish, to: AddressLike],
+    [boolean],
+    "nonpayable"
   >;
   getFunction(
     nameOrSignature: "assignRole"
@@ -1363,11 +1394,8 @@ export interface SecureChain extends BaseContract {
     "view"
   >;
   getFunction(
-    nameOrSignature: "getAssetTransferHistory"
+    nameOrSignature: "getAssetAssignmentHistory"
   ): TypedContractMethod<[tokenId: BigNumberish], [string[]], "view">;
-  getFunction(
-    nameOrSignature: "getAssetsByCategory"
-  ): TypedContractMethod<[category: string], [bigint[]], "view">;
   getFunction(
     nameOrSignature: "getAuditCount"
   ): TypedContractMethod<[], [bigint], "view">;
@@ -1379,6 +1407,9 @@ export interface SecureChain extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "getCustodian"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "getIdentity"
   ): TypedContractMethod<
     [did: string],
@@ -1389,7 +1420,7 @@ export interface SecureChain extends BaseContract {
     nameOrSignature: "getRoleAdmin"
   ): TypedContractMethod<[role: BytesLike], [string], "view">;
   getFunction(
-    nameOrSignature: "getUserAssets"
+    nameOrSignature: "getUserAssignedAssets"
   ): TypedContractMethod<[user: AddressLike], [bigint[]], "view">;
   getFunction(
     nameOrSignature: "getUserDIDs"
@@ -1441,7 +1472,7 @@ export interface SecureChain extends BaseContract {
       description: string,
       category: string,
       metadataURI: string,
-      initialOwner: AddressLike
+      initialAssignee: AddressLike
     ],
     [bigint],
     "nonpayable"
@@ -1459,6 +1490,9 @@ export interface SecureChain extends BaseContract {
     [void],
     "nonpayable"
   >;
+  getFunction(
+    nameOrSignature: "revokeAssignment"
+  ): TypedContractMethod<[tokenId: BigNumberish], [boolean], "nonpayable">;
   getFunction(
     nameOrSignature: "revokeRole"
   ): TypedContractMethod<
@@ -1509,13 +1543,6 @@ export interface SecureChain extends BaseContract {
     nameOrSignature: "tokenURI"
   ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
   getFunction(
-    nameOrSignature: "transferAsset"
-  ): TypedContractMethod<
-    [tokenId: BigNumberish, to: AddressLike],
-    [boolean],
-    "nonpayable"
-  >;
-  getFunction(
     nameOrSignature: "transferFrom"
   ): TypedContractMethod<
     [from: AddressLike, to: AddressLike, tokenId: BigNumberish],
@@ -1526,7 +1553,10 @@ export interface SecureChain extends BaseContract {
     nameOrSignature: "unfreezeAsset"
   ): TypedContractMethod<[tokenId: BigNumberish], [boolean], "nonpayable">;
   getFunction(
-    nameOrSignature: "userAssets"
+    nameOrSignature: "updateCustodian"
+  ): TypedContractMethod<[newCustodian: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "userAssignedAssets"
   ): TypedContractMethod<
     [arg0: AddressLike, arg1: BigNumberish],
     [bigint],
@@ -1558,11 +1588,11 @@ export interface SecureChain extends BaseContract {
     ApprovalForAllEvent.OutputObject
   >;
   getEvent(
-    key: "AssetAllocated"
+    key: "AssetAssigned"
   ): TypedContractEvent<
-    AssetAllocatedEvent.InputTuple,
-    AssetAllocatedEvent.OutputTuple,
-    AssetAllocatedEvent.OutputObject
+    AssetAssignedEvent.InputTuple,
+    AssetAssignedEvent.OutputTuple,
+    AssetAssignedEvent.OutputObject
   >;
   getEvent(
     key: "AssetMinted"
@@ -1572,13 +1602,6 @@ export interface SecureChain extends BaseContract {
     AssetMintedEvent.OutputObject
   >;
   getEvent(
-    key: "AssetTransferred"
-  ): TypedContractEvent<
-    AssetTransferredEvent.InputTuple,
-    AssetTransferredEvent.OutputTuple,
-    AssetTransferredEvent.OutputObject
-  >;
-  getEvent(
     key: "AuditRecorded"
   ): TypedContractEvent<
     AuditRecordedEvent.InputTuple,
@@ -1586,11 +1609,11 @@ export interface SecureChain extends BaseContract {
     AuditRecordedEvent.OutputObject
   >;
   getEvent(
-    key: "BatchMetadataUpdate"
+    key: "CustodianUpdated"
   ): TypedContractEvent<
-    BatchMetadataUpdateEvent.InputTuple,
-    BatchMetadataUpdateEvent.OutputTuple,
-    BatchMetadataUpdateEvent.OutputObject
+    CustodianUpdatedEvent.InputTuple,
+    CustodianUpdatedEvent.OutputTuple,
+    CustodianUpdatedEvent.OutputObject
   >;
   getEvent(
     key: "IdentityCreated"
@@ -1605,13 +1628,6 @@ export interface SecureChain extends BaseContract {
     IdentityVerifiedEvent.InputTuple,
     IdentityVerifiedEvent.OutputTuple,
     IdentityVerifiedEvent.OutputObject
-  >;
-  getEvent(
-    key: "MetadataUpdate"
-  ): TypedContractEvent<
-    MetadataUpdateEvent.InputTuple,
-    MetadataUpdateEvent.OutputTuple,
-    MetadataUpdateEvent.OutputObject
   >;
   getEvent(
     key: "RoleAdminChanged"
@@ -1649,6 +1665,13 @@ export interface SecureChain extends BaseContract {
     RoleRevokedCustomEvent.OutputObject
   >;
   getEvent(
+    key: "SecurityAlert"
+  ): TypedContractEvent<
+    SecurityAlertEvent.InputTuple,
+    SecurityAlertEvent.OutputTuple,
+    SecurityAlertEvent.OutputObject
+  >;
+  getEvent(
     key: "Transfer"
   ): TypedContractEvent<
     TransferEvent.InputTuple,
@@ -1679,15 +1702,15 @@ export interface SecureChain extends BaseContract {
       ApprovalForAllEvent.OutputObject
     >;
 
-    "AssetAllocated(uint256,address,address,uint256)": TypedContractEvent<
-      AssetAllocatedEvent.InputTuple,
-      AssetAllocatedEvent.OutputTuple,
-      AssetAllocatedEvent.OutputObject
+    "AssetAssigned(uint256,address,address,address,uint256)": TypedContractEvent<
+      AssetAssignedEvent.InputTuple,
+      AssetAssignedEvent.OutputTuple,
+      AssetAssignedEvent.OutputObject
     >;
-    AssetAllocated: TypedContractEvent<
-      AssetAllocatedEvent.InputTuple,
-      AssetAllocatedEvent.OutputTuple,
-      AssetAllocatedEvent.OutputObject
+    AssetAssigned: TypedContractEvent<
+      AssetAssignedEvent.InputTuple,
+      AssetAssignedEvent.OutputTuple,
+      AssetAssignedEvent.OutputObject
     >;
 
     "AssetMinted(uint256,string,address,address,string,uint256)": TypedContractEvent<
@@ -1701,17 +1724,6 @@ export interface SecureChain extends BaseContract {
       AssetMintedEvent.OutputObject
     >;
 
-    "AssetTransferred(uint256,address,address,uint256)": TypedContractEvent<
-      AssetTransferredEvent.InputTuple,
-      AssetTransferredEvent.OutputTuple,
-      AssetTransferredEvent.OutputObject
-    >;
-    AssetTransferred: TypedContractEvent<
-      AssetTransferredEvent.InputTuple,
-      AssetTransferredEvent.OutputTuple,
-      AssetTransferredEvent.OutputObject
-    >;
-
     "AuditRecorded(uint256,address,string,string,string,bytes32,uint256,uint256)": TypedContractEvent<
       AuditRecordedEvent.InputTuple,
       AuditRecordedEvent.OutputTuple,
@@ -1723,15 +1735,15 @@ export interface SecureChain extends BaseContract {
       AuditRecordedEvent.OutputObject
     >;
 
-    "BatchMetadataUpdate(uint256,uint256)": TypedContractEvent<
-      BatchMetadataUpdateEvent.InputTuple,
-      BatchMetadataUpdateEvent.OutputTuple,
-      BatchMetadataUpdateEvent.OutputObject
+    "CustodianUpdated(address,address)": TypedContractEvent<
+      CustodianUpdatedEvent.InputTuple,
+      CustodianUpdatedEvent.OutputTuple,
+      CustodianUpdatedEvent.OutputObject
     >;
-    BatchMetadataUpdate: TypedContractEvent<
-      BatchMetadataUpdateEvent.InputTuple,
-      BatchMetadataUpdateEvent.OutputTuple,
-      BatchMetadataUpdateEvent.OutputObject
+    CustodianUpdated: TypedContractEvent<
+      CustodianUpdatedEvent.InputTuple,
+      CustodianUpdatedEvent.OutputTuple,
+      CustodianUpdatedEvent.OutputObject
     >;
 
     "IdentityCreated(string,address,bytes32,uint256)": TypedContractEvent<
@@ -1754,17 +1766,6 @@ export interface SecureChain extends BaseContract {
       IdentityVerifiedEvent.InputTuple,
       IdentityVerifiedEvent.OutputTuple,
       IdentityVerifiedEvent.OutputObject
-    >;
-
-    "MetadataUpdate(uint256)": TypedContractEvent<
-      MetadataUpdateEvent.InputTuple,
-      MetadataUpdateEvent.OutputTuple,
-      MetadataUpdateEvent.OutputObject
-    >;
-    MetadataUpdate: TypedContractEvent<
-      MetadataUpdateEvent.InputTuple,
-      MetadataUpdateEvent.OutputTuple,
-      MetadataUpdateEvent.OutputObject
     >;
 
     "RoleAdminChanged(bytes32,bytes32,bytes32)": TypedContractEvent<
@@ -1820,6 +1821,17 @@ export interface SecureChain extends BaseContract {
       RoleRevokedCustomEvent.InputTuple,
       RoleRevokedCustomEvent.OutputTuple,
       RoleRevokedCustomEvent.OutputObject
+    >;
+
+    "SecurityAlert(uint256,address,string,string,string,string,uint256)": TypedContractEvent<
+      SecurityAlertEvent.InputTuple,
+      SecurityAlertEvent.OutputTuple,
+      SecurityAlertEvent.OutputObject
+    >;
+    SecurityAlert: TypedContractEvent<
+      SecurityAlertEvent.InputTuple,
+      SecurityAlertEvent.OutputTuple,
+      SecurityAlertEvent.OutputObject
     >;
 
     "Transfer(address,address,uint256)": TypedContractEvent<

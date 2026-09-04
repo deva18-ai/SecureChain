@@ -5,7 +5,7 @@
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen)]()
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue)]()
 
-A production-ready platform for **decentralized identity management**, **NFT-based digital asset ownership**, and **immutable audit trails** powered by blockchain technology. Built for Smart India Hackathon 2026 (SIH26125).
+A production-ready platform for **decentralized identity management**, **NFT-based digital asset ownership with non-transferable assignments**, and **immutable audit trails** powered by blockchain technology. Built for Smart India Hackathon 2026 (SIH26125).
 
 ## 🎯 Problem Statement
 
@@ -14,10 +14,21 @@ Organizations need a secure, tamper-resistant way to manage:
 - **Decentralized identifiers (DIDs)** following W3C standards
 - **Role-based access control** (Admin, Manager, Auditor, User)
 - **Digital asset ownership** via ERC-721 NFTs
-- **Authorized asset allocation** and **ownership transfers**
+- **Authorized asset assignment** — **Users CANNOT transfer assigned assets**
 - **Immutable audit trails** for all critical operations
 
 The blockchain provides trust and tamper resistance for critical operations.
+
+## 🔐 **Core Security Principle**
+
+> **AN EMPLOYEE / USER MUST NEVER BE ABLE TO TRANSFER AN ASSET ASSIGNED TO THEM.**
+
+This is enforced at the **smart contract level** (ERC-721 overrides), not just frontend/backend:
+- Asset assignment ≠ ERC-721 ownership transfer
+- The contract retains ERC-721 ownership (custodian model)
+- Only ADMIN/MANAGER can assign/reassign assets
+- All ERC-721 transfer functions (`transferFrom`, `safeTransferFrom`, `approve`, `setApprovalForAll`) are **blocked** for assigned users
+- Security alerts emitted on every unauthorized attempt
 
 ## ✨ Features
 
@@ -28,20 +39,21 @@ The blockchain provides trust and tamper resistance for critical operations.
 - On-chain identity verification
 - Identity creation and verification events
 
-### 🎨 NFT Digital Assets (ERC-721)
+### 🎨 NFT Digital Assets (ERC-721) — **Non-Transferable Assignments**
 - Mint assets with metadata (IPFS URIs)
 - Asset categories and descriptions
-- Ownership tracking on-chain
-- Transfer history immutable on blockchain
-- Asset status management (Active, Transferred, Burned, Frozen)
+- **Assignment tracking** (separate from ERC-721 ownership)
+- Assignment history immutable on blockchain
+- Asset status management (Active, Assigned/Reassigned, Burned, Frozen)
+- **Users CANNOT transfer, approve, or set operators for assigned assets**
 
 ### 🛡️ Role-Based Access Control (RBAC)
 | Role | Permissions |
 |------|-------------|
-| **ADMIN** | Full system access, user management, role assignment, identity creation, asset minting, system config |
-| **MANAGER** | Asset management, allocation, transfer approval, audit viewing |
-| **AUDITOR** | Read-only audit access, blockchain verification, ownership history, identity proofs |
-| **USER** | Own identity, own assets, transfer requests, activity view |
+| **ADMIN** | Full system access, user management, role assignment, identity creation, asset minting, system config, asset assignment/revocation |
+| **MANAGER** | Asset management, assignment/revocation, audit viewing, security event monitoring |
+| **AUDITOR** | Read-only audit access, blockchain verification, ownership history, identity proofs, security event viewing |
+| **USER** | Own identity, view assigned assets, activity view — **NO TRANSFER RIGHTS** |
 
 ### 📋 Immutable Audit Trail
 - Every critical operation logged
@@ -50,9 +62,17 @@ The blockchain provides trust and tamper resistance for critical operations.
 - Tamper-evident records
 - Auditor verification interface
 
+### 🚨 Security Event System
+- Automatic logging of unauthorized transfer attempts
+- Unauthorized approve/operator attempts detected
+- Repeated failed authentication tracking
+- Unauthorized API access detection
+- Admin/Manager resolution workflow
+
 ### ⛓️ Blockchain Integration
 - Hardhat local development network
-- OpenZeppelin secure contracts
+- Ethereum Sepolia testnet support
+- OpenZeppelin secure contracts (v5)
 - MetaMask wallet integration
 - Real-time transaction monitoring
 - Event parsing and indexing
@@ -74,7 +94,8 @@ The blockchain provides trust and tamper resistance for critical operations.
          ▼                       ▼                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                      PostgreSQL Database                        │
-│  users • dids • assets • transfers • audit_logs • blockchain_txs │
+│  users • dids • assets • transfers • audit_logs • blockchain_txs│
+│  security_events                                                │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -141,7 +162,8 @@ securechain/
 │   │   ├── auth/             # Authentication
 │   │   ├── blockchain/       # Blockchain service
 │   │   ├── did/              # DID service
-│   │   └── audit/            # Audit service
+│   │   ├── audit/            # Audit service
+│   │   └── security/         # Security event service
 │   ├── requirements.txt
 │   ├── .env.example
 │   └── tests/                # Pytest tests
@@ -219,6 +241,10 @@ VITE_NETWORK_NAME=Hardhat Localhost
 PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 RPC_URL=http://127.0.0.1:8545
 CONTRACT_ADDRESS=  # Filled after deployment
+
+# Sepolia Testnet (optional)
+SEPOLIA_RPC_URL=
+ETHERSCAN_API_KEY=
 ```
 
 ## 🔑 Hardhat Default Accounts (for MetaMask)
@@ -348,13 +374,12 @@ python ../seed.py
 8. **Create DID** for a user
 9. **Verify Identity** on blockchain
 10. **Assign Manager role** to a user
-11. **Mint NFT Asset** with metadata
-12. **Allocate Asset** to user
-13. **Login as User** to view asset
-14. **Initiate Transfer** to another user
-15. **Login as Manager** to approve transfer
-16. **Login as Auditor** to verify transaction on blockchain
-17. **View Immutable Audit Trail** with blockchain verification
+11. **Mint NFT Asset** with metadata (assigns to initial user)
+12. **User views assigned asset** — **cannot transfer it**
+13. **Admin/Manager reassigns asset** to another user via `assignAsset`
+14. **Login as Auditor** to verify transaction on blockchain
+15. **View Immutable Audit Trail** with blockchain verification
+16. **Check Security Events** for any unauthorized attempts
 
 ## 🔌 Key API Endpoints
 
@@ -390,16 +415,22 @@ python ../seed.py
 | GET | `/api/v1/assets` | JWT | Any |
 | GET | `/api/v1/assets/{id}` | JWT | Any |
 | POST | `/api/v1/assets/{id}/allocate` | JWT | Admin/Manager |
-| POST | `/api/v1/assets/{id}/transfer` | JWT | Owner/Admin/Manager |
+| POST | `/api/v1/assets/{id}/revoke` | JWT | Admin/Manager |
 
-### Transfers
+### Transfers (Assignment History)
 | Method | Endpoint | Auth | Role |
 |--------|----------|------|------|
-| POST | `/api/v1/transfers` | JWT | User |
 | GET | `/api/v1/transfers` | JWT | Any |
-| POST | `/api/v1/transfers/{id}/approve` | JWT | Admin/Manager |
-| POST | `/api/v1/transfers/{id}/reject` | JWT | Admin/Manager |
+| GET | `/api/v1/transfers/{id}` | JWT | Any |
 | POST | `/api/v1/transfers/{id}/cancel` | JWT | Initiator/Admin |
+
+### Security Events
+| Method | Endpoint | Auth | Role |
+|--------|----------|------|------|
+| GET | `/api/v1/security` | JWT | Admin/Auditor |
+| GET | `/api/v1/security/stats` | JWT | Admin/Auditor |
+| GET | `/api/v1/security/{id}` | JWT | Admin/Auditor |
+| POST | `/api/v1/security/{id}/resolve` | JWT | Admin/Manager |
 
 ### Audit Trail (Auditor)
 | Method | Endpoint | Auth | Role |
@@ -427,20 +458,30 @@ createIdentity(did, wallet, identityHash)     // Admin
 verifyIdentity(did)                            // Identity Verifier
 getIdentity(did)                               // View
 
-// Assets (ERC-721)
-mintAsset(assetId, name, desc, category, uri, owner)  // Minter
-allocateAsset(tokenId, to)                       // Manager
-transferAsset(tokenId, to)                       // Owner/Manager/Admin
-burnAsset(tokenId)                               // Owner/Admin
-freezeAsset(tokenId)                             // Admin
+// Assets (ERC-721 with Non-Transferable Assignments)
+mintAsset(assetId, name, desc, category, uri, initialAssignee)  // Minter
+assignAsset(tokenId, to)                        // Manager/Admin
+revokeAssignment(tokenId)                       // Manager/Admin
+getAsset(tokenId)                               // View
+getUserAssignedAssets(user)                     // View
+getAssetAssignmentHistory(tokenId)              // View
+getCustodian()                                  // View
 
 // Roles
-assignRole(account, role)                        // Admin
-revokeRole(account, role)                        // Admin
+assignRole(account, role)                       // Admin
+revokeRoleFromAccount(account, role)            // Admin
+
+// Asset Lifecycle (Admin only)
+burnAsset(tokenId)
+freezeAsset(tokenId)
+unfreezeAsset(tokenId)
+
+// Custodian
+updateCustodian(newCustodian)                   // Admin
 
 // Audit
-getAuditRecord(auditId)                          // Auditor
-getAuditCount()                                  // Auditor
+getAuditRecord(auditId)                         // Auditor
+getAuditCount()                                 // Auditor
 ```
 
 ## 📦 Smart Contract Events (for Indexing)
@@ -448,12 +489,13 @@ getAuditCount()                                  // Auditor
 ```solidity
 IdentityCreated(did, wallet, identityHash, timestamp)
 IdentityVerified(did, verifier, timestamp)
-AssetMinted(tokenId, assetId, creator, owner, name, timestamp)
-AssetAllocated(tokenId, from, to, timestamp)
-AssetTransferred(tokenId, from, to, timestamp)
+AssetMinted(tokenId, assetId, creator, assignedTo, name, timestamp)
+AssetAssigned(tokenId, from, to, assignedBy, timestamp)
 RoleAssigned(account, role, assigner, timestamp)
-RoleRevoked(account, role, revoker, timestamp)
+RoleRevokedCustom(account, role, revoker, timestamp)
 AuditRecorded(auditId, actor, action, resourceType, resourceId, role, blockNumber, timestamp)
+SecurityAlert(alertId, actor, action, resourceType, resourceId, reason, timestamp)
+CustodianUpdated(oldCustodian, newCustodian)
 ```
 
 ## 🧪 Testing
@@ -512,6 +554,7 @@ docker-compose restart backend
 - [ ] Security headers implemented
 - [ ] Dependency vulnerability scan passed (`npm audit`, `safety check`)
 - [ ] Smart contract audit completed (if mainnet)
+- [ ] **Non-transferable assignment enforcement verified on-chain**
 
 ## 📚 Documentation
 

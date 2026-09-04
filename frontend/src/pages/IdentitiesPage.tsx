@@ -6,14 +6,13 @@ import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 import { Table } from '../components/ui/Table';
 import { Modal } from '../components/ui/Modal';
-import { Toast } from '../components/ui/Toast';
 import { useDids, useCreateDID, useVerifyDID, useMyDid } from '../hooks/useApi';
-import { formatAddress, formatDate, getStatusColor, formatTxHash } from '../utils/helpers';
+import { formatAddress, formatDate, formatTxHash } from '../utils/helpers';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
 export default function IdentitiesPage() {
-  const { user, hasRole } = useAuth();
+  const { hasRole } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [verifiedFilter, setVerifiedFilter] = useState<boolean | undefined>(undefined);
@@ -68,15 +67,15 @@ export default function IdentitiesPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-dark-900 dark:text-white">Decentralized Identifiers</h1>
-            <p className="text-dark-600 dark:text-dark-400">Manage DIDs and identity verification</p>
+            <h1 className="text-2xl font-heading font-bold text-cyber-text">Decentralized Identifiers</h1>
+            <p className="text-cyber-textMuted">Manage DIDs and identity verification</p>
           </div>
         </div>
         <Card className="p-6 animate-pulse">
-          <div className="h-4 w-48 bg-dark-200 dark:bg-dark-700 rounded mb-4" />
+          <div className="h-4 w-48 bg-cyber-elevated rounded mb-4" />
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-dark-100 dark:bg-dark-800 rounded" />
+              <div key={i} className="h-16 bg-cyber-elevated/50 rounded" />
             ))}
           </div>
         </Card>
@@ -92,8 +91,8 @@ export default function IdentitiesPage() {
     <div className="space-y-6 animate-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-dark-900 dark:text-white">Decentralized Identifiers</h1>
-          <p className="text-dark-600 dark:text-dark-400">Manage DIDs and cryptographic identity verification</p>
+          <h1 className="text-2xl font-heading font-bold text-cyber-text">Decentralized Identifiers</h1>
+          <p className="text-cyber-textMuted">Manage DIDs and cryptographic identity verification</p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" onClick={() => refetch()} size="sm">
@@ -110,15 +109,15 @@ export default function IdentitiesPage() {
       </div>
 
       {myDid && !isAdminOrManager && (
-        <Card className="p-4 border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20">
+        <Card className="p-4 border-cyber-primary/30 bg-cyber-primary/5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                <CheckCircle className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+              <div className="w-12 h-12 rounded-xl bg-cyber-primary/10 flex items-center justify-center">
+                <CheckCircle className="h-6 w-6 text-cyber-primary" />
               </div>
               <div>
-                <p className="font-medium text-dark-900 dark:text-white">Your DID</p>
-                <p className="font-mono text-sm text-primary-600 dark:text-primary-400">{myDid.did}</p>
+                <p className="font-medium text-cyber-text">Your DID</p>
+                <p className="font-mono text-sm text-cyber-primary">{myDid.did}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -126,7 +125,7 @@ export default function IdentitiesPage() {
                 {myDid.verified ? 'Verified' : 'Pending Verification'}
               </Badge>
               {myDid.blockchain_tx_hash && (
-                <span className="text-xs text-dark-500 dark:text-dark-400 font-mono">
+                <span className="text-xs text-cyber-textMuted font-mono">
                   {formatTxHash(myDid.blockchain_tx_hash)}
                 </span>
               )}
@@ -136,7 +135,7 @@ export default function IdentitiesPage() {
       )}
 
       <Card>
-        <div className="p-4 border-b border-dark-200 dark:border-dark-700 flex flex-col sm:flex-row gap-4">
+        <div className="p-4 border-b border-cyber-border flex flex-col sm:flex-row gap-4">
           <div className="flex-1 max-w-md">
             <Input
               placeholder="Search DIDs..."
@@ -146,7 +145,7 @@ export default function IdentitiesPage() {
             />
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-sm text-dark-600 dark:text-dark-400">Status:</label>
+            <label className="text-sm text-cyber-textMuted">Status:</label>
             <select
               value={verifiedFilter === true ? 'verified' : verifiedFilter === false ? 'unverified' : 'all'}
               onChange={(e) => {
@@ -154,7 +153,7 @@ export default function IdentitiesPage() {
                 setVerifiedFilter(val === 'verified' ? true : val === 'unverified' ? false : undefined);
                 setPage(1);
               }}
-              className="px-3 py-2 rounded-lg border border-dark-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-white text-sm"
+              className="px-3 py-2 rounded-lg border border-cyber-border bg-cyber-elevated text-cyber-text text-sm"
             >
               <option value="all">All</option>
               <option value="verified">Verified</option>
@@ -179,7 +178,7 @@ export default function IdentitiesPage() {
             <tbody>
               {dids.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-12 text-dark-500 dark:text-dark-400">
+                  <td colSpan={7} className="text-center py-12 text-cyber-textMuted">
                     <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>No DIDs found</p>
                   </td>
@@ -195,14 +194,14 @@ export default function IdentitiesPage() {
                         {did.verified ? 'Verified' : 'Pending'}
                       </Badge>
                     </td>
-                    <td className="text-sm text-dark-600 dark:text-dark-400">{formatDate(did.created_at)}</td>
+                    <td className="text-sm text-cyber-textMuted">{formatDate(did.created_at)}</td>
                     <td>
                       {did.blockchain_tx_hash ? (
-                        <span className="font-mono text-xs text-green-600 dark:text-green-400">
+                        <span className="font-mono text-xs text-cyber-success">
                           {formatTxHash(did.blockchain_tx_hash)}
                         </span>
                       ) : (
-                        <span className="text-xs text-dark-500 dark:text-dark-400">Not on-chain</span>
+                        <span className="text-xs text-cyber-textMuted">Not on-chain</span>
                       )}
                     </td>
                     <td className="text-right">
@@ -231,8 +230,8 @@ export default function IdentitiesPage() {
         </div>
 
         {totalPages > 1 && (
-          <div className="p-4 border-t border-dark-200 dark:border-dark-700 flex items-center justify-between">
-            <p className="text-sm text-dark-600 dark:text-dark-400">
+          <div className="p-4 border-t border-cyber-border flex items-center justify-between">
+            <p className="text-sm text-cyber-textMuted">
               Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, total)} of {total} DIDs
             </p>
             <div className="flex items-center gap-2">
@@ -249,7 +248,7 @@ export default function IdentitiesPage() {
 
       <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Create New DID">
         <div className="space-y-4">
-          <p className="text-dark-600 dark:text-dark-400">
+          <p className="text-cyber-textMuted">
             This will create a new decentralized identifier (DID) for your account.
             The DID will be registered on-chain if a wallet is connected.
           </p>
@@ -268,45 +267,45 @@ export default function IdentitiesPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-dark-500 dark:text-dark-400">DID</p>
+                <p className="text-sm text-cyber-textMuted">DID</p>
                 <p className="font-mono text-sm break-all">{selectedDid.did}</p>
               </div>
               <div>
-                <p className="text-sm text-dark-500 dark:text-dark-400">Wallet Address</p>
+                <p className="text-sm text-cyber-textMuted">Wallet Address</p>
                 <p className="font-mono text-sm">{formatAddress(selectedDid.wallet_address)}</p>
               </div>
               <div>
-                <p className="text-sm text-dark-500 dark:text-dark-400">Identity Hash</p>
+                <p className="text-sm text-cyber-textMuted">Identity Hash</p>
                 <p className="font-mono text-xs break-all">{selectedDid.identity_hash}</p>
               </div>
               <div>
-                <p className="text-sm text-dark-500 dark:text-dark-400">Status</p>
+                <p className="text-sm text-cyber-textMuted">Status</p>
                 <Badge variant={selectedDid.verified ? 'success' : 'warning'}>
                   {selectedDid.verified ? 'Verified' : 'Pending Verification'}
                 </Badge>
               </div>
               <div>
-                <p className="text-sm text-dark-500 dark:text-dark-400">Created</p>
-                <p className="text-sm text-dark-900 dark:text-white">{formatDate(selectedDid.created_at)}</p>
+                <p className="text-sm text-cyber-textMuted">Created</p>
+                <p className="text-sm text-cyber-text">{formatDate(selectedDid.created_at)}</p>
               </div>
               <div>
-                <p className="text-sm text-dark-500 dark:text-dark-400">Verified At</p>
-                <p className="text-sm text-dark-900 dark:text-white">{selectedDid.verified_at ? formatDate(selectedDid.verified_at) : 'Not verified'}</p>
+                <p className="text-sm text-cyber-textMuted">Verified At</p>
+                <p className="text-sm text-cyber-text">{selectedDid.verified_at ? formatDate(selectedDid.verified_at) : 'Not verified'}</p>
               </div>
               {selectedDid.blockchain_tx_hash && (
                 <div className="col-span-2">
-                  <p className="text-sm text-dark-500 dark:text-dark-400">Blockchain Transaction</p>
-                  <p className="font-mono text-sm text-green-600 dark:text-green-400">{selectedDid.blockchain_tx_hash}</p>
+                  <p className="text-sm text-cyber-textMuted">Blockchain Transaction</p>
+                  <p className="font-mono text-sm text-cyber-success">{selectedDid.blockchain_tx_hash}</p>
                 </div>
               )}
               {selectedDid.blockchain_block_number && (
                 <div>
-                  <p className="text-sm text-dark-500 dark:text-dark-400">Block Number</p>
-                  <p className="text-sm text-dark-900 dark:text-white">{selectedDid.blockchain_block_number.toLocaleString()}</p>
+                  <p className="text-sm text-cyber-textMuted">Block Number</p>
+                  <p className="text-sm text-cyber-text">{selectedDid.blockchain_block_number.toLocaleString()}</p>
                 </div>
               )}
             </div>
-            <div className="flex justify-end gap-3 pt-4 border-t border-dark-200 dark:border-dark-700">
+            <div className="flex justify-end gap-3 pt-4 border-t border-cyber-border">
               <Button variant="outline" onClick={() => setSelectedDid(null)}>Close</Button>
             </div>
           </div>

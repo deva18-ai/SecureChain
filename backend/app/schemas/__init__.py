@@ -324,3 +324,63 @@ class HealthResponse(BaseModel):
     timestamp: datetime
     database: str
     blockchain: str
+
+
+class SecurityEventType(str, Enum):
+    UNAUTHORIZED_TRANSFER_ATTEMPT = "UNAUTHORIZED_TRANSFER_ATTEMPT"
+    UNAUTHORIZED_APPROVE_ATTEMPT = "UNAUTHORIZED_APPROVE_ATTEMPT"
+    UNAUTHORIZED_OPERATOR_ATTEMPT = "UNAUTHORIZED_OPERATOR_ATTEMPT"
+    SUSPICIOUS_ACTIVITY = "SUSPICIOUS_ACTIVITY"
+    REPEATED_FAILED_AUTH = "REPEATED_FAILED_AUTH"
+    UNAUTHORIZED_API_ACCESS = "UNAUTHORIZED_API_ACCESS"
+    ASSET_ASSIGNMENT_CHANGED = "ASSET_ASSIGNMENT_CHANGED"
+    ASSET_STATUS_CHANGED = "ASSET_STATUS_CHANGED"
+    ROLE_ESCALATION_ATTEMPT = "ROLE_ESCALATION_ATTEMPT"
+
+
+class SecurityEventSeverity(str, Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
+
+
+class SecurityEventBase(BaseModel):
+    event_type: SecurityEventType
+    severity: SecurityEventSeverity
+    actor_id: Optional[int] = None
+    actor_address: Optional[str] = None
+    actor_role: Optional[str] = None
+    resource_type: Optional[str] = None
+    resource_id: Optional[str] = None
+    reason: Optional[str] = None
+    blockchain_tx_hash: Optional[str] = None
+    blockchain_block_number: Optional[int] = None
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    request_path: Optional[str] = None
+    request_method: Optional[str] = None
+
+
+class SecurityEventCreate(SecurityEventBase):
+    pass
+
+
+class SecurityEventResponse(SecurityEventBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    resolved: bool
+    resolved_by: Optional[int] = None
+    resolved_at: Optional[datetime] = None
+    resolution_notes: Optional[str] = None
+    created_at: datetime
+
+
+class SecurityEventWithDetails(SecurityEventResponse):
+    actor: Optional[UserResponse] = None
+    resolver: Optional[UserResponse] = None
+
+
+class SecurityEventResolve(BaseModel):
+    resolution_notes: Optional[str] = None

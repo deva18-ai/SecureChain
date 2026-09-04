@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import { Search, Plus, Eye, Box, Loader2, AlertCircle, ArrowRightLeft, Send, Trash2, Lock, Unlock } from 'lucide-react';
+import { Search, Plus, Eye, Loader2, AlertCircle, ArrowRightLeft, Send, Trash2, Lock, Unlock, RotateCcw } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 import { Table } from '../components/ui/Table';
 import { Modal } from '../components/ui/Modal';
-import { useAssets, useCreateAsset, useAllocateAsset, useTransferAsset } from '../hooks/useApi';
+import { useAssets, useCreateAsset, useAllocateAsset, useRevokeAssignment } from '../hooks/useApi';
 import { useUsers } from '../hooks/useApi';
-import { formatAddress, formatDate, getStatusColor, formatTxHash, formatNumber } from '../utils/helpers';
+import { formatAddress, formatDate, formatTxHash, formatNumber } from '../utils/helpers';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
@@ -28,9 +28,8 @@ export default function AssetsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<any>(null);
   const [allocatingId, setAllocatingId] = useState<number | null>(null);
-  const [transferringId, setTransferringId] = useState<number | null>(null);
+  const [revokingId, setRevokingId] = useState<number | null>(null);
   const [allocateOwnerId, setAllocateOwnerId] = useState<number | null>(null);
-  const [transferOwnerId, setTransferOwnerId] = useState<number | null>(null);
 
   const { data: assetsData, isLoading, error, refetch } = useAssets({
     page,
@@ -41,14 +40,13 @@ export default function AssetsPage() {
   });
   const createAssetMutation = useCreateAsset();
   const allocateAssetMutation = useAllocateAsset();
-  const transferAssetMutation = useTransferAsset();
+  const revokeAssignmentMutation = useRevokeAssignment();
   const { data: usersData } = useUsers({ page_size: 100 });
 
   const isAdmin = hasRole(['ADMIN']);
   const isManager = hasRole(['ADMIN', 'MANAGER']);
   const canCreate = isAdmin;
   const canAllocate = isManager;
-  const canTransfer = true;
 
   const handleCreateAsset = async (data: any) => {
     try {
@@ -75,17 +73,16 @@ export default function AssetsPage() {
     }
   };
 
-  const handleTransfer = async (assetId: number, newOwnerId: number) => {
-    setTransferringId(assetId);
+  const handleRevoke = async (assetId: number) => {
+    setRevokingId(assetId);
     try {
-      await transferAssetMutation.mutateAsync({ id: assetId, new_owner_id: newOwnerId });
-      toast.success('Asset transferred successfully');
-      setTransferOwnerId(null);
+      await revokeAssignmentMutation.mutateAsync(assetId);
+      toast.success('Asset assignment revoked successfully');
       refetch();
     } catch (error: any) {
-      toast.error(error?.response?.data?.detail || 'Failed to transfer asset');
+      toast.error(error?.response?.data?.detail || 'Failed to revoke assignment');
     } finally {
-      setTransferringId(null);
+      setRevokingId(null);
     }
   };
 
@@ -100,15 +97,15 @@ export default function AssetsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-dark-900 dark:text-white">Digital Assets (NFTs)</h1>
-            <p className="text-dark-600 dark:text-dark-400">Manage ERC-721 assets and ownership</p>
+            <h1 className="text-2xl font-heading font-bold text-cyber-text">Digital Assets (NFTs)</h1>
+            <p className="text-cyber-textMuted">Manage ERC-721 assets and ownership</p>
           </div>
         </div>
         <Card className="p-6 animate-pulse">
-          <div className="h-4 w-48 bg-dark-200 dark:bg-dark-700 rounded mb-4" />
+          <div className="h-4 w-48 bg-cyber-elevated rounded mb-4" />
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-dark-100 dark:bg-dark-800 rounded" />
+              <div key={i} className="h-16 bg-cyber-elevated/50 rounded" />
             ))}
           </div>
         </Card>
@@ -125,8 +122,8 @@ export default function AssetsPage() {
     <div className="space-y-6 animate-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-dark-900 dark:text-white">Digital Assets (NFTs)</h1>
-          <p className="text-dark-600 dark:text-dark-400">Manage ERC-721 assets and ownership transfers</p>
+          <h1 className="text-2xl font-heading font-bold text-cyber-text">Digital Assets (NFTs)</h1>
+          <p className="text-cyber-textMuted">Manage ERC-721 assets and assignments</p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" onClick={() => refetch()} size="sm">
@@ -143,7 +140,7 @@ export default function AssetsPage() {
       </div>
 
       <Card>
-        <div className="p-4 border-b border-dark-200 dark:border-dark-700 flex flex-col sm:flex-row gap-4">
+        <div className="p-4 border-b border-cyber-border flex flex-col sm:flex-row gap-4">
           <div className="flex-1 max-w-md">
             <Input
               placeholder="Search assets..."
@@ -153,11 +150,11 @@ export default function AssetsPage() {
             />
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <label className="text-sm text-dark-600 dark:text-dark-400">Status:</label>
+            <label className="text-sm text-cyber-textMuted">Status:</label>
             <select
               value={statusFilter || 'all'}
               onChange={(e) => { const val = e.target.value; setStatusFilter(val === 'all' ? undefined : val); setPage(1); }}
-              className="px-3 py-2 rounded-lg border border-dark-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-white text-sm"
+              className="px-3 py-2 rounded-lg border border-cyber-border bg-cyber-elevated text-cyber-text text-sm"
             >
               <option value="all">All</option>
               <option value="ACTIVE">Active</option>
@@ -165,11 +162,11 @@ export default function AssetsPage() {
               <option value="BURNED">Burned</option>
               <option value="FROZEN">Frozen</option>
             </select>
-            <label className="text-sm text-dark-600 dark:text-dark-400">Category:</label>
+            <label className="text-sm text-cyber-textMuted">Category:</label>
             <select
               value={categoryFilter || 'all'}
               onChange={(e) => { const val = e.target.value; setCategoryFilter(val === 'all' ? undefined : val); setPage(1); }}
-              className="px-3 py-2 rounded-lg border border-dark-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-white text-sm"
+              className="px-3 py-2 rounded-lg border border-cyber-border bg-cyber-elevated text-cyber-text text-sm"
             >
               <option value="all">All</option>
               {categories.map((cat) => (
@@ -197,7 +194,7 @@ export default function AssetsPage() {
             <tbody>
               {assets.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-12 text-dark-500 dark:text-dark-400">
+                  <td colSpan={9} className="text-center py-12 text-cyber-textMuted">
                     <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>No assets found</p>
                   </td>
@@ -207,16 +204,16 @@ export default function AssetsPage() {
                   <tr key={asset.id}>
                     <td className="font-mono text-sm">{asset.token_id || '-'}</td>
                     <td className="font-mono text-sm">{asset.asset_id}</td>
-                    <td className="font-medium text-dark-900 dark:text-white">{asset.name}</td>
-                    <td className="text-sm text-dark-600 dark:text-dark-400">{asset.category}</td>
+                    <td className="font-medium text-cyber-text">{asset.name}</td>
+                    <td className="text-sm text-cyber-textMuted">{asset.category}</td>
                     <td>
                       {asset.owner ? (
                         <div>
-                          <p className="font-medium text-dark-900 dark:text-white">{asset.owner.full_name}</p>
-                          <p className="text-xs text-dark-500 dark:text-dark-400 font-mono">{formatAddress(asset.owner.wallet_address || '')}</p>
+                          <p className="font-medium text-cyber-text">{asset.owner.full_name}</p>
+                          <p className="text-xs text-cyber-textMuted font-mono">{formatAddress(asset.owner.wallet_address || '')}</p>
                         </div>
                       ) : (
-                        <span className="text-sm text-dark-500 dark:text-dark-400">Unassigned</span>
+                        <span className="text-sm text-cyber-textMuted">Unassigned</span>
                       )}
                     </td>
                     <td>
@@ -224,14 +221,14 @@ export default function AssetsPage() {
                         {asset.status}
                       </Badge>
                     </td>
-                    <td className="text-sm text-dark-600 dark:text-dark-400">{formatDate(asset.created_at)}</td>
+                    <td className="text-sm text-cyber-textMuted">{formatDate(asset.created_at)}</td>
                     <td>
                       {asset.blockchain_tx_hash ? (
-                        <span className="font-mono text-xs text-green-600 dark:text-green-400">
+                        <span className="font-mono text-xs text-cyber-success">
                           {formatTxHash(asset.blockchain_tx_hash)}
                         </span>
                       ) : (
-                        <span className="text-xs text-dark-500 dark:text-dark-400">Not on-chain</span>
+                        <span className="text-xs text-cyber-textMuted">Not on-chain</span>
                       )}
                     </td>
                     <td className="text-right">
@@ -247,16 +244,18 @@ export default function AssetsPage() {
                             loading={allocatingId === asset.id}
                           >
                             <ArrowRightLeft className="h-4 w-4" />
+                            Allocate
                           </Button>
                         )}
-                        {canTransfer && asset.owner_id === user?.id && asset.status !== 'BURNED' && asset.status !== 'FROZEN' && (
+                        {canAllocate && asset.owner_id && (
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setTransferOwnerId(asset.id)}
-                            loading={transferringId === asset.id}
+                            onClick={() => handleRevoke(asset.id)}
+                            loading={revokingId === asset.id}
                           >
-                            <Send className="h-4 w-4" />
+                            <RotateCcw className="h-4 w-4" />
+                            Revoke
                           </Button>
                         )}
                         {isAdmin && asset.status !== 'BURNED' && asset.status !== 'FROZEN' && (
@@ -264,7 +263,6 @@ export default function AssetsPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => {
-                              // Burn action would go here
                               toast('Burn functionality coming soon');
                             }}
                           >
@@ -276,7 +274,6 @@ export default function AssetsPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => {
-                              // Freeze action would go here
                               toast('Freeze functionality coming soon');
                             }}
                           >
@@ -293,8 +290,8 @@ export default function AssetsPage() {
         </div>
 
         {totalPages > 1 && (
-          <div className="p-4 border-t border-dark-200 dark:border-dark-700 flex items-center justify-between">
-            <p className="text-sm text-dark-600 dark:text-dark-400">
+          <div className="p-4 border-t border-cyber-border flex items-center justify-between">
+            <p className="text-sm text-cyber-textMuted">
               Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, total)} of {total} assets
             </p>
             <div className="flex items-center gap-2">
@@ -326,17 +323,6 @@ export default function AssetsPage() {
           onCancel={() => setAllocateOwnerId(null)}
           isLoading={allocatingId !== null}
           actionLabel="Allocate"
-        />
-      </Modal>
-
-      <Modal isOpen={transferOwnerId !== null} onClose={() => setTransferOwnerId(null)} title="Transfer Asset" size="lg">
-        <AssetActionForm
-          title="Transfer Asset"
-          users={users}
-          onSubmit={(ownerId) => handleTransfer(transferOwnerId!, ownerId)}
-          onCancel={() => setTransferOwnerId(null)}
-          isLoading={transferringId !== null}
-          actionLabel="Transfer"
         />
       </Modal>
 
@@ -406,11 +392,11 @@ function AssetCreateForm({ users, onSubmit, onCancel, isLoading }: any) {
         required
       />
       <div>
-        <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1.5">Initial Owner</label>
+        <label className="block text-sm font-medium text-cyber-textMuted mb-1.5">Initial Owner</label>
         <select
           value={formData.initial_owner_id}
           onChange={(e) => setFormData({ ...formData, initial_owner_id: e.target.value })}
-          className="w-full px-4 py-2.5 rounded-lg border border-dark-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="w-full px-4 py-2.5 rounded-lg border border-cyber-border bg-cyber-elevated text-cyber-text focus:outline-none focus:ring-2 focus:ring-cyber-primary"
           required
         >
           <option value="">Select owner</option>
@@ -419,7 +405,7 @@ function AssetCreateForm({ users, onSubmit, onCancel, isLoading }: any) {
           ))}
         </select>
       </div>
-      <div className="flex justify-end gap-3 pt-4 border-t border-dark-200 dark:border-dark-700">
+      <div className="flex justify-end gap-3 pt-4 border-t border-cyber-border">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>Cancel</Button>
         <Button type="submit" loading={isLoading}>Mint Asset</Button>
       </div>
@@ -432,15 +418,15 @@ function AssetActionForm({ title, users, onSubmit, onCancel, isLoading, actionLa
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); if (ownerId) onSubmit(parseInt(ownerId)); }} className="space-y-4">
-      <p className="text-dark-600 dark:text-dark-400">
+      <p className="text-cyber-textMuted">
         Select the recipient for this {actionLabel.toLowerCase()} action.
       </p>
       <div>
-        <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1.5">Recipient</label>
+        <label className="block text-sm font-medium text-cyber-textMuted mb-1.5">Recipient</label>
         <select
           value={ownerId}
           onChange={(e) => setOwnerId(e.target.value)}
-          className="w-full px-4 py-2.5 rounded-lg border border-dark-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-dark-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="w-full px-4 py-2.5 rounded-lg border border-cyber-border bg-cyber-elevated text-cyber-text focus:outline-none focus:ring-2 focus:ring-cyber-primary"
           required
         >
           <option value="">Select recipient</option>
@@ -449,7 +435,7 @@ function AssetActionForm({ title, users, onSubmit, onCancel, isLoading, actionLa
           ))}
         </select>
       </div>
-      <div className="flex justify-end gap-3 pt-4 border-t border-dark-200 dark:border-dark-700">
+      <div className="flex justify-end gap-3 pt-4 border-t border-cyber-border">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>Cancel</Button>
         <Button type="submit" loading={isLoading} disabled={!ownerId}>{actionLabel}</Button>
       </div>
@@ -462,61 +448,61 @@ function AssetDetailView({ asset, onClose }: any) {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Token ID</p>
-          <p className="font-mono text-lg font-bold text-dark-900 dark:text-white">{asset.token_id || 'Pending'}</p>
+          <p className="text-sm text-cyber-textMuted">Token ID</p>
+          <p className="font-mono text-2xl font-bold text-cyber-text">{asset.token_id || 'Pending'}</p>
         </div>
         <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Asset ID</p>
+          <p className="text-sm text-cyber-textMuted">Asset ID</p>
           <p className="font-mono text-sm">{asset.asset_id}</p>
         </div>
         <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Name</p>
-          <p className="font-medium text-dark-900 dark:text-white">{asset.name}</p>
+          <p className="text-sm text-cyber-textMuted">Name</p>
+          <p className="font-medium text-cyber-text">{asset.name}</p>
         </div>
         <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Category</p>
-          <p className="text-sm text-dark-900 dark:text-white">{asset.category}</p>
+          <p className="text-sm text-cyber-textMuted">Category</p>
+          <p className="text-sm text-cyber-text">{asset.category}</p>
         </div>
         <div className="col-span-2">
-          <p className="text-sm text-dark-500 dark:text-dark-400">Description</p>
-          <p className="text-sm text-dark-900 dark:text-white">{asset.description || 'No description'}</p>
+          <p className="text-sm text-cyber-textMuted">Description</p>
+          <p className="text-sm text-cyber-text">{asset.description || 'No description'}</p>
         </div>
         <div className="col-span-2">
-          <p className="text-sm text-dark-500 dark:text-dark-400">Metadata URI</p>
+          <p className="text-sm text-cyber-textMuted">Metadata URI</p>
           <p className="font-mono text-xs break-all">{asset.metadata_uri}</p>
         </div>
         <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Creator</p>
-          <p className="text-sm text-dark-900 dark:text-white">{asset.creator?.full_name || 'Unknown'}</p>
+          <p className="text-sm text-cyber-textMuted">Creator</p>
+          <p className="text-sm text-cyber-text">{asset.creator?.full_name || 'Unknown'}</p>
         </div>
         <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Owner</p>
-          <p className="text-sm text-dark-900 dark:text-white">{asset.owner?.full_name || 'Unassigned'}</p>
+          <p className="text-sm text-cyber-textMuted">Owner</p>
+          <p className="text-sm text-cyber-text">{asset.owner?.full_name || 'Unassigned'}</p>
         </div>
         <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Status</p>
+          <p className="text-sm text-cyber-textMuted">Status</p>
           <Badge variant={ASSET_STATUS_COLORS[asset.status] || 'default'}>
             {asset.status}
           </Badge>
         </div>
         <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Created</p>
-          <p className="text-sm text-dark-900 dark:text-white">{formatDate(asset.created_at)}</p>
+          <p className="text-sm text-cyber-textMuted">Created</p>
+          <p className="text-sm text-cyber-text">{formatDate(asset.created_at)}</p>
         </div>
         {asset.blockchain_tx_hash && (
           <div className="col-span-2">
-            <p className="text-sm text-dark-500 dark:text-dark-400">Blockchain Transaction</p>
-            <p className="font-mono text-sm text-green-600 dark:text-green-400">{asset.blockchain_tx_hash}</p>
+            <p className="text-sm text-cyber-textMuted">Blockchain Transaction</p>
+            <p className="font-mono text-sm text-cyber-success">{asset.blockchain_tx_hash}</p>
           </div>
         )}
         {asset.blockchain_block_number && (
           <div>
-            <p className="text-sm text-dark-500 dark:text-dark-400">Block Number</p>
-            <p className="text-sm text-dark-900 dark:text-white">{asset.blockchain_block_number.toLocaleString()}</p>
+            <p className="text-sm text-cyber-textMuted">Block Number</p>
+            <p className="text-sm text-cyber-text">{asset.blockchain_block_number.toLocaleString()}</p>
           </div>
         )}
       </div>
-      <div className="flex justify-end gap-3 pt-4 border-t border-dark-200 dark:border-dark-700">
+      <div className="flex justify-end gap-3 pt-4 border-t border-cyber-border">
         <Button variant="outline" onClick={onClose}>Close</Button>
       </div>
     </div>

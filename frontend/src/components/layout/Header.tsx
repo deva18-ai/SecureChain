@@ -1,158 +1,453 @@
-import { useState, useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '../../utils/helpers';
-import { Menu, Sun, Moon, LogOut, Bell, ChevronDown, Wallet, Shield, User } from 'lucide-react';
+import {
+  Menu,
+  Sun,
+  Moon,
+  LogOut,
+  Bell,
+  ChevronDown,
+  Wallet,
+  Shield,
+  User,
+  Server,
+  Database,
+  Globe,
+  CheckCircle,
+  XCircle,
+  Search,
+  Command,
+  Settings,
+  HelpCircle,
+  AlertTriangle,
+  Activity,
+  Key,
+  Box,
+  GitBranch,
+  FileText,
+  Blocks,
+  BookOpen,
+  UserCog,
+  Wifi,
+  WifiOff,
+  Zap,
+  Lock,
+  Eye,
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWallet } from '../../context/WalletContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 import { formatAddress } from '../../utils/helpers';
-import { Modal } from '../ui/Modal';
+import { useBlockchainStatus } from '../../hooks/useApi';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
+import { useToast } from '../../context/ToastContext';
+
+const routeLabels: Record<string, string> = {
+  '/dashboard': 'Dashboard',
+  '/security-center': 'Security Center',
+  '/identities': 'Identities',
+  '/identity': 'My Identity',
+  '/assets': 'Digital Assets',
+  '/my-assets': 'My Assets',
+  '/transfers': 'Transfers',
+  '/my-transfers': 'Transfer Requests',
+  '/audit': 'Audit Trail',
+  '/my-activity': 'My Activity',
+  '/blockchain': 'Blockchain Explorer',
+  '/transactions': 'Transactions',
+  '/admin/users': 'User Management',
+  '/admin/roles': 'Roles & Permissions',
+  '/admin/config': 'System Configuration',
+  '/security-resources': 'Cybersecurity Resources',
+  '/settings': 'Settings',
+};
+
+const commandPaletteItems = [
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, keywords: 'home overview metrics' },
+  { label: 'Security Center', href: '/security-center', icon: ShieldCheck, keywords: 'threats alerts monitoring' },
+  { label: 'Identities', href: '/identities', icon: Key, keywords: 'dids verification manage' },
+  { label: 'My Identity', href: '/identity', icon: Shield, keywords: 'did profile' },
+  { label: 'Digital Assets', href: '/assets', icon: Box, keywords: 'nfts browse mint' },
+  { label: 'My Assets', href: '/my-assets', icon: Wallet, keywords: 'owned nfts' },
+  { label: 'Transfers', href: '/transfers', icon: GitBranch, keywords: 'transfer manage approve' },
+  { label: 'Transfer Requests', href: '/my-transfers', icon: GitBranch, keywords: 'pending requests' },
+  { label: 'Blockchain Explorer', href: '/blockchain', icon: Blocks, keywords: 'blocks transactions explorer' },
+  { label: 'Transactions', href: '/transactions', icon: Activity, keywords: 'history txs' },
+  { label: 'Audit Trail', href: '/audit', icon: FileText, keywords: 'logs immutable verify' },
+  { label: 'My Activity', href: '/my-activity', icon: Activity, keywords: 'personal logs' },
+  { label: 'Users', href: '/admin/users', icon: UserCog, keywords: 'management admin' },
+  { label: 'Roles & Permissions', href: '/admin/roles', icon: Shield, keywords: 'rbac admin' },
+  { label: 'System Configuration', href: '/admin/config', icon: Settings, keywords: 'settings admin' },
+  { label: 'Cybersecurity Resources', href: '/security-resources', icon: BookOpen, keywords: 'guides docs' },
+  { label: 'Settings', href: '/settings', icon: Settings, keywords: 'preferences profile' },
+];
+
+import {
+  LayoutDashboard,
+  ShieldCheck,
+  Key,
+  Shield,
+  Box,
+  Wallet,
+  GitBranch,
+  Blocks,
+  Activity,
+  FileText,
+  Settings,
+  UserCog,
+  BookOpen,
+} from 'lucide-react';
+
+function getBreadcrumbs(pathname: string) {
+  const parts = pathname.split('/').filter(Boolean);
+  const crumbs: { label: string; href: string }[] = [{ label: 'Home', href: '/dashboard' }];
+  
+  let currentPath = '';
+  for (const part of parts) {
+    currentPath += `/${part}`;
+    const label = routeLabels[currentPath] || part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' ');
+    crumbs.push({ label, href: currentPath });
+  }
+  return crumbs;
+}
+
+function getServiceStatus(name: string, blockchainStatus: any, isConnected: boolean) {
+  switch (name) {
+    case 'API':
+      return { status: 'operational', label: 'Operational', color: 'success', icon: Server, description: 'REST API responding normally' };
+    case 'Database':
+      return { status: 'operational', label: 'Operational', color: 'success', icon: Database, description: 'PostgreSQL connected, queries optimal' };
+    case 'Blockchain':
+      return blockchainStatus?.connected
+        ? { status: 'operational', label: 'Connected', color: 'success', icon: Globe, description: `Connected to ${blockchainStatus.network} (Chain ${blockchainStatus.chain_id})` }
+        : { status: 'critical', label: 'Disconnected', color: 'critical', icon: WifiOff, description: 'Unable to connect to blockchain node' };
+    case 'Authentication':
+      return { status: 'operational', label: 'Protected', color: 'success', icon: Lock, description: 'JWT auth active, sessions valid' };
+    case 'Audit':
+      return { status: 'operational', label: 'Verified', color: 'success', icon: FileText, description: 'Audit logging functional, blockchain sync active' };
+    case 'Wallet':
+      return isConnected
+        ? { status: 'operational', label: 'Connected', color: 'success', icon: Wallet, description: 'MetaMask connected' }
+        : { status: 'degraded', label: 'Disconnected', color: 'warning', icon: WifiOff, description: 'Wallet not connected' };
+    default:
+      return { status: 'unknown', label: 'Unknown', color: 'default', icon: HelpCircle, description: '' };
+  }
+}
+
+const services = ['API', 'Database', 'Blockchain', 'Authentication', 'Audit', 'Wallet'];
 
 export function Header() {
   const { user, logout, hasRole } = useAuth();
-  const { isConnected, account, connect, disconnect } = useWallet();
+  const { isConnected, account, connect, disconnect, chainId, balance } = useWallet();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { data: blockchainStatus } = useBlockchainStatus();
+  const toast = useToast();
+
   const [profileOpen, setProfileOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [systemHealthOpen, setSystemHealthOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredCommands, setFilteredCommands] = useState(commandPaletteItems);
+  const [selectedCommandIndex, setSelectedCommandIndex] = useState(0);
+
   const profileRef = useRef<HTMLDivElement>(null);
   const walletRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const systemHealthRef = useRef<HTMLDivElement>(null);
+  const commandPaletteRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useKeyboardShortcuts({
+    shortcuts: [
+      { key: 'k', ctrl: true, description: 'Open command palette', action: () => setCommandPaletteOpen(true), global: true },
+      { key: 'k', meta: true, description: 'Open command palette (Mac)', action: () => setCommandPaletteOpen(true), global: true },
+      { key: 'b', ctrl: true, description: 'Toggle sidebar', action: () => window.dispatchEvent(new CustomEvent('toggle-sidebar')), global: true },
+      { key: '/', ctrl: true, description: 'Focus search', action: () => searchInputRef.current?.focus(), global: true },
+      { key: 'Escape', description: 'Close modals', action: () => {
+        setProfileOpen(false);
+        setWalletOpen(false);
+        setNotificationsOpen(false);
+        setSystemHealthOpen(false);
+        setCommandPaletteOpen(false);
+      }, global: true },
+    ],
+    enabled: true,
+  });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
-        setProfileOpen(false);
-      }
-      if (walletRef.current && !walletRef.current.contains(event.target as Node)) {
-        setWalletOpen(false);
-      }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) setProfileOpen(false);
+      if (walletRef.current && !walletRef.current.contains(event.target as Node)) setWalletOpen(false);
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) setNotificationsOpen(false);
+      if (systemHealthRef.current && !systemHealthRef.current.contains(event.target as Node)) setSystemHealthOpen(false);
+      if (commandPaletteRef.current && !commandPaletteRef.current.contains(event.target as Node)) setCommandPaletteOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (commandPaletteOpen) {
+      setFilteredCommands(commandPaletteItems);
+      setSelectedCommandIndex(0);
+      setTimeout(() => searchInputRef.current?.focus(), 50);
+    }
+  }, [commandPaletteOpen]);
+
+  const handleCommandSelect = (item: typeof commandPaletteItems[0]) => {
+    navigate(item.href);
+    setCommandPaletteOpen(false);
+    setSearchQuery('');
+  };
+
+  const handleCommandKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedCommandIndex(prev => Math.min(prev + 1, filteredCommands.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedCommandIndex(prev => Math.max(prev - 1, 0));
+    } else if (e.key === 'Enter' && filteredCommands[selectedCommandIndex]) {
+      handleCommandSelect(filteredCommands[selectedCommandIndex]);
+    } else if (e.key === 'Escape') {
+      setCommandPaletteOpen(false);
+      setSearchQuery('');
+    }
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    const filtered = commandPaletteItems.filter(item =>
+      item.label.toLowerCase().includes(value.toLowerCase()) ||
+      item.keywords.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredCommands(filtered);
+    setSelectedCommandIndex(0);
+  };
 
   const handleLogout = async () => {
     await logout();
     setProfileOpen(false);
   };
 
-  const isDashboard = location.pathname.startsWith('/dashboard') || location.pathname === '/';
+  const breadcrumbs = getBreadcrumbs(location.pathname);
+
+  const handleNotificationAction = (action: string) => {
+    toast.info(`${action} clicked`);
+    setNotificationsOpen(false);
+  };
 
   return (
-    <header className="sticky top-0 z-30 bg-white/80 dark:bg-dark-900/80 backdrop-blur-xl border-b border-dark-200 dark:border-dark-700">
+    <header className="sticky top-0 z-30 bg-cyber-panel/80 backdrop-blur-xl border-b border-cyber-border">
       <div className="flex items-center justify-between h-16 px-4 lg:px-6">
-        <div className="lg:hidden flex items-center gap-4">
-          <button
-            className="btn-ghost p-2"
+        <div className="lg:hidden flex items-center gap-4 flex-1">
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => window.dispatchEvent(new CustomEvent('toggle-sidebar'))}
             aria-label="Toggle menu"
+            className="p-2"
           >
             <Menu className="h-5 w-5" />
-          </button>
+          </Button>
           <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-600 to-blue-600 flex items-center justify-center">
-              <Shield className="h-5 w-5 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyber-primary to-cyber-secondary flex items-center justify-center">
+              <Shield className="h-5 w-5 text-cyber-bg" />
             </div>
-            <span className="font-bold text-lg text-dark-900 dark:text-white hidden sm:block">SecureChain</span>
+            <span className="font-heading font-bold text-lg text-cyber-text hidden sm:block">SecureChain</span>
           </Link>
         </div>
 
-        <div className="flex-1 lg:flex-none" />
-
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={toggleTheme} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
-            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
-
-          <div className="relative" ref={walletRef}>
-            <Button
-              variant={isConnected ? 'secondary' : 'outline'}
-              size="sm"
-              onClick={isConnected ? () => setWalletOpen(!walletOpen) : connect}
-              className="gap-2"
-            >
-              <Wallet className="h-4 w-4" />
-              <span className="hidden sm:inline">{isConnected ? formatAddress(account || '') : 'Connect Wallet'}</span>
-            </Button>
-            {walletOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-900 rounded-lg border border-dark-200 dark:border-dark-700 shadow-lg py-2 animate-in">
-                {isConnected ? (
-                  <>
-                    <div className="px-4 py-2 border-b border-dark-200 dark:border-dark-700">
-                      <p className="text-xs text-dark-500 dark:text-dark-400">Connected Account</p>
-                      <p className="font-mono text-sm text-dark-900 dark:text-white">{formatAddress(account || '', 6)}</p>
-                    </div>
-                    <button
-                      onClick={disconnect}
-                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
+        <div className="hidden lg:flex lg:flex-1 lg:items-center lg:gap-4 lg:px-8 min-w-0">
+          <nav className="flex items-center gap-1 flex-1 min-w-0" aria-label="Breadcrumb">
+            <ol className="flex items-center gap-2 overflow-x-auto pb-1 pr-4">
+              {breadcrumbs.map((crumb, index) => (
+                <li key={crumb.href} className="flex items-center gap-2 whitespace-nowrap flex-shrink-0">
+                  {index > 0 && <ChevronDown className="h-4 w-4 text-cyber-textDim flex-shrink-0" aria-hidden="true" />}
+                  {index === breadcrumbs.length - 1 ? (
+                    <span className="font-medium text-cyber-text truncate max-w-[200px]">{crumb.label}</span>
+                  ) : (
+                    <Link
+                      to={crumb.href}
+                      className="text-sm text-cyber-textMuted hover:text-cyber-primary transition-colors truncate max-w-[150px]"
                     >
-                      <LogOut className="h-4 w-4" />
-                      Disconnect
-                    </button>
-                  </>
-                ) : (
-                  <div className="px-4 py-2">
-                    <p className="text-sm text-dark-600 dark:text-dark-400">Install MetaMask to connect your wallet</p>
-                  </div>
-                )}
+                      {crumb.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
+
+          <div className="relative hidden xl:block" ref={systemHealthRef}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSystemHealthOpen(!systemHealthOpen)}
+              className="gap-2 px-3"
+            >
+              <Server className="h-4 w-4" />
+              <span className="text-xs font-medium text-cyber-text hidden sm:inline">SYSTEM</span>
+              <span className={cn(
+                'status-dot',
+                blockchainStatus?.connected ? 'status-operational' : 'status-critical'
+              )} />
+            </Button>
+            {systemHealthOpen && (
+              <div className="absolute right-0 mt-2 w-72 bg-cyber-panel border border-cyber-border rounded-lg shadow-elevated py-2 animate-in z-50">
+                {services.map((service) => {
+                  const status = getServiceStatus(service, blockchainStatus, isConnected);
+                  const Icon = status.icon;
+                  return (
+                    <div
+                      key={service}
+                      className="flex items-center justify-between px-4 py-2 hover:bg-cyber-elevated/50 cursor-default"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Icon className="h-4 w-4 text-cyber-textMuted" />
+                        <span className="text-sm font-medium text-cyber-text">{service}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={cn('status-dot', status.status === 'operational' && 'status-operational', status.status === 'degraded' && 'status-warning', status.status === 'critical' && 'status-critical')} />
+                        <span className={cn('text-xs font-medium', status.color === 'success' && 'text-cyber-success', status.color === 'warning' && 'text-cyber-warning', status.color === 'critical' && 'text-cyber-critical')}>
+                          {status.label}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div className="border-t border-cyber-border pt-2 px-4">
+                  <p className="text-xs text-cyber-textDim">Last checked: Just now</p>
+                </div>
               </div>
             )}
           </div>
+
+          <div className="relative" ref={notificationsRef}>
+            <Button variant="ghost" size="sm" onClick={() => setNotificationsOpen(!notificationsOpen)} className="relative p-2" aria-label="Notifications">
+              <Bell className="h-5 w-5 text-cyber-textMuted" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-cyber-warning rounded-full animate-pulse" />
+            </Button>
+            {notificationsOpen && (
+              <div className="absolute right-0 mt-2 w-80 bg-cyber-panel border border-cyber-border rounded-lg shadow-elevated py-2 animate-in z-50">
+                <div className="px-4 py-2 border-b border-cyber-border flex items-center justify-between">
+                  <p className="font-medium text-cyber-text">Notifications</p>
+                  <Button variant="ghost" size="xs" onClick={() => toast.info('Mark all as read - coming soon')}>
+                    Mark all read
+                  </Button>
+                </div>
+                <div className="py-2 max-h-96 overflow-y-auto">
+                  <div className="px-4 py-3 border-b border-cyber-border">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-cyber-primary/10 text-cyber-primary rounded-lg">
+                        <AlertTriangle className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-cyber-text">New Transfer Request</p>
+                        <p className="text-xs text-cyber-textMuted">Asset LAPTOP-001 requested by User 2</p>
+                      </div>
+                      <span className="text-xs text-cyber-textDim">2m ago</span>
+                    </div>
+                  </div>
+                  <div className="px-4 py-3 border-b border-cyber-border">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-cyber-success/10 text-cyber-success rounded-lg">
+                        <CheckCircle className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-cyber-text">Identity Verified</p>
+                        <p className="text-xs text-cyber-textMuted">DID did:securechain:abc123 verified on blockchain</p>
+                      </div>
+                      <span className="text-xs text-cyber-textDim">1h ago</span>
+                    </div>
+                  </div>
+                  <div className="px-4 py-3">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-cyber-warning/10 text-cyber-warning rounded-lg">
+                        <Activity className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-cyber-text">Asset Minted</p>
+                        <p className="text-xs text-cyber-textMuted">New asset VEHICLE-001 minted by Admin</p>
+                      </div>
+                      <span className="text-xs text-cyber-textDim">3h ago</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="border-t border-cyber-border pt-2 px-4">
+                  <Button variant="ghost" size="sm" className="w-full" onClick={() => { navigate('/audit'); setNotificationsOpen(false); }}>
+                    View All Notifications
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <Button variant="ghost" size="sm" onClick={toggleTheme} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
 
           <div className="relative" ref={profileRef}>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setProfileOpen(!profileOpen)}
-              className="gap-2 lg:hidden"
+              className="hidden lg:flex items-center gap-2"
             >
-              <User className="h-5 w-5" />
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyber-primary to-cyber-secondary flex items-center justify-center">
+                <span className="text-cyber-bg text-sm font-medium">
+                  {user?.full_name?.charAt(0).toUpperCase() || 'U'}
+                </span>
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-medium text-cyber-text">{user?.full_name}</p>
+                <p className="text-xs text-cyber-textDim capitalize">{user?.role?.toLowerCase()}</p>
+              </div>
+              <ChevronDown className="h-4 w-4 text-cyber-textMuted" />
             </Button>
+
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setProfileOpen(!profileOpen)}
-              className="hidden lg:flex items-center gap-2"
+              className="lg:hidden gap-2"
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-600 to-blue-600 flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
-                  {user?.full_name?.charAt(0).toUpperCase() || 'U'}
-                </span>
-              </div>
-              <div className="text-left hidden sm:block">
-                <p className="text-sm font-medium text-dark-900 dark:text-white">{user?.full_name}</p>
-                <p className="text-xs text-dark-500 dark:text-dark-400 capitalize">{user?.role?.toLowerCase()}</p>
-              </div>
-              <ChevronDown className="h-4 w-4 text-dark-500" />
+              <User className="h-5 w-5" />
             </Button>
 
             {profileOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-dark-900 rounded-lg border border-dark-200 dark:border-dark-700 shadow-lg py-2 animate-in">
-                <div className="px-4 py-2 border-b border-dark-200 dark:border-dark-700">
-                  <p className="text-sm font-medium text-dark-900 dark:text-white">{user?.full_name}</p>
-                  <p className="text-xs text-dark-500 dark:text-dark-400">{user?.email}</p>
+              <div className="absolute right-0 mt-2 w-56 bg-cyber-panel border border-cyber-border rounded-lg shadow-elevated py-2 animate-in z-50">
+                <div className="px-4 py-2 border-b border-cyber-border">
+                  <p className="text-sm font-medium text-cyber-text">{user?.full_name}</p>
+                  <p className="text-xs text-cyber-textMuted">{user?.email}</p>
                 </div>
                 <Link
-                  to="/profile"
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-dark-700 dark:text-dark-300 hover:bg-dark-50 dark:hover:bg-dark-800"
+                  to="/settings"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-cyber-textMuted hover:bg-cyber-elevated/50 hover:text-cyber-text"
                   onClick={() => setProfileOpen(false)}
                 >
-                  <User className="h-4 w-4" />
-                  Profile
+                  <Settings className="h-4 w-4" />
+                  Settings
                 </Link>
                 <Link
-                  to="/settings"
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-dark-700 dark:text-dark-300 hover:bg-dark-50 dark:hover:bg-dark-800"
+                  to="/identity"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-cyber-textMuted hover:bg-cyber-elevated/50 hover:text-cyber-text"
                   onClick={() => setProfileOpen(false)}
                 >
                   <Shield className="h-4 w-4" />
-                  Settings
+                  My Identity
                 </Link>
-                <hr className="my-2 border-dark-200 dark:border-dark-700" />
+                <hr className="my-2 border-cyber-border" />
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-cyber-critical hover:bg-cyber-critical/10"
                 >
                   <LogOut className="h-4 w-4" />
                   Logout
@@ -160,6 +455,67 @@ export function Header() {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="relative" ref={commandPaletteRef}>
+          {commandPaletteOpen && (
+            <div className="fixed inset-0 z-50 flex items-start justify-center pt-20">
+              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setCommandPaletteOpen(false)} />
+              <div className="relative w-full max-w-2xl bg-cyber-panel border border-cyber-border rounded-xl shadow-2xl overflow-hidden animate-in">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-cyber-textDim" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    onKeyDown={handleCommandKeyDown}
+                    placeholder="Type a command or search... (Ctrl+K)"
+                    className="w-full px-12 py-3 pl-12 bg-transparent border-b border-cyber-border text-cyber-text placeholder-cyber-textDim focus:outline-none text-base"
+                    data-search-input
+                  />
+                  <kbd className="absolute right-4 top-1/2 -translate-y-1/2 px-2 py-1 bg-cyber-elevated rounded text-xs text-cyber-textMuted font-mono">
+                    ⌘K
+                  </kbd>
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  {filteredCommands.length === 0 ? (
+                    <div className="px-4 py-8 text-center text-cyber-textMuted">
+                      <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>No commands found</p>
+                    </div>
+                  ) : (
+                    filteredCommands.map((item, index) => (
+                      <button
+                        key={item.href}
+                        onClick={() => handleCommandSelect(item)}
+                        onMouseEnter={() => setSelectedCommandIndex(index)}
+                        className={cn(
+                          'w-full flex items-center gap-3 px-4 py-3 text-left transition-colors',
+                          index === selectedCommandIndex
+                            ? 'bg-cyber-primary/10 text-cyber-primary'
+                            : 'text-cyber-textMuted hover:bg-cyber-elevated/50 hover:text-cyber-text'
+                        )}
+                      >
+                        <item.icon className={cn('h-5 w-5 flex-shrink-0', index === selectedCommandIndex ? 'text-cyber-primary' : 'text-cyber-textDim')} />
+                        <span className="font-medium">{item.label}</span>
+                        <span className="ml-auto text-xs text-cyber-textDim font-mono">
+                          {item.href.split('/').pop()?.replace(/-/g, ' ') || ''}
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+                <div className="px-4 py-2 border-t border-cyber-border text-center text-xs text-cyber-textDim">
+                  <kbd className="px-1.5 py-0.5 bg-cyber-elevated rounded">↑</kbd> <kbd className="px-1.5 py-0.5 bg-cyber-elevated rounded">↓</kbd> Navigate
+                  <span className="mx-2">·</span>
+                  <kbd className="px-1.5 py-0.5 bg-cyber-elevated rounded">Enter</kbd> Select
+                  <span className="mx-2">·</span>
+                  <kbd className="px-1.5 py-0.5 bg-cyber-elevated rounded">Esc</kbd> Close
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>

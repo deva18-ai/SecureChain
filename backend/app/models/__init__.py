@@ -33,6 +33,7 @@ class User(Base):
     transfers_initiated: Mapped[list["Transfer"]] = relationship("Transfer", back_populates="initiator", foreign_keys="Transfer.initiator_id")
     transfers_received: Mapped[list["Transfer"]] = relationship("Transfer", back_populates="recipient", foreign_keys="Transfer.recipient_id")
     audit_logs: Mapped[list["AuditLog"]] = relationship("AuditLog", back_populates="actor")
+    security_events: Mapped[list["SecurityEvent"]] = relationship("SecurityEvent", back_populates="actor")
 
     __table_args__ = (
         Index("ix_users_email_active", "email", "is_active"),
@@ -47,7 +48,7 @@ class DID(Base):
     did: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     wallet_address: Mapped[str] = mapped_column(String(42), nullable=False)
-    identity_hash: Mapped[str] = mapped_column(String(66), nullable=False)  # 0x + 64 hex chars
+    identity_hash: Mapped[str] = mapped_column(String(66), nullable=False)
     verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     verification_tx_hash: Mapped[str] = mapped_column(String(66), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
@@ -143,6 +144,8 @@ class AuditAction(str, enum.Enum):
     ROLE_REVOKED = "ROLE_REVOKED"
     ASSET_MINTED = "ASSET_MINTED"
     ASSET_ALLOCATED = "ASSET_ALLOCATED"
+    ASSET_ASSIGNED = "ASSET_ASSIGNED"
+    ASSET_REVOKED = "ASSET_REVOKED"
     ASSET_TRANSFERRED = "ASSET_TRANSFERRED"
     ASSET_BURNED = "ASSET_BURNED"
     ASSET_FROZEN = "ASSET_FROZEN"
@@ -181,6 +184,61 @@ class AuditLog(Base):
     )
 
 
+class SecurityEventType(str, enum.Enum):
+    UNAUTHORIZED_TRANSFER_ATTEMPT = "UNAUTHORIZED_TRANSFER_ATTEMPT"
+    UNAUTHORIZED_APPROVE_ATTEMPT = "UNAUTHORIZED_APPROVE_ATTEMPT"
+    UNAUTHORIZED_OPERATOR_ATTEMPT = "UNAUTHORIZED_OPERATOR_ATTEMPT"
+    SUSPICIOUS_ACTIVITY = "SUSPICIOUS_ACTIVITY"
+    REPEATED_FAILED_AUTH = "REPEATED_FAILED_AUTH"
+    UNAUTHORIZED_API_ACCESS = "UNAUTHORIZED_API_ACCESS"
+    ASSET_ASSIGNMENT_CHANGED = "ASSET_ASSIGNMENT_CHANGED"
+    ASSET_STATUS_CHANGED = "ASSET_STATUS_CHANGED"
+    ROLE_ESCALATION_ATTEMPT = "ROLE_ESCALATION_ATTEMPT"
+
+
+class SecurityEventSeverity(str, enum.Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
+
+
+class SecurityEvent(Base):
+    __tablename__ = "security_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    event_type: Mapped[SecurityEventType] = mapped_column(Enum(SecurityEventType), nullable=False)
+    severity: Mapped[SecurityEventSeverity] = mapped_column(Enum(SecurityEventSeverity), default=SecurityEventSeverity.MEDIUM, nullable=False)
+    actor_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    actor_address: Mapped[str] = mapped_column(String(42), nullable=True)
+    actor_role: Mapped[str] = mapped_column(String(20), nullable=True)
+    resource_type: Mapped[str] = mapped_column(String(50), nullable=True)
+    resource_id: Mapped[str] = mapped_column(String(100), nullable=True)
+    reason: Mapped[str] = mapped_column(Text, nullable=True)
+    blockchain_tx_hash: Mapped[str] = mapped_column(String(66), nullable=True)
+    blockchain_block_number: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    ip_address: Mapped[str] = mapped_column(String(45), nullable=True)
+    user_agent: Mapped[str] = mapped_column(String(500), nullable=True)
+    request_path: Mapped[str] = mapped_column(String(500), nullable=True)
+    request_method: Mapped[str] = mapped_column(String(10), nullable=True)
+    resolved: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    resolved_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    resolved_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    resolution_notes: Mapped[str] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+    actor: Mapped["User"] = relationship("User", back_populates="security_events", foreign_keys=[actor_id])
+    resolver: Mapped["User"] = relationship("User", foreign_keys=[resolved_by])
+
+    __table_args__ = (
+        Index("ix_security_events_actor_created", "actor_id", "created_at"),
+        Index("ix_security_events_type_created", "event_type", "created_at"),
+        Index("ix_security_events_severity_created", "severity", "created_at"),
+        Index("ix_security_events_resolved", "resolved", "created_at"),
+        Index("ix_security_events_resource", "resource_type", "resource_id"),
+    )
+
+
 class BlockchainTransaction(Base):
     __tablename__ = "blockchain_transactions"
 
@@ -193,7 +251,7 @@ class BlockchainTransaction(Base):
     value: Mapped[str] = mapped_column(String(100), default="0", nullable=False)
     gas_used: Mapped[int] = mapped_column(BigInteger, nullable=True)
     gas_price: Mapped[str] = mapped_column(String(100), nullable=True)
-    status: Mapped[int] = mapped_column(Integer, nullable=False)  # 1 = success, 0 = failed
+    status: Mapped[int] = mapped_column(Integer, nullable=False)
     contract_address: Mapped[str] = mapped_column(String(42), index=True, nullable=True)
     method_name: Mapped[str] = mapped_column(String(100), nullable=True)
     event_data: Mapped[str] = mapped_column(Text, nullable=True)

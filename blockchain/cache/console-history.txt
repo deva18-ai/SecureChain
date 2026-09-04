@@ -1,0 +1,4 @@
+(await ethers.getSigners())[0].address
+(await ethers.provider.getNetwork()).chainId
+(await ethers.provider.getBalance((await ethers.getSigners())[0].address)).toString()
+(await ethers.provider.getNetwork()).chainId

@@ -107,7 +107,11 @@ async def login(
     await db.commit()
 
     access_token = create_access_token(
-        data={"sub": user.id, "email": user.email, "role": user.role.value}
+        data={
+            "sub": str(user.id),
+            "email": user.email,
+            "role": user.role.value
+        }
     )
 
     await AuditService.log_action(

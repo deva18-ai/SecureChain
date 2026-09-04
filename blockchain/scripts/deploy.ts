@@ -15,17 +15,19 @@ async function main() {
     await secureChain.waitForDeployment();
     const contractAddress = await secureChain.getAddress();
 
+    const network = await ethers.provider.getNetwork();
+
     console.log("\n✅ SecureChain deployed to:", contractAddress);
-    console.log("Network:", (await ethers.provider.getNetwork()).name);
+    console.log("Network:", network.name);
     console.log("Deployer:", deployer.address);
 
     const deploymentInfo = {
         contractAddress,
-        network: (await ethers.provider.getNetwork()).name,
-        chainId: (await ethers.provider.getNetwork()).chainId,
+        network: network.name,
+        chainId: network.chainId.toString(),
         deployer: deployer.address,
         deployedAt: new Date().toISOString(),
-        blockNumber: (await ethers.provider.getBlockNumber()),
+        blockNumber: await ethers.provider.getBlockNumber(),
     };
 
     const deploymentsDir = path.join(__dirname, "..", "deployments");

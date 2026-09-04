@@ -1,9 +1,9 @@
-import { useQuery, useMutation, useQueryClient, UseQueryOptions, UseMutationOptions } from '@tanstack/react-query';
-import { api } from '../services/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../services/api';
 import type {
   User, DID, Asset, Transfer, AuditLog, BlockchainStatus,
   BlockchainTransaction, DashboardStats, PaginatedResponse,
-  AssetCreate, AssetUpdate, TransferCreate, VerificationRequest,
+  AssetCreate, AssetUpdate, VerificationRequest,
   UserRole
 } from '../types';
 
@@ -167,26 +167,13 @@ export function useAllocateAsset() {
   });
 }
 
-export function useTransferAsset() {
+export function useRevokeAssignment() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, new_owner_id }: { id: number; new_owner_id: number }) =>
-      api.post<Asset>(`/assets/${id}/transfer`, { new_owner_id }).then(r => r.data),
+    mutationFn: (id: number) => api.post<Asset>(`/assets/${id}/revoke`).then(r => r.data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['assets'] });
       queryClient.invalidateQueries({ queryKey: ['asset', id] });
-      queryClient.invalidateQueries({ queryKey: ['transfers'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
-    },
-  });
-}
-
-export function useCreateTransfer() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: TransferCreate) => api.post<Transfer>('/transfers', data).then(r => r.data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transfers'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
     },
   });
@@ -209,6 +196,16 @@ export function useRejectTransfer() {
   return useMutation({
     mutationFn: ({ id, reason }: { id: number; reason: string }) =>
       api.post<Transfer>(`/transfers/${id}/reject`, { reason }).then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transfers'] });
+    },
+  });
+}
+
+export function useCancelTransfer() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.post<Transfer>(`/transfers/${id}/cancel`).then(r => r.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transfers'] });
     },

@@ -10,25 +10,23 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200,
+        runs: 1,
       },
       viaIR: true,
     },
-  },
-  // Enable the new Yul optimizer for mcopy support
-  yulOptimizer: {
-    enabled: true,
-    runs: 200,
   },
   networks: {
     localhost: {
       url: "http://127.0.0.1:8545",
       chainId: 31337,
       allowUnlimitedContractSize: true,
+      gas: "auto",
+      blockGasLimit: 30000000,
     },
     hardhat: {
       chainId: 31337,
       allowUnlimitedContractSize: true,
+      blockGasLimit: 30000000,
     },
     sepolia: {
       url: process.env.SEPOLIA_RPC_URL || "",
