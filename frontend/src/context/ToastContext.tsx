@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { cn } from '../../utils/helpers';
-import { Toast as ToastComponent, type ToastProps } from './Toast';
+import { Toast as ToastComponent, type ToastProps } from '../components/ui/Toast';
 
 export interface ToastMessage {
   id: string;
@@ -131,7 +130,7 @@ export function useToastPromise<T>(
 
 export function useToastQueue() {
   const { toasts, dismissToast, dismissAll } = useToast();
-  
+
   return {
     toasts,
     dismiss: dismissToast,

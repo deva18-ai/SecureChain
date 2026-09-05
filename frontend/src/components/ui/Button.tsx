@@ -1,4 +1,10 @@
-import React, { forwardRef, ButtonHTMLAttributes } from 'react';
+import React, {
+  forwardRef,
+  ButtonHTMLAttributes,
+  useState,
+  useRef,
+  useEffect,
+} from 'react';
 import { cn } from '../../utils/helpers';
 import { Loader2, ChevronDown, MoreVertical } from 'lucide-react';
 
@@ -153,9 +159,6 @@ export interface SplitButtonProps {
   disabled?: boolean;
   loading?: boolean;
 }
-
-import { ChevronDown, MoreVertical } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
 
 export function SplitButton({
   label,
