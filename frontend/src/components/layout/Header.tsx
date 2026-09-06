@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Shield, ChevronDown, LogOut, Settings, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWallet } from '../../context/WalletContext';
+import { displayRole } from '../../utils/helpers';
 import { Button } from '../ui/Button';
 
 function getBreadcrumbs(pathname: string) {
@@ -142,7 +143,7 @@ export function Header() {
               </div>
               <div className="text-left">
                 <p className="text-sm font-medium" style={{ color: '#e6e9ef' }}>{user?.full_name}</p>
-                <p className="text-xs capitalize" style={{ color: '#8991a3' }}>{user?.role?.toLowerCase()}</p>
+                <p className="text-xs" style={{ color: '#8991a3' }}>{displayRole(user?.role)}</p>
               </div>
               <ChevronDown className="icon" style={{ width: 14, height: 14, color: '#8991a3' }} />
             </Button>

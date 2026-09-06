@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 import type {
   User, DID, Asset, Transfer, AuditLog, BlockchainStatus,
@@ -112,6 +112,12 @@ export function useBlockchainStatus() {
   });
 }
 
+export function useBlockchainTransactions(params?: { page?: number; page_size?: number; from_address?: string; contract_address?: string }) {
+  return useQuery({
+    queryKey: ['blockchain', 'transactions', params],
+    queryFn: () => api.get<PaginatedResponse<BlockchainTransaction>>('/blockchain/transactions', { params }).then(r => r.data),
+  });
+}
 export function useBlockchainTransaction(txHash: string) {
   return useQuery({
     queryKey: queryKeys.blockchainTx(txHash),
@@ -195,6 +201,17 @@ export function useRevokeAssignment() {
   });
 }
 
+export function useCreateTransfer() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: import('../types').TransferCreate) =>
+      api.post<Transfer>('/transfers', data).then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transfers'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
+    },
+  });
+}
 export function useApproveTransfer() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -370,3 +387,5 @@ export function useResolveSecurityEvent() {
     },
   });
 }
+
+

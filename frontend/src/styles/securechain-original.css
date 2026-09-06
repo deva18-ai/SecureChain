@@ -1,6 +1,6 @@
-/* =====================================================================
-   SECURECHAIN — ORIGINAL HTML STYLES
-   Exact copy from securechain-demo.html <style> block
+﻿/* =====================================================================
+   SECURECHAIN \u2014 ORIGINAL HTML STYLES
+   Exact copy from the original SecureChain prototype <style> block
    ===================================================================== */
 
 :root{
@@ -159,7 +159,7 @@ button{font-family:inherit;cursor:pointer;}
 }
 .brand-name{font-size:20px;font-weight:700;letter-spacing:.01em;}
 .brand-sub{color:var(--muted);font-size:13px;margin:2px 0 30px;}
-.demo-pill{
+.notice-pill{
   display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;
   padding:4px 10px;border-radius:4px;background:rgba(201,154,62,0.1);
   color:var(--yellow);border:1px solid rgba(201,154,62,0.3);margin-bottom:22px;
@@ -355,11 +355,11 @@ textarea{resize:vertical;min-height:70px;}
 .toast-title{font-weight:600;margin-bottom:2px;}
 .toast-msg{color:var(--muted);font-size:12px;}
 
-.demo-banner{
+.notice-banner{
   background:var(--panel2);
   border:1px solid var(--border);border-left:3px solid var(--yellow);border-radius:6px;padding:10px 14px;
   font-size:12px;color:var(--muted);margin-bottom:20px;display:flex;gap:8px;align-items:center;font-weight:500;
 }
-.demo-banner .icon{color:var(--yellow);}
+.notice-banner .icon{color:var(--yellow);}
 .pageview{display:none;}
 .pageview.active{display:block;}

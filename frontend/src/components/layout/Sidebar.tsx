@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useLocation, NavLink } from 'react-router-dom';
-import { cn } from '../../utils/helpers';
+import { cn, displayRole } from '../../utils/helpers';
 import {
   LayoutDashboard,
   Users,
@@ -108,7 +108,7 @@ export function Sidebar({ isOpen = false, onClose }: NavProps) {
           {!isCollapsed && (
             <div className="side-brand-text">
               <b>SECURECHAIN</b>
-              <span>DEMO MODE</span>
+              <span>CONTROL CENTER</span>
             </div>
           )}
         </div>
@@ -145,8 +145,8 @@ export function Sidebar({ isOpen = false, onClose }: NavProps) {
             </div>
             {!isCollapsed && (
               <div>
-                <div className="who-name">{user?.full_name || '—'}</div>
-                <div className="who-role">{user?.role || '—'}</div>
+                <div className="who-name">{user?.full_name || '-'}</div>
+                <div className="who-role">{displayRole(user?.role)}</div>
               </div>
             )}
           </div>

@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from 'clsx';
+﻿import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
@@ -35,6 +35,24 @@ export function formatDate(dateString: string): string {
   });
 }
 
+
+export function displayRole(role?: string | null): string {
+  switch (role) {
+    case 'ADMIN':
+      return 'OWNER';
+    case 'USER':
+      return 'EMPLOYEE';
+    case 'MANAGER':
+    case 'AUDITOR':
+      return role;
+    default:
+      return role || 'UNASSIGNED';
+  }
+}
+
+export function firstName(name?: string | null): string {
+  return name?.trim().split(/\s+/)[0] || 'User';
+}
 export function formatRelativeTime(dateString: string): string {
   const date = new Date(dateString);
   const now = new Date();
@@ -128,3 +146,4 @@ export function truncate(str: string, length: number): string {
 export function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+

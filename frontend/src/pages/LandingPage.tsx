@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import {
   Users,
   Shield,
@@ -15,7 +15,7 @@ const features = [
   {
     icon: Users,
     title: 'Role-Based Access',
-    desc: 'Owner, Manager, and Employee roles each see exactly what they\'re permitted to — enforced in code, not just hidden UI.',
+    desc: 'Owner, Manager, and Employee roles each see exactly what they\'re permitted to \u2014 enforced in code, not just hidden UI.',
   },
   {
     icon: FileText,
@@ -45,7 +45,7 @@ const features = [
   {
     icon: Shield,
     title: 'Security Center',
-    desc: 'Live control status and an interactive test that demonstrates a blocked unauthorized action in real time.',
+    desc: 'Security events highlight blocked Owner-only operations and authorization outcomes from the backend.',
   },
   {
     icon: Zap,
@@ -56,7 +56,7 @@ const features = [
 
 const flowSteps = [
   'Manager/Admin requests a protected operation (transfer, freeze, update, or edit access).',
-  'Request enters Pending Owner Approval — it cannot be executed directly.',
+  'Request enters Pending Owner Approval \u2014 it cannot be executed directly.',
   'Owner reviews, then approves or rejects.',
   'System executes the action, writes an audit log, and records a blockchain transaction.',
 ];
@@ -64,7 +64,7 @@ const flowSteps = [
 export default function LandingPage() {
   const navigate = useNavigate();
 
-  const handleEnterDemo = () => {
+  const handleEnterPortal = () => {
     navigate('/login');
   };
 
@@ -99,19 +99,19 @@ export default function LandingPage() {
           >
             How it works
           </a>
-          <button className="btn btn-outline btn-sm" onClick={handleEnterDemo}>
+          <button className="btn btn-outline btn-sm" onClick={handleEnterPortal}>
             Sign In
           </button>
         </div>
       </header>
 
       <div className="landing-hero">
-        <div className="hero-badge">⛓ SecureChain Platform</div>
+        <div className="hero-badge">\u26a1 SecureChain Platform</div>
         <div className="hero-title">Blockchain-secured asset &<br /><span>identity management</span></div>
-        <div className="hero-sub">SecureChain gives owners cryptographic control over every protected operation — while managers work fast and every action is verified, approved, and permanently recorded.</div>
+        <div className="hero-sub">SecureChain gives owners cryptographic control over every protected operation \u2014 while managers work fast and every action is verified, approved, and permanently recorded.</div>
         <div className="hero-ctas">
-          <button className="btn btn-primary btn-lg" onClick={handleEnterDemo}>
-            Enter Portal →
+<button className="btn btn-primary btn-lg" onClick={handleEnterPortal}>
+            Enter Portal \u2192
           </button>
           <button className="btn btn-outline btn-lg" onClick={handleExploreFeatures}>
             Explore Features
@@ -150,8 +150,8 @@ export default function LandingPage() {
         </div>
       </div>
 
-      <footer className="landing-footer">
-        SecureChain — Decentralized Identity, NFT Asset Ownership & Immutable Audit Platform
+<footer className="landing-footer">
+        SecureChain \u2014 Decentralized Identity, NFT Asset Ownership & Immutable Audit Platform
       </footer>
     </div>
   );

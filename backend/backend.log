@@ -741,3 +741,284 @@ DETAIL:  Key (token_id)=(0) already exists.
 [SQL: INSERT INTO assets (token_id, asset_id, name, description, category, metadata_uri, creator_id, owner_id, status, created_at, updated_at, blockchain_tx_hash, blockchain_block_number, blockchain_tx_status, blockchain_network, contract_address) VALUES ($1::BIGINT, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::INTEGER, $8::INTEGER, $9, $10::TIMESTAMP WITHOUT TIME ZONE, $11::TIMESTAMP WITHOUT TIME ZONE, $12::VARCHAR, $13::BIGINT, $14, $15::VARCHAR, $16::VARCHAR) RETURNING assets.id]
 [parameters: (0, 'PHASE5-LAPTOP-001', 'Phase5 Test Laptop', 'Test asset', 'Laptop', 'ipfs://QmPhase5TestMetadata', 1, 23, 'ACTIVE', datetime.datetime(2026, 9, 6, 9, 32, 20, 25387), datetime.datetime(2026, 9, 6, 9, 32, 20, 25387), None, None, 'PENDING', None, None)]
 (Background on this error at: https://sqlalche.me/e/20/gkpj)
+2026-09-06 15:03:05,880 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:03:05,880 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:03:05,880 INFO sqlalchemy.engine.Engine [cached since 120s ago] (3,)
+2026-09-06 15:03:05,881 INFO sqlalchemy.engine.Engine SELECT count(users.id) AS count_1 
+FROM users
+2026-09-06 15:03:05,881 INFO sqlalchemy.engine.Engine [cached since 120s ago] ()
+2026-09-06 15:03:05,882 INFO sqlalchemy.engine.Engine SELECT count(dids.id) AS count_1 
+FROM dids 
+WHERE dids.verified = true
+2026-09-06 15:03:05,882 INFO sqlalchemy.engine.Engine [cached since 120s ago] ()
+2026-09-06 15:03:05,882 INFO sqlalchemy.engine.Engine SELECT count(assets.id) AS count_1 
+FROM assets
+2026-09-06 15:03:05,882 INFO sqlalchemy.engine.Engine [cached since 120s ago] ()
+2026-09-06 15:03:05,883 INFO sqlalchemy.engine.Engine SELECT count(transfers.id) AS count_1 
+FROM transfers 
+WHERE transfers.status = $1
+2026-09-06 15:03:05,883 INFO sqlalchemy.engine.Engine [cached since 120s ago] ('PENDING',)
+2026-09-06 15:03:05,883 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs 
+WHERE audit_logs.blockchain_tx_hash IS NOT NULL
+2026-09-06 15:03:05,883 INFO sqlalchemy.engine.Engine [cached since 120s ago] ()
+2026-09-06 15:03:05,884 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs
+2026-09-06 15:03:05,884 INFO sqlalchemy.engine.Engine [cached since 120s ago] ()
+2026-09-06 15:03:05,885 INFO sqlalchemy.engine.Engine SELECT users.role, count(users.id) AS count_1 
+FROM users GROUP BY users.role
+2026-09-06 15:03:05,885 INFO sqlalchemy.engine.Engine [cached since 120s ago] ()
+2026-09-06 15:03:05,885 INFO sqlalchemy.engine.Engine SELECT audit_logs.id, audit_logs.actor_id, audit_logs.actor_address, audit_logs.action, audit_logs.resource_type, audit_logs.resource_id, audit_logs.role, audit_logs.blockchain_tx_hash, audit_logs.blockchain_block_number, audit_logs.blockchain_verified, audit_logs.details, audit_logs.ip_address, audit_logs.user_agent, audit_logs.created_at 
+FROM audit_logs ORDER BY audit_logs.created_at DESC 
+ LIMIT $1::INTEGER
+2026-09-06 15:03:05,885 INFO sqlalchemy.engine.Engine [cached since 120s ago] (10,)
+2026-09-06 15:03:05,886 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.wallet_address AS users_wallet_address, users.role AS users_role, users.is_active AS users_is_active, users.is_verified AS users_is_verified, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.id IN ($1::INTEGER, $2::INTEGER, $3::INTEGER)
+2026-09-06 15:03:05,886 INFO sqlalchemy.engine.Engine [cached since 120s ago] (1, 23, 24)
+Blockchain service initialization failed: The private key must be exactly 32 bytes long, instead of 42 bytes.
+2026-09-06 15:03:05,924 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:55012 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+2026-09-06 15:04:05,563 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:04:05,563 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:04:05,563 INFO sqlalchemy.engine.Engine [cached since 179.7s ago] (3,)
+2026-09-06 15:04:05,564 INFO sqlalchemy.engine.Engine SELECT count(users.id) AS count_1 
+FROM users
+2026-09-06 15:04:05,564 INFO sqlalchemy.engine.Engine [cached since 179.7s ago] ()
+2026-09-06 15:04:05,564 INFO sqlalchemy.engine.Engine SELECT count(dids.id) AS count_1 
+FROM dids 
+WHERE dids.verified = true
+2026-09-06 15:04:05,564 INFO sqlalchemy.engine.Engine [cached since 179.7s ago] ()
+2026-09-06 15:04:05,565 INFO sqlalchemy.engine.Engine SELECT count(assets.id) AS count_1 
+FROM assets
+2026-09-06 15:04:05,565 INFO sqlalchemy.engine.Engine [cached since 179.7s ago] ()
+2026-09-06 15:04:05,566 INFO sqlalchemy.engine.Engine SELECT count(transfers.id) AS count_1 
+FROM transfers 
+WHERE transfers.status = $1
+2026-09-06 15:04:05,566 INFO sqlalchemy.engine.Engine [cached since 179.7s ago] ('PENDING',)
+2026-09-06 15:04:05,566 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs 
+WHERE audit_logs.blockchain_tx_hash IS NOT NULL
+2026-09-06 15:04:05,566 INFO sqlalchemy.engine.Engine [cached since 179.6s ago] ()
+2026-09-06 15:04:05,568 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs
+2026-09-06 15:04:05,568 INFO sqlalchemy.engine.Engine [cached since 179.6s ago] ()
+2026-09-06 15:04:05,568 INFO sqlalchemy.engine.Engine SELECT users.role, count(users.id) AS count_1 
+FROM users GROUP BY users.role
+2026-09-06 15:04:05,568 INFO sqlalchemy.engine.Engine [cached since 179.6s ago] ()
+2026-09-06 15:04:05,569 INFO sqlalchemy.engine.Engine SELECT audit_logs.id, audit_logs.actor_id, audit_logs.actor_address, audit_logs.action, audit_logs.resource_type, audit_logs.resource_id, audit_logs.role, audit_logs.blockchain_tx_hash, audit_logs.blockchain_block_number, audit_logs.blockchain_verified, audit_logs.details, audit_logs.ip_address, audit_logs.user_agent, audit_logs.created_at 
+FROM audit_logs ORDER BY audit_logs.created_at DESC 
+ LIMIT $1::INTEGER
+2026-09-06 15:04:05,569 INFO sqlalchemy.engine.Engine [cached since 179.6s ago] (10,)
+2026-09-06 15:04:05,570 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.wallet_address AS users_wallet_address, users.role AS users_role, users.is_active AS users_is_active, users.is_verified AS users_is_verified, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.id IN ($1::INTEGER, $2::INTEGER, $3::INTEGER)
+2026-09-06 15:04:05,570 INFO sqlalchemy.engine.Engine [cached since 179.6s ago] (1, 23, 24)
+Blockchain service initialization failed: The private key must be exactly 32 bytes long, instead of 42 bytes.
+2026-09-06 15:04:05,589 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58985 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+2026-09-06 15:05:05,881 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:05:05,882 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:05:05,882 INFO sqlalchemy.engine.Engine [cached since 240s ago] (3,)
+2026-09-06 15:05:05,883 INFO sqlalchemy.engine.Engine SELECT count(users.id) AS count_1 
+FROM users
+2026-09-06 15:05:05,883 INFO sqlalchemy.engine.Engine [cached since 240s ago] ()
+2026-09-06 15:05:05,884 INFO sqlalchemy.engine.Engine SELECT count(dids.id) AS count_1 
+FROM dids 
+WHERE dids.verified = true
+2026-09-06 15:05:05,884 INFO sqlalchemy.engine.Engine [cached since 240s ago] ()
+2026-09-06 15:05:05,884 INFO sqlalchemy.engine.Engine SELECT count(assets.id) AS count_1 
+FROM assets
+2026-09-06 15:05:05,884 INFO sqlalchemy.engine.Engine [cached since 240s ago] ()
+2026-09-06 15:05:05,885 INFO sqlalchemy.engine.Engine SELECT count(transfers.id) AS count_1 
+FROM transfers 
+WHERE transfers.status = $1
+2026-09-06 15:05:05,885 INFO sqlalchemy.engine.Engine [cached since 240s ago] ('PENDING',)
+2026-09-06 15:05:05,885 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs 
+WHERE audit_logs.blockchain_tx_hash IS NOT NULL
+2026-09-06 15:05:05,885 INFO sqlalchemy.engine.Engine [cached since 240s ago] ()
+2026-09-06 15:05:05,886 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs
+2026-09-06 15:05:05,886 INFO sqlalchemy.engine.Engine [cached since 240s ago] ()
+2026-09-06 15:05:05,886 INFO sqlalchemy.engine.Engine SELECT users.role, count(users.id) AS count_1 
+FROM users GROUP BY users.role
+2026-09-06 15:05:05,886 INFO sqlalchemy.engine.Engine [cached since 240s ago] ()
+2026-09-06 15:05:05,886 INFO sqlalchemy.engine.Engine SELECT audit_logs.id, audit_logs.actor_id, audit_logs.actor_address, audit_logs.action, audit_logs.resource_type, audit_logs.resource_id, audit_logs.role, audit_logs.blockchain_tx_hash, audit_logs.blockchain_block_number, audit_logs.blockchain_verified, audit_logs.details, audit_logs.ip_address, audit_logs.user_agent, audit_logs.created_at 
+FROM audit_logs ORDER BY audit_logs.created_at DESC 
+ LIMIT $1::INTEGER
+2026-09-06 15:05:05,887 INFO sqlalchemy.engine.Engine [cached since 240s ago] (10,)
+2026-09-06 15:05:05,887 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.wallet_address AS users_wallet_address, users.role AS users_role, users.is_active AS users_is_active, users.is_verified AS users_is_verified, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.id IN ($1::INTEGER, $2::INTEGER, $3::INTEGER)
+2026-09-06 15:05:05,887 INFO sqlalchemy.engine.Engine [cached since 239.9s ago] (1, 23, 24)
+Blockchain service initialization failed: The private key must be exactly 32 bytes long, instead of 42 bytes.
+2026-09-06 15:05:05,923 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57352 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+2026-09-06 15:06:05,580 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:06:05,581 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:06:05,581 INFO sqlalchemy.engine.Engine [cached since 299.7s ago] (3,)
+2026-09-06 15:06:05,582 INFO sqlalchemy.engine.Engine SELECT count(users.id) AS count_1 
+FROM users
+2026-09-06 15:06:05,582 INFO sqlalchemy.engine.Engine [cached since 299.7s ago] ()
+2026-09-06 15:06:05,582 INFO sqlalchemy.engine.Engine SELECT count(dids.id) AS count_1 
+FROM dids 
+WHERE dids.verified = true
+2026-09-06 15:06:05,582 INFO sqlalchemy.engine.Engine [cached since 299.7s ago] ()
+2026-09-06 15:06:05,583 INFO sqlalchemy.engine.Engine SELECT count(assets.id) AS count_1 
+FROM assets
+2026-09-06 15:06:05,583 INFO sqlalchemy.engine.Engine [cached since 299.7s ago] ()
+2026-09-06 15:06:05,583 INFO sqlalchemy.engine.Engine SELECT count(transfers.id) AS count_1 
+FROM transfers 
+WHERE transfers.status = $1
+2026-09-06 15:06:05,583 INFO sqlalchemy.engine.Engine [cached since 299.7s ago] ('PENDING',)
+2026-09-06 15:06:05,584 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs 
+WHERE audit_logs.blockchain_tx_hash IS NOT NULL
+2026-09-06 15:06:05,584 INFO sqlalchemy.engine.Engine [cached since 299.7s ago] ()
+2026-09-06 15:06:05,584 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs
+2026-09-06 15:06:05,585 INFO sqlalchemy.engine.Engine [cached since 299.7s ago] ()
+2026-09-06 15:06:05,585 INFO sqlalchemy.engine.Engine SELECT users.role, count(users.id) AS count_1 
+FROM users GROUP BY users.role
+2026-09-06 15:06:05,585 INFO sqlalchemy.engine.Engine [cached since 299.7s ago] ()
+2026-09-06 15:06:05,585 INFO sqlalchemy.engine.Engine SELECT audit_logs.id, audit_logs.actor_id, audit_logs.actor_address, audit_logs.action, audit_logs.resource_type, audit_logs.resource_id, audit_logs.role, audit_logs.blockchain_tx_hash, audit_logs.blockchain_block_number, audit_logs.blockchain_verified, audit_logs.details, audit_logs.ip_address, audit_logs.user_agent, audit_logs.created_at 
+FROM audit_logs ORDER BY audit_logs.created_at DESC 
+ LIMIT $1::INTEGER
+2026-09-06 15:06:05,585 INFO sqlalchemy.engine.Engine [cached since 299.7s ago] (10,)
+2026-09-06 15:06:05,586 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.wallet_address AS users_wallet_address, users.role AS users_role, users.is_active AS users_is_active, users.is_verified AS users_is_verified, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.id IN ($1::INTEGER, $2::INTEGER, $3::INTEGER)
+2026-09-06 15:06:05,586 INFO sqlalchemy.engine.Engine [cached since 299.6s ago] (1, 23, 24)
+Blockchain service initialization failed: The private key must be exactly 32 bytes long, instead of 42 bytes.
+2026-09-06 15:06:05,619 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:63555 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58090 - "OPTIONS /api/v1/dashboard/stats HTTP/1.1" 200 OK
+2026-09-06 15:07:05,886 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:07:05,886 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:07:05,886 INFO sqlalchemy.engine.Engine [cached since 360s ago] (3,)
+2026-09-06 15:07:05,888 INFO sqlalchemy.engine.Engine SELECT count(users.id) AS count_1 
+FROM users
+2026-09-06 15:07:05,888 INFO sqlalchemy.engine.Engine [cached since 360s ago] ()
+2026-09-06 15:07:05,889 INFO sqlalchemy.engine.Engine SELECT count(dids.id) AS count_1 
+FROM dids 
+WHERE dids.verified = true
+2026-09-06 15:07:05,889 INFO sqlalchemy.engine.Engine [cached since 360s ago] ()
+2026-09-06 15:07:05,889 INFO sqlalchemy.engine.Engine SELECT count(assets.id) AS count_1 
+FROM assets
+2026-09-06 15:07:05,889 INFO sqlalchemy.engine.Engine [cached since 360s ago] ()
+2026-09-06 15:07:05,890 INFO sqlalchemy.engine.Engine SELECT count(transfers.id) AS count_1 
+FROM transfers 
+WHERE transfers.status = $1
+2026-09-06 15:07:05,890 INFO sqlalchemy.engine.Engine [cached since 360s ago] ('PENDING',)
+2026-09-06 15:07:05,890 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs 
+WHERE audit_logs.blockchain_tx_hash IS NOT NULL
+2026-09-06 15:07:05,890 INFO sqlalchemy.engine.Engine [cached since 360s ago] ()
+2026-09-06 15:07:05,891 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs
+2026-09-06 15:07:05,891 INFO sqlalchemy.engine.Engine [cached since 360s ago] ()
+2026-09-06 15:07:05,891 INFO sqlalchemy.engine.Engine SELECT users.role, count(users.id) AS count_1 
+FROM users GROUP BY users.role
+2026-09-06 15:07:05,891 INFO sqlalchemy.engine.Engine [cached since 360s ago] ()
+2026-09-06 15:07:05,892 INFO sqlalchemy.engine.Engine SELECT audit_logs.id, audit_logs.actor_id, audit_logs.actor_address, audit_logs.action, audit_logs.resource_type, audit_logs.resource_id, audit_logs.role, audit_logs.blockchain_tx_hash, audit_logs.blockchain_block_number, audit_logs.blockchain_verified, audit_logs.details, audit_logs.ip_address, audit_logs.user_agent, audit_logs.created_at 
+FROM audit_logs ORDER BY audit_logs.created_at DESC 
+ LIMIT $1::INTEGER
+2026-09-06 15:07:05,892 INFO sqlalchemy.engine.Engine [cached since 360s ago] (10,)
+2026-09-06 15:07:05,892 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.wallet_address AS users_wallet_address, users.role AS users_role, users.is_active AS users_is_active, users.is_verified AS users_is_verified, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.id IN ($1::INTEGER, $2::INTEGER, $3::INTEGER)
+2026-09-06 15:07:05,892 INFO sqlalchemy.engine.Engine [cached since 359.9s ago] (1, 23, 24)
+Blockchain service initialization failed: The private key must be exactly 32 bytes long, instead of 42 bytes.
+2026-09-06 15:07:05,925 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58090 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+2026-09-06 15:08:05,588 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:08:05,588 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:08:05,588 INFO sqlalchemy.engine.Engine [cached since 419.7s ago] (3,)
+2026-09-06 15:08:05,589 INFO sqlalchemy.engine.Engine SELECT count(users.id) AS count_1 
+FROM users
+2026-09-06 15:08:05,590 INFO sqlalchemy.engine.Engine [cached since 419.7s ago] ()
+2026-09-06 15:08:05,590 INFO sqlalchemy.engine.Engine SELECT count(dids.id) AS count_1 
+FROM dids 
+WHERE dids.verified = true
+2026-09-06 15:08:05,590 INFO sqlalchemy.engine.Engine [cached since 419.7s ago] ()
+2026-09-06 15:08:05,591 INFO sqlalchemy.engine.Engine SELECT count(assets.id) AS count_1 
+FROM assets
+2026-09-06 15:08:05,591 INFO sqlalchemy.engine.Engine [cached since 419.7s ago] ()
+2026-09-06 15:08:05,591 INFO sqlalchemy.engine.Engine SELECT count(transfers.id) AS count_1 
+FROM transfers 
+WHERE transfers.status = $1
+2026-09-06 15:08:05,591 INFO sqlalchemy.engine.Engine [cached since 419.7s ago] ('PENDING',)
+2026-09-06 15:08:05,592 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs 
+WHERE audit_logs.blockchain_tx_hash IS NOT NULL
+2026-09-06 15:08:05,592 INFO sqlalchemy.engine.Engine [cached since 419.7s ago] ()
+2026-09-06 15:08:05,592 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs
+2026-09-06 15:08:05,592 INFO sqlalchemy.engine.Engine [cached since 419.7s ago] ()
+2026-09-06 15:08:05,593 INFO sqlalchemy.engine.Engine SELECT users.role, count(users.id) AS count_1 
+FROM users GROUP BY users.role
+2026-09-06 15:08:05,593 INFO sqlalchemy.engine.Engine [cached since 419.7s ago] ()
+2026-09-06 15:08:05,593 INFO sqlalchemy.engine.Engine SELECT audit_logs.id, audit_logs.actor_id, audit_logs.actor_address, audit_logs.action, audit_logs.resource_type, audit_logs.resource_id, audit_logs.role, audit_logs.blockchain_tx_hash, audit_logs.blockchain_block_number, audit_logs.blockchain_verified, audit_logs.details, audit_logs.ip_address, audit_logs.user_agent, audit_logs.created_at 
+FROM audit_logs ORDER BY audit_logs.created_at DESC 
+ LIMIT $1::INTEGER
+2026-09-06 15:08:05,593 INFO sqlalchemy.engine.Engine [cached since 419.7s ago] (10,)
+2026-09-06 15:08:05,594 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.wallet_address AS users_wallet_address, users.role AS users_role, users.is_active AS users_is_active, users.is_verified AS users_is_verified, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.id IN ($1::INTEGER, $2::INTEGER, $3::INTEGER)
+2026-09-06 15:08:05,594 INFO sqlalchemy.engine.Engine [cached since 419.6s ago] (1, 23, 24)
+Blockchain service initialization failed: The private key must be exactly 32 bytes long, instead of 42 bytes.
+2026-09-06 15:08:05,629 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58003 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+2026-09-06 15:08:50,178 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:08:50,179 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:08:50,179 INFO sqlalchemy.engine.Engine [cached since 464.3s ago] (3,)
+2026-09-06 15:08:50,179 INFO sqlalchemy.engine.Engine SELECT count(users.id) AS count_1 
+FROM users
+2026-09-06 15:08:50,179 INFO sqlalchemy.engine.Engine [cached since 464.3s ago] ()
+2026-09-06 15:08:50,181 INFO sqlalchemy.engine.Engine SELECT count(dids.id) AS count_1 
+FROM dids 
+WHERE dids.verified = true
+2026-09-06 15:08:50,181 INFO sqlalchemy.engine.Engine [cached since 464.3s ago] ()
+2026-09-06 15:08:50,182 INFO sqlalchemy.engine.Engine SELECT count(assets.id) AS count_1 
+FROM assets
+2026-09-06 15:08:50,183 INFO sqlalchemy.engine.Engine [cached since 464.3s ago] ()
+2026-09-06 15:08:50,185 INFO sqlalchemy.engine.Engine SELECT count(transfers.id) AS count_1 
+FROM transfers 
+WHERE transfers.status = $1
+2026-09-06 15:08:50,185 INFO sqlalchemy.engine.Engine [cached since 464.3s ago] ('PENDING',)
+2026-09-06 15:08:50,186 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs 
+WHERE audit_logs.blockchain_tx_hash IS NOT NULL
+2026-09-06 15:08:50,186 INFO sqlalchemy.engine.Engine [cached since 464.2s ago] ()
+2026-09-06 15:08:50,187 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs
+2026-09-06 15:08:50,187 INFO sqlalchemy.engine.Engine [cached since 464.2s ago] ()
+2026-09-06 15:08:50,188 INFO sqlalchemy.engine.Engine SELECT users.role, count(users.id) AS count_1 
+FROM users GROUP BY users.role
+2026-09-06 15:08:50,189 INFO sqlalchemy.engine.Engine [cached since 464.2s ago] ()
+2026-09-06 15:08:50,190 INFO sqlalchemy.engine.Engine SELECT audit_logs.id, audit_logs.actor_id, audit_logs.actor_address, audit_logs.action, audit_logs.resource_type, audit_logs.resource_id, audit_logs.role, audit_logs.blockchain_tx_hash, audit_logs.blockchain_block_number, audit_logs.blockchain_verified, audit_logs.details, audit_logs.ip_address, audit_logs.user_agent, audit_logs.created_at 
+FROM audit_logs ORDER BY audit_logs.created_at DESC 
+ LIMIT $1::INTEGER
+2026-09-06 15:08:50,190 INFO sqlalchemy.engine.Engine [cached since 464.2s ago] (10,)
+2026-09-06 15:08:50,192 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.wallet_address AS users_wallet_address, users.role AS users_role, users.is_active AS users_is_active, users.is_verified AS users_is_verified, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.id IN ($1::INTEGER, $2::INTEGER, $3::INTEGER)
+2026-09-06 15:08:50,192 INFO sqlalchemy.engine.Engine [cached since 464.2s ago] (1, 23, 24)
+Blockchain service initialization failed: The private key must be exactly 32 bytes long, instead of 42 bytes.
+2026-09-06 15:08:50,347 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57384 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
