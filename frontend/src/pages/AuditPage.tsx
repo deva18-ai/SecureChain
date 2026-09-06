@@ -1,17 +1,18 @@
 import { useState } from 'react';
-import { Search, Eye, Loader2, AlertCircle, CheckCircle, XCircle, RefreshCw, Download } from 'lucide-react';
+import { AlertCircle, CheckCircle, XCircle, RefreshCw, Download, Search, Eye } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Badge } from '../components/ui/Badge';
+import { Badge, BadgeVariant } from '../components/ui/Badge';
 import { Table } from '../components/ui/Table';
 import { Modal } from '../components/ui/Modal';
 import { useAuditLogs, useVerifyOnBlockchain } from '../hooks/useApi';
 import { formatAddress, formatDate, formatTxHash, formatRelativeTime } from '../utils/helpers';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import type { AuditLog, VerificationResponse } from '../types';
 
-const AUDIT_ACTION_COLORS: Record<string, string> = {
+const AUDIT_ACTION_COLORS: Record<string, BadgeVariant> = {
   IDENTITY_CREATED: 'primary',
   IDENTITY_VERIFIED: 'success',
   ROLE_ASSIGNED: 'primary',
@@ -35,16 +36,16 @@ export default function AuditPage() {
   const [actionFilter, setActionFilter] = useState<string | undefined>(undefined);
   const [resourceTypeFilter, setResourceTypeFilter] = useState<string | undefined>(undefined);
   const [verifiedFilter, setVerifiedFilter] = useState<boolean | undefined>(undefined);
-  const [selectedLog, setSelectedLog] = useState<any>(null);
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [verification, setVerification] = useState<{
     txHash: string;
     tokenId: string;
     did: string;
   }>({ txHash: '', tokenId: '', did: '' });
-  const [verificationResult, setVerificationResult] = useState<any>(null);
+  const [verificationResult, setVerificationResult] = useState<VerificationResponse | null>(null);
   const [verifying, setVerifying] = useState(false);
 
-  const { data: logsData, isLoading, error, refetch } = useAuditLogs({
+  const { data: logsData, isLoading, refetch } = useAuditLogs({
     page,
     page_size: 50,
     action: actionFilter,
@@ -53,8 +54,7 @@ export default function AuditPage() {
   });
   const verifyMutation = useVerifyOnBlockchain();
 
-  const isAdmin = hasRole(['OWNER']);
-  const isAuditor = hasRole(['OWNER', 'MANAGER']);
+  void hasRole; // role-based logic available for future use
 
   const actions = [
     'IDENTITY_CREATED', 'IDENTITY_VERIFIED', 'ROLE_ASSIGNED', 'ROLE_REVOKED',
@@ -79,15 +79,15 @@ export default function AuditPage() {
       });
       setVerificationResult(result);
       toast.success(result.verified ? 'Verified on blockchain' : 'Verification failed');
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error('Verification request failed');
-      setVerificationResult({ verified: false, error_message: error.message });
+      setVerificationResult({ verified: false, error_message: error instanceof Error ? error.message : 'Verification request failed' });
     } finally {
       setVerifying(false);
     }
   };
 
-  const handleViewLog = (log: any) => {
+  const handleViewLog = (log: AuditLog) => {
     setSelectedLog(log);
     if (log.blockchain_tx_hash) {
       setVerification({ txHash: log.blockchain_tx_hash, tokenId: '', did: '' });
@@ -100,18 +100,18 @@ export default function AuditPage() {
 
   if (isLoading && !logsData) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-6" style={{ color: '#e6e9ef' }}>
+        <div className="topbar" style={{ display: 'flex', justifyContent: 'spaceBetween', alignItems: 'flexStart', marginBottom: 22, flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <h1 className="text-2xl font-heading font-bold text-cyber-text">Audit Trail</h1>
-            <p className="text-cyber-textMuted">Immutable audit logs with blockchain verification</p>
+            <div className="page-title" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-.01em' }}>Audit & Security Log</div>
+            <div className="page-sub" style={{ color: '#8991a3', fontSize: 13, marginTop: 4 }}>Full chronological event history</div>
           </div>
         </div>
-        <Card className="p-6 animate-pulse">
-          <div className="h-4 w-48 bg-cyber-elevated rounded mb-4" />
+        <Card className="p-6" style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8 }}>
+          <div className="h-4 w-48 bg-[#191e29] rounded mb-4 animate-pulse" />
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-cyber-elevated/50 rounded" />
+              <div key={i} className="h-16 bg-[#191e29] rounded animate-pulse" />
             ))}
           </div>
         </Card>
@@ -124,13 +124,13 @@ export default function AuditPage() {
   const totalPages = logsData?.total_pages || 1;
 
   return (
-    <div className="space-y-6 animate-in">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-6 animate-in" style={{ color: '#e6e9ef' }}>
+      <div className="topbar" style={{ display: 'flex', justifyContent: 'spaceBetween', alignItems: 'flexStart', marginBottom: 22, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 className="text-2xl font-heading font-bold text-cyber-text">Audit Trail</h1>
-          <p className="text-cyber-textMuted">Immutable audit logs with blockchain verification capability</p>
+          <div className="page-title" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-.01em' }}>Audit & Security Log</div>
+          <div className="page-sub" style={{ color: '#8991a3', fontSize: 13, marginTop: 4 }}>Full chronological event history</div>
         </div>
-        <div className="flex items-center gap-3">
+        <div style={{ display: 'flex', gap: 10 }}>
           <Button variant="outline" onClick={() => refetch()} size="sm">
             <RefreshCw className="h-4 w-4" />
             Refresh
@@ -142,15 +142,15 @@ export default function AuditPage() {
         </div>
       </div>
 
-      <Card className="mb-6">
-        <div className="p-4 border-b border-cyber-border">
-          <h3 className="text-lg font-semibold text-cyber-text mb-4">Blockchain Verification</h3>
-          <p className="text-sm text-cyber-textMuted mb-4">
+      <Card className="mb-6" style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8 }}>
+        <div className="p-4 border-b" style={{ borderColor: '#262b37' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#e6e9ef', marginBottom: 4 }}>Blockchain Verification</h3>
+          <p style={{ fontSize: 12, color: '#8991a3', marginBottom: 16 }}>
             Verify any transaction, asset ownership, or identity proof directly on the blockchain.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 16 }}>
             <div>
-              <label className="block text-sm font-medium text-cyber-textMuted mb-1.5">Transaction Hash</label>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#8991a3', marginBottom: 6 }}>Transaction Hash</label>
               <Input
                 value={verification.txHash}
                 onChange={(e) => setVerification({ ...verification, txHash: e.target.value })}
@@ -159,7 +159,7 @@ export default function AuditPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-cyber-textMuted mb-1.5">Asset Token ID</label>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#8991a3', marginBottom: 6 }}>Asset Token ID</label>
               <Input
                 value={verification.tokenId}
                 onChange={(e) => setVerification({ ...verification, tokenId: e.target.value })}
@@ -168,7 +168,7 @@ export default function AuditPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-cyber-textMuted mb-1.5">DID</label>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#8991a3', marginBottom: 6 }}>DID</label>
               <Input
                 value={verification.did}
                 onChange={(e) => setVerification({ ...verification, did: e.target.value })}
@@ -176,8 +176,8 @@ export default function AuditPage() {
               />
             </div>
           </div>
-          <div className="flex gap-3">
-            <Button onClick={handleVerify} loading={verifying} className="flex-1">
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button onClick={handleVerify} loading={verifying} style={{ flex: 1 }}>
               <CheckCircle className="h-4 w-4" />
               Verify on Blockchain
             </Button>
@@ -187,45 +187,45 @@ export default function AuditPage() {
             </Button>
           </div>
           {verificationResult && (
-            <div className={`mt-4 p-4 rounded-lg ${verificationResult.verified ? 'bg-cyber-success/10 border border-cyber-success/30' : 'bg-cyber-critical/10 border border-cyber-critical/30'}`}>
-              <div className="flex items-center gap-2 mb-2">
+            <div style={{ marginTop: 16, padding: 16, borderRadius: 8, background: verificationResult.verified ? 'rgba(47,168,114,0.1)' : 'rgba(221,91,100,0.1)', border: `1px solid ${verificationResult.verified ? 'rgba(47,168,114,0.3)' : 'rgba(221,91,100,0.3)'}` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 {verificationResult.verified ? (
-                  <CheckCircle className="h-5 w-5 text-cyber-success" />
+                  <CheckCircle className="h-5 w-5" style={{ color: '#2fa872' }} />
                 ) : (
-                  <XCircle className="h-5 w-5 text-cyber-critical" />
+                  <XCircle className="h-5 w-5" style={{ color: '#dd5b64' }} />
                 )}
-                <span className="font-semibold text-cyber-text">
+                <span className="font-semibold" style={{ color: verificationResult.verified ? '#2fa872' : '#dd5b64' }}>
                   {verificationResult.verified ? 'VERIFIED ON BLOCKCHAIN' : 'VERIFICATION FAILED'}
                 </span>
               </div>
               {verificationResult.verified && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, fontSize: 12 }}>
                   <div>
-                    <p className="text-cyber-textMuted">Block Number</p>
-                    <p className="font-mono text-cyber-text">{verificationResult.block_number || 'N/A'}</p>
+                    <p style={{ color: '#8991a3', marginBottom: 2 }}>Block Number</p>
+                    <p className="font-mono" style={{ color: '#e6e9ef' }}>{verificationResult.block_number || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-cyber-textMuted">Contract</p>
-                    <p className="font-mono text-xs text-cyber-text truncate">{verificationResult.contract_address || 'N/A'}</p>
+                    <p style={{ color: '#8991a3', marginBottom: 2 }}>Contract</p>
+                    <p className="font-mono text-xs truncate" style={{ color: '#e6e9ef' }}>{verificationResult.contract_address || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-cyber-textMuted">Event Type</p>
-                    <p className="font-medium text-cyber-text">{verificationResult.event_type || 'Unknown'}</p>
+                    <p style={{ color: '#8991a3', marginBottom: 2 }}>Event Type</p>
+                    <p className="font-medium" style={{ color: '#e6e9ef' }}>{verificationResult.event_type || 'Unknown'}</p>
                   </div>
                   <div>
-                    <p className="text-cyber-textMuted">Actor</p>
-                    <p className="font-mono text-xs text-cyber-text">{formatAddress(verificationResult.actor || '')}</p>
+                    <p style={{ color: '#8991a3', marginBottom: 2 }}>Actor</p>
+                    <p className="font-mono text-xs" style={{ color: '#e6e9ef' }}>{formatAddress(verificationResult.actor || '')}</p>
                   </div>
                   {verificationResult.token_id && (
-                    <div className="col-span-2">
-                      <p className="text-cyber-textMuted">Token ID</p>
-                      <p className="font-mono text-cyber-text">{verificationResult.token_id}</p>
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <p style={{ color: '#8991a3', marginBottom: 2 }}>Token ID</p>
+                      <p className="font-mono" style={{ color: '#e6e9ef' }}>{verificationResult.token_id}</p>
                     </div>
                   )}
                   {verificationResult.from_address && verificationResult.to_address && (
-                    <div className="col-span-2">
-                      <p className="text-cyber-textMuted">Transfer</p>
-                      <p className="font-mono text-xs text-cyber-text">
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <p style={{ color: '#8991a3', marginBottom: 2 }}>Transfer</p>
+                      <p className="font-mono text-xs" style={{ color: '#e6e9ef' }}>
                         {formatAddress(verificationResult.from_address)} → {formatAddress(verificationResult.to_address)}
                       </p>
                     </div>
@@ -233,16 +233,16 @@ export default function AuditPage() {
                 </div>
               )}
               {verificationResult.error_message && (
-                <p className="text-sm text-cyber-critical mt-2">{verificationResult.error_message}</p>
+                <p style={{ fontSize: 12, color: '#dd5b64', marginTop: 8 }}>{verificationResult.error_message}</p>
               )}
             </div>
           )}
         </div>
       </Card>
 
-      <Card>
-        <div className="p-4 border-b border-cyber-border flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 max-w-md">
+      <Card style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8 }}>
+        <div className="p-4 border-b" style={{ borderColor: '#262b37', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div className="flex-1" style={{ maxWidth: 320 }}>
             <Input
               placeholder="Search audit logs..."
               value={search}
@@ -250,34 +250,34 @@ export default function AuditPage() {
               leftIcon={<Search className="h-4 w-4" />}
             />
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <label className="text-sm text-cyber-textMuted">Action:</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+            <label style={{ fontSize: 12, color: '#8991a3' }}>Action:</label>
             <select
               value={actionFilter || 'all'}
               onChange={(e) => { const val = e.target.value; setActionFilter(val === 'all' ? undefined : val); setPage(1); }}
-              className="px-3 py-2 rounded-lg border border-cyber-border bg-cyber-elevated text-cyber-text text-sm"
+              style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #333a4a', background: '#191e29', color: '#e6e9ef', fontSize: 12 }}
             >
               <option value="all">All Actions</option>
               {actions.map((a) => (
                 <option key={a} value={a}>{a.replace(/_/g, ' ')}</option>
               ))}
             </select>
-            <label className="text-sm text-cyber-textMuted">Resource:</label>
+            <label style={{ fontSize: 12, color: '#8991a3' }}>Resource:</label>
             <select
               value={resourceTypeFilter || 'all'}
               onChange={(e) => { const val = e.target.value; setResourceTypeFilter(val === 'all' ? undefined : val); setPage(1); }}
-              className="px-3 py-2 rounded-lg border border-cyber-border bg-cyber-elevated text-cyber-text text-sm"
+              style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #333a4a', background: '#191e29', color: '#e6e9ef', fontSize: 12 }}
             >
               <option value="all">All Types</option>
               {resourceTypes.map((r) => (
                 <option key={r} value={r}>{r}</option>
               ))}
             </select>
-            <label className="text-sm text-cyber-textMuted">Verified:</label>
+            <label style={{ fontSize: 12, color: '#8991a3' }}>Verified:</label>
             <select
               value={verifiedFilter === true ? 'verified' : verifiedFilter === false ? 'unverified' : 'all'}
               onChange={(e) => { const val = e.target.value; setVerifiedFilter(val === 'verified' ? true : val === 'unverified' ? false : undefined); setPage(1); }}
-              className="px-3 py-2 rounded-lg border border-cyber-border bg-cyber-elevated text-cyber-text text-sm"
+              style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #333a4a', background: '#191e29', color: '#e6e9ef', fontSize: 12 }}
             >
               <option value="all">All</option>
               <option value="verified">Verified</option>
@@ -286,75 +286,77 @@ export default function AuditPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="table-wrap" style={{ overflowX: 'auto' }}>
           <Table>
             <thead>
-              <tr>
-                <th>Timestamp</th>
-                <th>Actor</th>
-                <th>Action</th>
-                <th>Resource</th>
-                <th>Role</th>
-                <th>Blockchain</th>
-                <th>Verified</th>
-                <th className="text-right">Details</th>
+              <tr style={{ borderBottom: '1px solid #262b37' }}>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Timestamp</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Actor</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Action</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Resource</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Role</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Blockchain</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Verified</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}></th>
               </tr>
             </thead>
             <tbody>
               {logs.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-12 text-cyber-textMuted">
+                  <td colSpan={8} className="text-center py-12" style={{ color: '#8991a3' }}>
                     <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>No audit logs found</p>
                   </td>
                 </tr>
               ) : (
                 logs.map((log) => (
-                  <tr key={log.id}>
-                    <td className="text-sm text-cyber-textMuted whitespace-nowrap">
+                  <tr key={log.id} className="row-hover" style={{ transition: 'background .15s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#191e29'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                    <td style={{ padding: '12px', borderBottom: '1px solid #262b37', fontSize: 12, color: '#8991a3', whiteSpace: 'nowrap' }}>
                       {formatRelativeTime(log.created_at)}
                     </td>
-                    <td>
+                    <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>
                       {log.actor ? (
                         <div>
-                          <p className="font-medium text-cyber-text">{log.actor.full_name}</p>
-                          <p className="text-xs text-cyber-textMuted font-mono">{formatAddress(log.actor.wallet_address || '')}</p>
+                          <p className="font-medium" style={{ color: '#e6e9ef' }}>{log.actor.full_name}</p>
+                          <p className="text-xs font-mono" style={{ color: '#8991a3' }}>{formatAddress(log.actor.wallet_address || '')}</p>
                         </div>
                       ) : log.actor_address ? (
                         <p className="font-mono text-sm">{formatAddress(log.actor_address)}</p>
                       ) : (
-                        <span className="text-sm text-cyber-textMuted">System</span>
+                        <span style={{ fontSize: 12, color: '#8991a3' }}>System</span>
                       )}
                     </td>
-                    <td>
-                      <Badge variant={AUDIT_ACTION_COLORS[log.action] || 'default'}>
+                    <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>
+                      <Badge variant={AUDIT_ACTION_COLORS[log.action] || 'default'} style={{ fontSize: 11, padding: '3px 9px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6 }}>
                         {log.action.replace(/_/g, ' ')}
                       </Badge>
                     </td>
-                    <td>
-                      <p className="text-sm font-medium text-cyber-text">{log.resource_type}</p>
-                      <p className="text-xs text-cyber-textMuted font-mono">{log.resource_id}</p>
+                    <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>
+                      <p className="font-medium" style={{ color: '#e6e9ef' }}>{log.resource_type}</p>
+                      <p className="text-xs font-mono" style={{ color: '#8991a3' }}>{log.resource_id}</p>
                     </td>
-                    <td>
+                    <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>
                       {log.role && (
-                        <Badge variant="outline">{log.role}</Badge>
+                        <Badge variant="outline" style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6, borderColor: '#333a4a' }}>
+                          {log.role === 'ADMIN' ? 'OWNER' : log.role === 'USER' ? 'EMPLOYEE' : log.role}
+                        </Badge>
                       )}
                     </td>
-                    <td>
+                    <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>
                       {log.blockchain_tx_hash ? (
-                        <span className="font-mono text-xs text-cyber-success">
+                        <span className="font-mono text-xs" style={{ color: '#2fa872' }}>
                           {formatTxHash(log.blockchain_tx_hash)}
                         </span>
                       ) : (
-                        <span className="text-xs text-cyber-textMuted">No tx hash</span>
+                        <span style={{ fontSize: 11, color: '#8991a3' }}>No tx hash</span>
                       )}
                     </td>
-                    <td>
-                      <Badge variant={log.blockchain_verified ? 'success' : 'warning'}>
+                    <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>
+                      <Badge variant={log.blockchain_verified ? 'success' : 'warning'} style={{ fontSize: 11, padding: '3px 9px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6 }}>
                         {log.blockchain_verified ? 'Verified' : 'Pending'}
                       </Badge>
                     </td>
-                    <td className="text-right">
+                    <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>
                       <Button variant="ghost" size="sm" onClick={() => handleViewLog(log)}>
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -367,17 +369,13 @@ export default function AuditPage() {
         </div>
 
         {totalPages > 1 && (
-          <div className="p-4 border-t border-cyber-border flex items-center justify-between">
-            <p className="text-sm text-cyber-textMuted">
+          <div className="p-4 border-t" style={{ borderColor: '#262b37', display: 'flex', alignItems: 'center', justifyContent: 'spaceBetween' }}>
+            <p className="text-sm" style={{ color: '#8991a3' }}>
               Showing {(page - 1) * 50 + 1} to {Math.min(page * 50, total)} of {total} audit logs
             </p>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
-                Previous
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
-                Next
-              </Button>
+              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
+              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Next</Button>
             </div>
           </div>
         )}
@@ -385,77 +383,81 @@ export default function AuditPage() {
 
       <Modal isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} title="Audit Log Details" size="lg">
         {selectedLog && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4" style={{ color: '#e6e9ef' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
               <div>
-                <p className="text-sm text-cyber-textMuted">Log ID</p>
-                <p className="font-mono text-lg font-bold text-cyber-text">#{selectedLog.id}</p>
+                <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Log ID</p>
+                <p className="font-mono text-lg font-bold" style={{ color: '#e6e9ef' }}>#{selectedLog.id}</p>
               </div>
               <div>
-                <p className="text-sm text-cyber-textMuted">Timestamp</p>
-                <p className="text-sm text-cyber-text">{formatDate(selectedLog.created_at)}</p>
+                <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Timestamp</p>
+                <p className="text-sm" style={{ color: '#e6e9ef' }}>{formatDate(selectedLog.created_at)}</p>
               </div>
               <div>
-                <p className="text-sm text-cyber-textMuted">Actor</p>
-                <p className="font-medium text-cyber-text">{selectedLog.actor?.full_name || 'System'}</p>
+                <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Actor</p>
+                <p className="font-medium" style={{ color: '#e6e9ef' }}>{selectedLog.actor?.full_name || 'System'}</p>
                 {selectedLog.actor?.wallet_address && (
-                  <p className="text-xs text-cyber-textMuted font-mono">{formatAddress(selectedLog.actor.wallet_address)}</p>
+                  <p className="text-xs font-mono" style={{ color: '#8991a3' }}>{formatAddress(selectedLog.actor.wallet_address)}</p>
                 )}
               </div>
               <div>
-                <p className="text-sm text-cyber-textMuted">Actor Role</p>
-                <Badge variant="outline">{selectedLog.role || 'N/A'}</Badge>
+                <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Actor Role</p>
+                <Badge variant="outline" style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6, borderColor: '#333a4a' }}>
+                  {selectedLog.role === 'ADMIN' ? 'OWNER' : selectedLog.role === 'USER' ? 'EMPLOYEE' : selectedLog.role || 'N/A'}
+                </Badge>
               </div>
               <div>
-                <p className="text-sm text-cyber-textMuted">Action</p>
-                <Badge variant={AUDIT_ACTION_COLORS[selectedLog.action] || 'default'}>
+                <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Action</p>
+                <Badge variant={AUDIT_ACTION_COLORS[selectedLog.action] || 'default'} style={{ fontSize: 11, padding: '3px 9px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6 }}>
                   {selectedLog.action.replace(/_/g, ' ')}
                 </Badge>
               </div>
               <div>
-                <p className="text-sm text-cyber-textMuted">Resource</p>
-                <p className="font-medium text-cyber-text">{selectedLog.resource_type}: {selectedLog.resource_id}</p>
+                <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Resource</p>
+                <p className="font-medium" style={{ color: '#e6e9ef' }}>{selectedLog.resource_type}: {selectedLog.resource_id}</p>
               </div>
               {selectedLog.blockchain_tx_hash && (
-                <div className="col-span-2">
-                  <p className="text-sm text-cyber-textMuted">Blockchain Transaction</p>
-                  <p className="font-mono text-sm text-cyber-success">{selectedLog.blockchain_tx_hash}</p>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Blockchain Transaction</p>
+                  <p className="font-mono text-sm" style={{ color: '#2fa872' }}>{selectedLog.blockchain_tx_hash}</p>
                 </div>
               )}
               {selectedLog.blockchain_block_number && (
                 <div>
-                  <p className="text-sm text-cyber-textMuted">Block Number</p>
-                  <p className="text-sm text-cyber-text">{selectedLog.blockchain_block_number.toLocaleString()}</p>
+                  <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Block Number</p>
+                  <p className="text-sm" style={{ color: '#e6e9ef' }}>{selectedLog.blockchain_block_number.toLocaleString()}</p>
                 </div>
               )}
               <div>
-                <p className="text-sm text-cyber-textMuted">Blockchain Verified</p>
-                <Badge variant={selectedLog.blockchain_verified ? 'success' : 'warning'}>
+                <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Blockchain Verified</p>
+                <Badge variant={selectedLog.blockchain_verified ? 'success' : 'warning'} style={{ fontSize: 11, padding: '3px 9px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6 }}>
                   {selectedLog.blockchain_verified ? 'Yes' : 'No'}
                 </Badge>
               </div>
             </div>
             {selectedLog.details && (
-              <div className="p-4 rounded-lg bg-cyber-elevated/50 border border-cyber-border/50">
-                <p className="text-sm text-cyber-textMuted mb-1">Details</p>
-                <p className="text-sm text-cyber-text font-mono">{selectedLog.details}</p>
+              <div style={{ padding: 16, borderRadius: 8, background: 'rgba(25,30,41,0.5)', border: '1px solid rgba(38,43,55,0.5)' }}>
+                <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Details</p>
+                <p className="text-sm font-mono" style={{ color: '#e6e9ef' }}>{selectedLog.details}</p>
               </div>
             )}
             {selectedLog.ip_address && (
-              <div className="p-4 rounded-lg bg-cyber-elevated/50 border border-cyber-border/50">
-                <p className="text-sm text-cyber-textMuted mb-1">Network Info</p>
-                <p className="text-xs text-cyber-textMuted font-mono">
+              <div style={{ padding: 16, borderRadius: 8, background: 'rgba(25,30,41,0.5)', border: '1px solid rgba(38,43,55,0.5)' }}>
+                <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Network Info</p>
+                <p className="text-xs font-mono" style={{ color: '#8991a3' }}>
                   IP: {selectedLog.ip_address} | UA: {selectedLog.user_agent?.substring(0, 50)}...
                 </p>
               </div>
             )}
-            <div className="flex justify-end gap-3 pt-4 border-t border-cyber-border">
+            <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flexEnd', gap: 10, marginTop: 18, paddingTop: 18, borderTop: '1px solid #262b37' }}>
               {selectedLog.blockchain_tx_hash && !selectedLog.blockchain_verified && (
                 <Button
                   variant="primary"
                   size="sm"
                   onClick={() => {
-                    setVerification({ txHash: selectedLog.blockchain_tx_hash, tokenId: '', did: '' });
+                    const txHash = selectedLog.blockchain_tx_hash;
+                    if (!txHash) return;
+                    setVerification({ txHash, tokenId: '', did: '' });
                     handleVerify();
                     setSelectedLog(null);
                   }}

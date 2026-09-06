@@ -405,6 +405,4 @@ export function Drawer({
       </div>
     </Fragment>
   );
-}
-
-import { createPortal } from 'react-dom';
+}

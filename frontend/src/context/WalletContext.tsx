@@ -168,10 +168,4 @@ export function useWallet() {
     throw new Error('useWallet must be used within a WalletProvider');
   }
   return context;
-}
-
-declare global {
-  interface Window {
-    ethereum?: ethers.Eip1193Provider;
-  }
-}
+}

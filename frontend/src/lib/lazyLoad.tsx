@@ -8,11 +8,11 @@ interface LazyLoadOptions {
   delay?: number;
 }
 
-export function lazyLoad<T extends ComponentType<any>>(
+export function lazyLoad<T extends ComponentType<object>>(
   importFn: () => Promise<{ default: T }>,
   options: LazyLoadOptions = {}
 ): LazyExoticComponent<T> {
-  const { preload = false, fallback, delay = 200 } = options;
+  const { preload = false, delay = 200 } = options;
 
   const LazyComponent = lazy(async () => {
     await new Promise(resolve => setTimeout(resolve, delay));
@@ -26,7 +26,7 @@ export function lazyLoad<T extends ComponentType<any>>(
   return LazyComponent;
 }
 
-export function createLazyPage<T extends ComponentType<any>>(
+export function createLazyPage<T extends ComponentType<object>>(
   importFn: () => Promise<{ default: T }>,
   options: LazyLoadOptions = {}
 ) {
@@ -34,31 +34,22 @@ export function createLazyPage<T extends ComponentType<any>>(
   
   const displayName = importFn.toString().match(/pages\/([^\/]+)/)?.[1] || 'Page';
   
-  LazyComponent.displayName = `Lazy${displayName.charAt(0).toUpperCase() + displayName.slice(1)}`;
+  (LazyComponent as unknown as { displayName?: string }).displayName = `Lazy${displayName.charAt(0).toUpperCase() + displayName.slice(1)}`;
   
   return LazyComponent;
 }
 
 export const pageLoaders = {
   DashboardPage: () => import('../pages/DashboardPage'),
-  IdentitiesPage: () => import('../pages/IdentitiesPage'),
+  UsersPage: () => import('../pages/UsersPage'),
   AssetsPage: () => import('../pages/AssetsPage'),
-  TransfersPage: () => import('../pages/TransfersPage'),
-  AuditPage: () => import('../pages/AuditPage'),
+  RequestsPage: () => import('../pages/RequestsPage'),
+  IdentitiesPage: () => import('../pages/IdentitiesPage'),
   BlockchainPage: () => import('../pages/BlockchainPage'),
-  MyIdentityPage: () => import('../pages/MyIdentityPage'),
-  MyAssetsPage: () => import('../pages/MyAssetsPage'),
-  MyTransfersPage: () => import('../pages/MyTransfersPage'),
-  MyActivityPage: () => import('../pages/MyActivityPage'),
-  AdminUsersPage: () => import('../pages/AdminUsersPage'),
-  AdminRolesPage: () => import('../pages/AdminRolesPage'),
-  AdminConfigPage: () => import('../pages/AdminConfigPage'),
-  SettingsPage: () => import('../pages/SettingsPage'),
+  AuditPage: () => import('../pages/AuditPage'),
   SecurityCenterPage: () => import('../pages/SecurityCenterPage'),
-  SecurityResourcesPage: () => import('../pages/SecurityResourcesPage'),
   LandingPage: () => import('../pages/LandingPage'),
   LoginPage: () => import('../pages/LoginPage'),
-  RegisterPage: () => import('../pages/RegisterPage'),
 };
 
 export type PageName = keyof typeof pageLoaders;
@@ -71,11 +62,12 @@ export function getLazyPage(name: PageName, options?: LazyLoadOptions) {
   return createLazyPage(loader, options);
 }
 
-export function PageLoadingFallback({ title = 'Loading...', showSkeleton = true }) {
+export function PageLoadingFallback({ title = 'Loading...', showSkeleton = true }: { title?: string; showSkeleton?: boolean }) {
   return (
     <div className="animate-in space-y-6">
       <div className="flex items-center justify-between">
         <div>
+          <h2 className="text-xl font-semibold text-cyber-text">{title}</h2>
           <SkeletonPageHeader />
         </div>
       </div>
@@ -93,15 +85,17 @@ export function PageLoadingFallback({ title = 'Loading...', showSkeleton = true 
 
 export function withPageTransition<P extends object>(
   WrappedComponent: ComponentType<P>,
-  pageName: string
+  pageName?: string
 ) {
-  return function WithPageTransition(props: P) {
+  const ComponentWithTransition = function (props: P) {
     return (
       <div className="page-transition-enter">
         <WrappedComponent {...props} />
       </div>
     );
   };
+  ComponentWithTransition.displayName = pageName ? `WithPageTransition(${pageName})` : 'WithPageTransition';
+  return ComponentWithTransition;
 }
 
 export function preloadPages(pageNames: PageName[]) {
@@ -114,13 +108,13 @@ export function preloadPages(pageNames: PageName[]) {
 }
 
 export function preloadCriticalPages() {
-  preloadPages(['DashboardPage', 'IdentitiesPage', 'AssetsPage', 'TransfersPage']);
+  preloadPages(['DashboardPage', 'IdentitiesPage', 'AssetsPage', 'UsersPage']);
 }
 
 export function preloadAdminPages() {
-  preloadPages(['AdminUsersPage', 'AdminRolesPage', 'AdminConfigPage']);
+  preloadPages(['DashboardPage', 'UsersPage', 'AssetsPage']);
 }
 
 export function preloadUserPages() {
-  preloadPages(['MyIdentityPage', 'MyAssetsPage', 'MyTransfersPage', 'MyActivityPage']);
+  preloadPages(['DashboardPage', 'IdentitiesPage', 'AssetsPage']);
 }

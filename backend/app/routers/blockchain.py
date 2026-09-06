@@ -1,3 +1,4 @@
+from typing import TypeVar
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
@@ -9,10 +10,12 @@ from app.schemas import (
     BlockchainTransactionResponse,
     PaginatedResponse,
 )
-from app.auth import get_current_active_user, require_employee
+from app.auth import get_current_active_user
 from app.services.blockchain import BlockchainService
 
 router = APIRouter(prefix="/blockchain", tags=["Blockchain"])
+
+BlockchainTransactionListResponse = PaginatedResponse[BlockchainTransactionResponse]
 
 
 @router.get("/status", response_model=BlockchainStatus)
@@ -26,7 +29,7 @@ async def get_blockchain_status(
 @router.get("/transaction/{tx_hash}", response_model=BlockchainTransactionResponse)
 async def get_blockchain_transaction(
     tx_hash: str,
-    current_user: User = Depends(require_employee),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
@@ -75,13 +78,13 @@ async def get_blockchain_asset(
     return asset
 
 
-@router.get("/transactions", response_model=PaginatedResponse)
+@router.get("/transactions", response_model=BlockchainTransactionListResponse)
 async def list_blockchain_transactions(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     from_address: str = Query(None),
     contract_address: str = Query(None),
-    current_user: User = Depends(require_employee),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(BlockchainTransaction)
@@ -100,7 +103,7 @@ async def list_blockchain_transactions(
     result = await db.execute(query)
     transactions = result.scalars().all()
 
-    return PaginatedResponse(
+    return BlockchainTransactionListResponse(
         items=transactions,
         total=total,
         page=page,

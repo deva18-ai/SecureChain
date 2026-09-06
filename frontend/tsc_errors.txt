@@ -1,0 +1,238 @@
+﻿src/components/ui/Transitions.tsx(20,7): error TS2322: Type '{ duration: number; ease: number[]; }' is not assignable to type 'Transition<any> | undefined'.
+  Type '{ duration: number; ease: number[]; }' is not assignable to type 'TransitionWithValueOverrides<any>'.
+    Type '{ duration: number; ease: number[]; }' is not assignable to type 'ValueAnimationTransition<any>'.
+      Types of property 'ease' are incompatible.
+        Type 'number[]' is not assignable to type 'Easing | Easing[] | undefined'.
+          Type 'number[]' is not assignable to type 'EasingFunction | Easing[]'.
+            Type 'number[]' is not assignable to type 'Easing[]'.
+              Type 'number' is not assignable to type 'Easing'.
+src/components/ui/Transitions.tsx(457,9): error TS2322: Type 'ReactNode' is not assignable to type 'Key | null | undefined'.
+  Type 'false' is not assignable to type 'Key | null | undefined'.
+src/context/WalletContext.tsx(175,5): error TS2717: Subsequent property declarations must have the same type.  Property 'ethereum' must be of type '{ isMetaMask?: boolean | undefined; request: (args: { method: string; params?: unknown[] | undefined; }) => Promise<unknown>; on?: ((eventName: string, handler: (...args: unknown[]) => void) => void) | undefined; removeListener?: ((eventName: string, handler: (...args: unknown[]) => void) => void) | undefined; } | u...', but here has type 'Eip1193Provider | undefined'.
+src/pages/AdminConfigPage.tsx(2,18): error TS6133: 'Loader2' is declared but its value is never read.
+src/pages/AdminConfigPage.tsx(2,27): error TS6133: 'AlertCircle' is declared but its value is never read.
+src/pages/AdminConfigPage.tsx(2,46): error TS6133: 'Key' is declared but its value is never read.
+src/pages/AdminConfigPage.tsx(2,85): error TS6133: 'Globe' is declared but its value is never read.
+src/pages/AdminConfigPage.tsx(2,98): error TS6133: 'Bell' is declared but its value is never read.
+src/pages/AdminConfigPage.tsx(2,104): error TS6133: 'Moon' is declared but its value is never read.
+src/pages/AdminConfigPage.tsx(2,110): error TS6133: 'Sun' is declared but its value is never read.
+src/pages/AdminConfigPage.tsx(7,1): error TS6133: 'Modal' is declared but its value is never read.
+src/pages/AdminConfigPage.tsx(9,1): error TS6133: 'formatAddress' is declared but its value is never read.
+src/pages/AdminConfigPage.tsx(14,9): error TS6133: 'hasRole' is declared but its value is never read.
+src/pages/AdminConfigPage.tsx(85,13): error TS2322: Type '{ label: string; value: string; onChange: (e: ChangeEvent<HTMLInputElement>) => void; type: "select"; options: { value: string; label: string; }[]; }' is not assignable to type 'IntrinsicAttributes & InputProps & RefAttributes<HTMLInputElement>'.
+  Property 'options' does not exist on type 'IntrinsicAttributes & InputProps & RefAttributes<HTMLInputElement>'.
+src/pages/AdminConfigPage.tsx(184,14): error TS2304: Cannot find name 'RefreshCw'.
+src/pages/AdminRolesPage.tsx(2,18): error TS6133: 'Users' is declared but its value is never read.
+src/pages/AdminRolesPage.tsx(2,25): error TS6133: 'Eye' is declared but its value is never read.
+src/pages/AdminRolesPage.tsx(2,30): error TS6133: 'Loader2' is declared but its value is never read.
+src/pages/AdminRolesPage.tsx(2,39): error TS6133: 'AlertCircle' is declared but its value is never read.
+src/pages/AdminRolesPage.tsx(2,58): error TS6133: 'Key' is declared but its value is never read.
+src/pages/AdminRolesPage.tsx(2,63): error TS6133: 'Search' is declared but its value is never read.
+src/pages/AdminRolesPage.tsx(2,84): error TS6133: 'FileText' is declared but its value is never read.
+src/pages/AdminRolesPage.tsx(2,94): error TS6133: 'Blocks' is declared but its value is never read.
+src/pages/AdminRolesPage.tsx(2,102): error TS6133: 'Wallet' is declared but its value is never read.
+src/pages/AdminRolesPage.tsx(2,110): error TS6133: 'BarChart3' is declared but its value is never read.
+src/pages/AdminRolesPage.tsx(6,1): error TS6133: 'Table' is declared but its value is never read.
+src/pages/AdminRolesPage.tsx(9,10): error TS6133: 'formatAddress' is declared but its value is never read.
+src/pages/AdminRolesPage.tsx(9,25): error TS6133: 'formatDate' is declared but its value is never read.
+src/pages/AdminRolesPage.tsx(38,9): error TS6133: 'hasRole' is declared but its value is never read.
+src/pages/AdminUsersPage.tsx(2,72): error TS6133: 'MoreVertical' is declared but its value is never read.
+src/pages/AdminUsersPage.tsx(16,17): error TS6133: 'hasRole' is declared but its value is never read.
+src/pages/AdminUsersPage.tsx(25,39): error TS6133: 'error' is declared but its value is never read.
+src/pages/AdminUsersPage.tsx(243,22): error TS2339: Property 'register' does not exist on type '{ list: (params?: { page?: number | undefined; page_size?: number | undefined; role?: string | undefined; is_active?: boolean | undefined; search?: string | undefined; } | undefined) => Promise<...>; ... 8 more ...; deleteWallet: (userId: number, walletId: number) => Promise<...>; }'.
+src/pages/AIProposalsPage.tsx(2,83): error TS6133: 'Edit' is declared but its value is never read.
+src/pages/AIProposalsPage.tsx(2,89): error TS6133: 'Trash2' is declared but its value is never read.
+src/pages/AIProposalsPage.tsx(10,22): error TS2440: Import declaration conflicts with local declaration of 'getProposalStatusColor'.
+src/pages/AIProposalsPage.tsx(34,9): error TS6133: 'usersData' is declared but its value is never read.
+src/pages/AIProposalsPage.tsx(62,9): error TS6133: 'fetchUsers' is declared but its value is never read.
+src/pages/AIProposalsPage.tsx(226,67): error TS17001: JSX elements cannot have multiple attributes with the same name.
+src/pages/AIProposalsPage.tsx(273,13): error TS2322: Type '{ label: string; value: string; onChange: (e: ChangeEvent<HTMLInputElement>) => void; placeholder: string; type: "textarea"; rows: number; }' is not assignable to type 'IntrinsicAttributes & InputProps & RefAttributes<HTMLInputElement>'.
+  Property 'rows' does not exist on type 'IntrinsicAttributes & InputProps & RefAttributes<HTMLInputElement>'.
+src/pages/AIProposalsPage.tsx(299,13): error TS2322: Type '{ label: string; value: string; onChange: (e: ChangeEvent<HTMLInputElement>) => void; placeholder: string; type: "textarea"; rows: number; }' is not assignable to type 'IntrinsicAttributes & InputProps & RefAttributes<HTMLInputElement>'.
+  Property 'rows' does not exist on type 'IntrinsicAttributes & InputProps & RefAttributes<HTMLInputElement>'.
+src/pages/AIProposalsPage.tsx(307,13): error TS2322: Type '{ label: string; value: string; onChange: (e: ChangeEvent<HTMLInputElement>) => void; placeholder: string; type: "textarea"; rows: number; }' is not assignable to type 'IntrinsicAttributes & InputProps & RefAttributes<HTMLInputElement>'.
+  Property 'rows' does not exist on type 'IntrinsicAttributes & InputProps & RefAttributes<HTMLInputElement>'.
+src/pages/AssetsPage.tsx(2,10): error TS6133: 'Search' is declared but its value is never read.
+src/pages/AssetsPage.tsx(2,24): error TS6133: 'Eye' is declared but its value is never read.
+src/pages/AssetsPage.tsx(2,29): error TS6133: 'Loader2' is declared but its value is never read.
+src/pages/AssetsPage.tsx(2,38): error TS6133: 'AlertCircle' is declared but its value is never read.
+src/pages/AssetsPage.tsx(2,67): error TS6133: 'Send' is declared but its value is never read.
+src/pages/AssetsPage.tsx(2,73): error TS6133: 'Trash2' is declared but its value is never read.
+src/pages/AssetsPage.tsx(2,81): error TS6133: 'Lock' is declared but its value is never read.
+src/pages/AssetsPage.tsx(2,87): error TS6133: 'Unlock' is declared but its value is never read.
+src/pages/AssetsPage.tsx(2,95): error TS6133: 'RotateCcw' is declared but its value is never read.
+src/pages/AssetsPage.tsx(2,106): error TS6133: 'PlusCircle' is declared but its value is never read.
+src/pages/AssetsPage.tsx(7,1): error TS6133: 'Table' is declared but its value is never read.
+src/pages/AssetsPage.tsx(15,7): error TS6133: 'ASSET_STATUS_COLORS' is declared but its value is never read.
+src/pages/AssetsPage.tsx(32,11): error TS6133: 'user' is declared but its value is never read.
+src/pages/AssetsPage.tsx(34,18): error TS6133: 'setSearch' is declared but its value is never read.
+src/pages/AssetsPage.tsx(35,24): error TS6133: 'setStatusFilter' is declared but its value is never read.
+src/pages/AssetsPage.tsx(36,26): error TS6133: 'setCategoryFilter' is declared but its value is never read.
+src/pages/AssetsPage.tsx(40,10): error TS6133: 'revokingId' is declared but its value is never read.
+src/pages/AssetsPage.tsx(43,40): error TS6133: 'error' is declared but its value is never read.
+src/pages/AssetsPage.tsx(85,9): error TS6133: 'handleRevoke' is declared but its value is never read.
+src/pages/AssetsPage.tsx(102,9): error TS6133: 'categories' is declared but its value is never read.
+src/pages/AssetsPage.tsx(211,22): error TS7006: Parameter 'ownerId' implicitly has an 'any' type.
+src/pages/AssetsPage.tsx(301,28): error TS6133: 'title' is declared but its value is never read.
+src/pages/AuditPage.tsx(2,23): error TS6133: 'Loader2' is declared but its value is never read.
+src/pages/AuditPage.tsx(47,38): error TS6133: 'error' is declared but its value is never read.
+src/pages/AuditPage.tsx(56,9): error TS6133: 'isAdmin' is declared but its value is never read.
+src/pages/AuditPage.tsx(57,9): error TS6133: 'isAuditor' is declared but its value is never read.
+src/pages/AuditPage.tsx(330,30): error TS2322: Type 'string' is not assignable to type '"success" | "primary" | "warning" | "danger" | "default" | "outline" | "violet" | "active" | "critical" | "info" | "approved" | "pending" | "rejected" | "executed" | undefined'.
+src/pages/AuditPage.tsx(411,24): error TS2322: Type 'string' is not assignable to type '"success" | "primary" | "warning" | "danger" | "default" | "outline" | "violet" | "active" | "critical" | "info" | "approved" | "pending" | "rejected" | "executed" | undefined'.
+src/pages/BlockchainPage.tsx(2,18): error TS6133: 'Eye' is declared but its value is never read.
+src/pages/BlockchainPage.tsx(2,23): error TS6133: 'Loader2' is declared but its value is never read.
+src/pages/BlockchainPage.tsx(2,32): error TS6133: 'AlertCircle' is declared but its value is never read.
+src/pages/BlockchainPage.tsx(2,100): error TS6133: 'ChevronRight' is declared but its value is never read.
+src/pages/BlockchainPage.tsx(8,1): error TS6133: 'Modal' is declared but its value is never read.
+src/pages/BlockchainPage.tsx(10,1): error TS6192: All imports in import declaration are unused.
+src/pages/BlockchainPage.tsx(11,1): error TS6133: 'toast' is declared but its value is never read.
+src/pages/BlockchainPage.tsx(18,10): error TS6133: 'txDetail' is declared but its value is never read.
+src/pages/BlockchainPage.tsx(18,20): error TS6133: 'setTxDetail' is declared but its value is never read.
+src/pages/BlockchainPage.tsx(19,10): error TS6133: 'assetDetail' is declared but its value is never read.
+src/pages/BlockchainPage.tsx(19,23): error TS6133: 'setAssetDetail' is declared but its value is never read.
+src/pages/BlockchainPage.tsx(22,9): error TS6198: All destructured elements are unused.
+src/pages/BlockchainPage.tsx(23,9): error TS6198: All destructured elements are unused.
+src/pages/BlockchainPage.tsx(25,9): error TS6133: 'isAuditor' is declared but its value is never read.
+src/pages/BlockchainPage.tsx(27,9): error TS6133: 'handleViewTx' is declared but its value is never read.
+src/pages/BlockchainPage.tsx(31,9): error TS6133: 'handleViewAsset' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(1,20): error TS6133: 'useEffect' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(2,10): error TS6133: 'Search' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(2,18): error TS6133: 'Eye' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(2,32): error TS6133: 'AlertCircle' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(2,58): error TS6133: 'Shield' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(2,66): error TS6133: 'Key' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(5,1): error TS6133: 'Input' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(7,1): error TS6133: 'Table' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(16,16): error TS6133: 'setPage' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(17,18): error TS6133: 'setSearch' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(18,26): error TS6133: 'setVerifiedFilter' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(21,10): error TS6133: 'isVerifying' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(36,9): error TS6133: 'canVerify' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(49,9): error TS6133: 'handleVerifyDID' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(62,9): error TS6133: 'handleViewDid' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(81,18): error TS2304: Cannot find name 'Plus'.
+src/pages/IdentitiesPage.tsx(100,9): error TS6133: 'total' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(101,9): error TS6133: 'totalPages' is declared but its value is never read.
+src/pages/IdentitiesPage.tsx(119,16): error TS2304: Cannot find name 'Plus'.
+src/pages/IdentitiesPage.tsx(193,16): error TS2304: Cannot find name 'Plus'.
+src/pages/LoginPage.tsx(3,18): error TS6133: 'Loader2' is declared but its value is never read.
+src/pages/LoginPage.tsx(3,27): error TS6133: 'AlertCircle' is declared but its value is never read.
+src/pages/MyActivityPage.tsx(2,77): error TS6133: 'Calendar' is declared but its value is never read.
+src/pages/MyActivityPage.tsx(8,10): error TS6133: 'formatDate' is declared but its value is never read.
+src/pages/MyActivityPage.tsx(8,42): error TS6133: 'getStatusColor' is declared but its value is never read.
+src/pages/MyActivityPage.tsx(50,38): error TS6133: 'error' is declared but its value is never read.
+src/pages/MyActivityPage.tsx(146,34): error TS2322: Type 'string' is not assignable to type '"success" | "primary" | "warning" | "danger" | "default" | "outline" | "violet" | "active" | "critical" | "info" | "approved" | "pending" | "rejected" | "executed" | undefined'.
+src/pages/MyAssetsPage.tsx(2,37): error TS6133: 'Hash' is declared but its value is never read.
+src/pages/MyAssetsPage.tsx(10,10): error TS6133: 'formatAddress' is declared but its value is never read.
+src/pages/MyAssetsPage.tsx(10,51): error TS6133: 'getStatusColor' is declared but its value is never read.
+src/pages/MyAssetsPage.tsx(11,1): error TS6133: 'toast' is declared but its value is never read.
+src/pages/MyAssetsPage.tsx(28,40): error TS6133: 'error' is declared but its value is never read.
+src/pages/MyAssetsPage.tsx(140,32): error TS2322: Type 'string' is not assignable to type '"success" | "primary" | "warning" | "danger" | "default" | "outline" | "violet" | "active" | "critical" | "info" | "approved" | "pending" | "rejected" | "executed" | undefined'.
+src/pages/MyAssetsPage.tsx(229,18): error TS2322: Type 'string' is not assignable to type '"success" | "primary" | "warning" | "danger" | "default" | "outline" | "violet" | "active" | "critical" | "info" | "approved" | "pending" | "rejected" | "executed" | undefined'.
+src/pages/MyIdentityPage.tsx(2,18): error TS6133: 'Loader2' is declared but its value is never read.
+src/pages/MyIdentityPage.tsx(2,27): error TS6133: 'AlertCircle' is declared but its value is never read.
+src/pages/MyIdentityPage.tsx(2,78): error TS6133: 'Calendar' is declared but its value is never read.
+src/pages/MyIdentityPage.tsx(9,37): error TS6133: 'formatTxHash' is declared but its value is never read.
+src/pages/MyIdentityPage.tsx(15,35): error TS6133: 'error' is declared but its value is never read.
+src/pages/MyIdentityPage.tsx(158,88): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/pages/MyTransfersPage.tsx(2,45): error TS6133: 'Send' is declared but its value is never read.
+src/pages/MyTransfersPage.tsx(2,51): error TS6133: 'Clock' is declared but its value is never read.
+src/pages/MyTransfersPage.tsx(2,58): error TS6133: 'CheckCircle' is declared but its value is never read.
+src/pages/MyTransfersPage.tsx(2,71): error TS6133: 'XCircle' is declared but its value is never read.
+src/pages/MyTransfersPage.tsx(2,80): error TS6133: 'ArrowRight' is declared but its value is never read.
+src/pages/MyTransfersPage.tsx(33,43): error TS6133: 'error' is declared but its value is never read.
+src/pages/MyTransfersPage.tsx(39,9): error TS6133: 'assetsData' is declared but its value is never read.
+src/pages/MyTransfersPage.tsx(40,9): error TS6133: 'usersData' is declared but its value is never read.
+src/pages/MyTransfersPage.tsx(192,30): error TS2322: Type 'string' is not assignable to type '"success" | "primary" | "warning" | "danger" | "default" | "outline" | "violet" | "active" | "critical" | "info" | "approved" | "pending" | "rejected" | "executed" | undefined'.
+src/pages/MyTransfersPage.tsx(271,18): error TS2322: Type 'string' is not assignable to type '"success" | "primary" | "warning" | "danger" | "default" | "outline" | "violet" | "active" | "critical" | "info" | "approved" | "pending" | "rejected" | "executed" | undefined'.
+src/pages/RegisterPage.tsx(26,75): error TS6133: 'setFormError' is declared but its value is never read.
+src/pages/RegisterPage.tsx(26,89): error TS6133: 'clearErrors' is declared but its value is never read.
+src/pages/RegisterPage.tsx(192,30): error TS2345: Argument of type '"terms"' is not assignable to parameter of type '"email" | "full_name" | "password" | "wallet_address" | "confirmPassword"'.
+src/pages/RequestsPage.tsx(2,10): error TS6133: 'Search' is declared but its value is never read.
+src/pages/RequestsPage.tsx(2,24): error TS6133: 'Eye' is declared but its value is never read.
+src/pages/RequestsPage.tsx(2,29): error TS6133: 'Loader2' is declared but its value is never read.
+src/pages/RequestsPage.tsx(2,51): error TS6133: 'CheckCircle' is declared but its value is never read.
+src/pages/RequestsPage.tsx(2,64): error TS6133: 'XCircle' is declared but its value is never read.
+src/pages/RequestsPage.tsx(5,1): error TS6133: 'Input' is declared but its value is never read.
+src/pages/RequestsPage.tsx(8,1): error TS6133: 'Modal' is declared but its value is never read.
+src/pages/RequestsPage.tsx(12,10): error TS6133: 'formatAddress' is declared but its value is never read.
+src/pages/RequestsPage.tsx(12,37): error TS6133: 'formatTxHash' is declared but its value is never read.
+src/pages/RequestsPage.tsx(37,16): error TS6133: 'setPage' is declared but its value is never read.
+src/pages/RequestsPage.tsx(38,10): error TS6133: 'search' is declared but its value is never read.
+src/pages/RequestsPage.tsx(38,18): error TS6133: 'setSearch' is declared but its value is never read.
+src/pages/RequestsPage.tsx(39,24): error TS6133: 'setStatusFilter' is declared but its value is never read.
+src/pages/RequestsPage.tsx(40,10): error TS6133: 'showRequestModal' is declared but its value is never read.
+src/pages/RequestsPage.tsx(41,10): error TS6133: 'selectedRequest' is declared but its value is never read.
+src/pages/RequestsPage.tsx(42,10): error TS6133: 'requestType' is declared but its value is never read.
+src/pages/RequestsPage.tsx(43,10): error TS6133: 'preSelectedAssetId' is declared but its value is never read.
+src/pages/RequestsPage.tsx(43,30): error TS6133: 'setPreSelectedAssetId' is declared but its value is never read.
+src/pages/RequestsPage.tsx(44,10): error TS6133: 'showRejectModal' is declared but its value is never read.
+src/pages/RequestsPage.tsx(56,9): error TS6133: 'cancelMutation' is declared but its value is never read.
+src/pages/RequestsPage.tsx(60,9): error TS6133: 'canCreateRequest' is declared but its value is never read.
+src/pages/RequestsPage.tsx(65,9): error TS6133: 'total' is declared but its value is never read.
+src/pages/RequestsPage.tsx(66,9): error TS6133: 'totalPages' is declared but its value is never read.
+src/pages/RequestsPage.tsx(70,9): error TS6133: 'handleSubmitRequest' is declared but its value is never read.
+src/pages/RequestsPage.tsx(70,66): error TS6133: 'reason' is declared but its value is never read.
+src/pages/RequestsPage.tsx(103,9): error TS6133: 'handleReject' is declared but its value is never read.
+src/pages/SecurityCenterPage.tsx(3,11): error TS6133: 'Lock' is declared but its value is never read.
+src/pages/SecurityCenterPage.tsx(3,52): error TS6133: 'Wallet' is declared but its value is never read.
+src/pages/SecurityCenterPage.tsx(4,50): error TS6133: 'Zap' is declared but its value is never read.
+src/pages/SecurityCenterPage.tsx(4,55): error TS6133: 'Key' is declared but its value is never read.
+src/pages/SecurityCenterPage.tsx(5,27): error TS6133: 'Eye' is declared but its value is never read.
+src/pages/SecurityCenterPage.tsx(5,38): error TS6133: 'Network' is declared but its value is never read.
+src/pages/SecurityCenterPage.tsx(5,47): error TS6133: 'HardDrive' is declared but its value is never read.
+src/pages/SecurityCenterPage.tsx(5,58): error TS6133: 'Fingerprint' is declared but its value is never read.
+src/pages/SecurityCenterPage.tsx(8,1): error TS6133: 'Button' is declared but its value is never read.
+src/pages/SecurityCenterPage.tsx(12,3): error TS6133: 'SystemHealth' is declared but its value is never read.
+src/pages/SecurityCenterPage.tsx(281,36): error TS2304: Cannot find name 'cn'.
+src/pages/SecurityCenterPage.tsx(305,25): error TS2322: Type 'string' is not assignable to type '"critical" | "operational" | "degraded" | "unknown"'.
+src/pages/SecurityResourcesPage.tsx(2,1): error TS6133: 'Link' is declared but its value is never read.
+src/pages/SecurityResourcesPage.tsx(4,33): error TS6133: 'Server' is declared but its value is never read.
+src/pages/SecurityResourcesPage.tsx(5,43): error TS6133: 'Users' is declared but its value is never read.
+src/pages/SecurityResourcesPage.tsx(6,3): error TS6133: 'ChevronRight' is declared but its value is never read.
+src/pages/SecurityResourcesPage.tsx(9,1): error TS6133: 'Button' is declared but its value is never read.
+src/pages/SettingsPage.tsx(2,10): error TS6133: 'Loader2' is declared but its value is never read.
+src/pages/SettingsPage.tsx(2,65): error TS6133: 'Moon' is declared but its value is never read.
+src/pages/SettingsPage.tsx(2,71): error TS6133: 'Sun' is declared but its value is never read.
+src/pages/SettingsPage.tsx(202,20): error TS2304: Cannot find name 'CheckCircle'.
+src/pages/SettingsPage.tsx(213,51): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/pages/SettingsPage.tsx(235,121): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/pages/SettingsPage.tsx(237,22): error TS2304: Cannot find name 'Copy'.
+src/pages/TransfersPage.tsx(2,45): error TS6133: 'Clock' is declared but its value is never read.
+src/pages/TransfersPage.tsx(2,52): error TS6133: 'CheckCircle' is declared but its value is never read.
+src/pages/TransfersPage.tsx(2,65): error TS6133: 'XCircle' is declared but its value is never read.
+src/pages/TransfersPage.tsx(2,74): error TS6133: 'ArrowRight' is declared but its value is never read.
+src/pages/TransfersPage.tsx(2,86): error TS6133: 'Send' is declared but its value is never read.
+src/pages/TransfersPage.tsx(12,37): error TS6133: 'getStatusColor' is declared but its value is never read.
+src/pages/TransfersPage.tsx(33,10): error TS6133: 'rejectReason' is declared but its value is never read.
+src/pages/TransfersPage.tsx(33,24): error TS6133: 'setRejectReason' is declared but its value is never read.
+src/pages/TransfersPage.tsx(35,43): error TS6133: 'error' is declared but its value is never read.
+src/pages/TransfersPage.tsx(46,9): error TS6133: 'isAuditor' is declared but its value is never read.
+src/pages/TransfersPage.tsx(90,9): error TS6133: 'users' is declared but its value is never read.
+src/pages/TransfersPage.tsx(213,30): error TS2322: Type 'string' is not assignable to type '"success" | "primary" | "warning" | "danger" | "default" | "outline" | "violet" | "active" | "critical" | "info" | "approved" | "pending" | "rejected" | "executed" | undefined'.
+src/pages/TransfersPage.tsx(292,18): error TS2322: Type 'string' is not assignable to type '"success" | "primary" | "warning" | "danger" | "default" | "outline" | "violet" | "active" | "critical" | "info" | "approved" | "pending" | "rejected" | "executed" | undefined'.
+src/pages/UsersPage.tsx(1,20): error TS6133: 'useEffect' is declared but its value is never read.
+src/pages/UsersPage.tsx(2,10): error TS6133: 'Search' is declared but its value is never read.
+src/pages/UsersPage.tsx(2,18): error TS6133: 'Plus' is declared but its value is never read.
+src/pages/UsersPage.tsx(2,24): error TS6133: 'Eye' is declared but its value is never read.
+src/pages/UsersPage.tsx(2,29): error TS6133: 'Loader2' is declared but its value is never read.
+src/pages/UsersPage.tsx(2,61): error TS6133: 'Shield' is declared but its value is never read.
+src/pages/UsersPage.tsx(27,11): error TS6133: 'user' is declared but its value is never read.
+src/pages/UsersPage.tsx(29,18): error TS6133: 'setSearch' is declared but its value is never read.
+src/pages/UsersPage.tsx(30,22): error TS6133: 'setRoleFilter' is declared but its value is never read.
+src/pages/UsersPage.tsx(31,24): error TS6133: 'setStatusFilter' is declared but its value is never read.
+src/pages/UsersPage.tsx(35,39): error TS6133: 'error' is declared but its value is never read.
+src/pages/WalletManagementPage.tsx(2,18): error TS6133: 'Plus' is declared but its value is never read.
+src/pages/WalletManagementPage.tsx(2,70): error TS6133: 'CheckCircle' is declared but its value is never read.
+src/pages/WalletManagementPage.tsx(2,83): error TS6133: 'XCircle' is declared but its value is never read.
+src/pages/WalletManagementPage.tsx(2,92): error TS6133: 'MoreVertical' is declared but its value is never read.
+src/pages/WalletManagementPage.tsx(10,39): error TS2440: Import declaration conflicts with local declaration of 'getWalletTypeColor'.
+src/pages/WalletManagementPage.tsx(30,39): error TS6133: 'error' is declared but its value is never read.
+src/pages/WalletManagementPage.tsx(76,51): error TS2345: Argument of type '{ wallet_address: string; wallet_type: string; did: string; is_primary: boolean; }' is not assignable to parameter of type 'WalletAssociationCreate'.
+  Types of property 'wallet_type' are incompatible.
+    Type 'string' is not assignable to type 'WalletType | undefined'.
+src/pages/WalletManagementPage.tsx(235,65): error TS17001: JSX elements cannot have multiple attributes with the same name.

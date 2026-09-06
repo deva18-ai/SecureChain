@@ -6,15 +6,17 @@ from app.database import Base
 
 
 class UserRole(str, enum.Enum):
-    OWNER = "OWNER"
+    ADMIN = "ADMIN"
     MANAGER = "MANAGER"
-    EMPLOYEE = "EMPLOYEE"
+    AUDITOR = "AUDITOR"
+    USER = "USER"
 
 
 class WalletType(str, enum.Enum):
-    OWNER = "OWNER"
+    ADMIN = "ADMIN"
     MANAGER = "MANAGER"
-    EMPLOYEE = "EMPLOYEE"
+    AUDITOR = "AUDITOR"
+    USER = "USER"
 
 
 class BlockchainTxStatus(str, enum.Enum):
@@ -31,7 +33,7 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     wallet_address: Mapped[str] = mapped_column(String(42), unique=True, index=True, nullable=True)
-    role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.EMPLOYEE, nullable=False)
+    role: Mapped[UserRole] = mapped_column(Enum(UserRole, native_enum=False), default=UserRole.USER, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
@@ -44,7 +46,7 @@ class User(Base):
     transfers_initiated: Mapped[list["Transfer"]] = relationship("Transfer", back_populates="initiator", foreign_keys="Transfer.initiator_id")
     transfers_received: Mapped[list["Transfer"]] = relationship("Transfer", back_populates="recipient", foreign_keys="Transfer.recipient_id")
     audit_logs: Mapped[list["AuditLog"]] = relationship("AuditLog", back_populates="actor")
-    security_events: Mapped[list["SecurityEvent"]] = relationship("SecurityEvent", back_populates="actor")
+    security_events: Mapped[list["SecurityEvent"]] = relationship("SecurityEvent", back_populates="actor", foreign_keys="SecurityEvent.actor_id")
     wallet_associations: Mapped[list["WalletAssociation"]] = relationship("WalletAssociation", back_populates="user", cascade="all, delete-orphan")
 
     __table_args__ = (
@@ -67,7 +69,7 @@ class DID(Base):
     verified_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     blockchain_tx_hash: Mapped[str] = mapped_column(String(66), nullable=True)
     blockchain_block_number: Mapped[int] = mapped_column(BigInteger, nullable=True)
-    blockchain_tx_status: Mapped[BlockchainTxStatus] = mapped_column(Enum(BlockchainTxStatus), default=BlockchainTxStatus.PENDING, nullable=False)
+    blockchain_tx_status: Mapped[BlockchainTxStatus] = mapped_column(Enum(BlockchainTxStatus, native_enum=False), default=BlockchainTxStatus.PENDING, nullable=False)
 
     user: Mapped["User"] = relationship("User", back_populates="dids")
 
@@ -83,11 +85,11 @@ class WalletAssociation(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     wallet_address: Mapped[str] = mapped_column(String(42), unique=True, index=True, nullable=False)
-    wallet_type: Mapped[WalletType] = mapped_column(Enum(WalletType), nullable=False)
+    wallet_type: Mapped[WalletType] = mapped_column(Enum(WalletType, native_enum=False), nullable=False)
     did: Mapped[str] = mapped_column(String(255), nullable=True)
     blockchain_identity_tx_hash: Mapped[str] = mapped_column(String(66), nullable=True)
     blockchain_identity_block_number: Mapped[int] = mapped_column(BigInteger, nullable=True)
-    blockchain_identity_status: Mapped[BlockchainTxStatus] = mapped_column(Enum(BlockchainTxStatus), default=BlockchainTxStatus.PENDING, nullable=False)
+    blockchain_identity_status: Mapped[BlockchainTxStatus] = mapped_column(Enum(BlockchainTxStatus, native_enum=False), default=BlockchainTxStatus.PENDING, nullable=False)
     is_primary: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
@@ -119,12 +121,12 @@ class Asset(Base):
     metadata_uri: Mapped[str] = mapped_column(String(500), nullable=False)
     creator_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     owner_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    status: Mapped[AssetStatus] = mapped_column(Enum(AssetStatus), default=AssetStatus.ACTIVE, nullable=False)
+    status: Mapped[AssetStatus] = mapped_column(Enum(AssetStatus, native_enum=False), default=AssetStatus.ACTIVE, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     blockchain_tx_hash: Mapped[str] = mapped_column(String(66), nullable=True)
     blockchain_block_number: Mapped[int] = mapped_column(BigInteger, nullable=True)
-    blockchain_tx_status: Mapped[BlockchainTxStatus] = mapped_column(Enum(BlockchainTxStatus), default=BlockchainTxStatus.PENDING, nullable=False)
+    blockchain_tx_status: Mapped[BlockchainTxStatus] = mapped_column(Enum(BlockchainTxStatus, native_enum=False), default=BlockchainTxStatus.PENDING, nullable=False)
     blockchain_network: Mapped[str] = mapped_column(String(50), nullable=True)
     contract_address: Mapped[str] = mapped_column(String(42), nullable=True)
 
@@ -157,10 +159,10 @@ class Transfer(Base):
     recipient_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     from_address: Mapped[str] = mapped_column(String(42), nullable=False)
     to_address: Mapped[str] = mapped_column(String(42), nullable=False)
-    status: Mapped[TransferStatus] = mapped_column(Enum(TransferStatus), default=TransferStatus.PENDING, nullable=False)
+    status: Mapped[TransferStatus] = mapped_column(Enum(TransferStatus, native_enum=False), default=TransferStatus.PENDING, nullable=False)
     blockchain_tx_hash: Mapped[str] = mapped_column(String(66), nullable=True)
     blockchain_block_number: Mapped[int] = mapped_column(BigInteger, nullable=True)
-    blockchain_tx_status: Mapped[BlockchainTxStatus] = mapped_column(Enum(BlockchainTxStatus), default=BlockchainTxStatus.PENDING, nullable=False)
+    blockchain_tx_status: Mapped[BlockchainTxStatus] = mapped_column(Enum(BlockchainTxStatus, native_enum=False), default=BlockchainTxStatus.PENDING, nullable=False)
     error_message: Mapped[str] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
@@ -202,7 +204,7 @@ class AuditLog(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
     actor_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     actor_address: Mapped[str] = mapped_column(String(42), nullable=True)
-    action: Mapped[AuditAction] = mapped_column(Enum(AuditAction), nullable=False)
+    action: Mapped[AuditAction] = mapped_column(Enum(AuditAction, native_enum=False), nullable=False)
     resource_type: Mapped[str] = mapped_column(String(50), nullable=False)
     resource_id: Mapped[str] = mapped_column(String(100), nullable=False)
     role: Mapped[str] = mapped_column(String(50), nullable=True)
@@ -247,8 +249,8 @@ class SecurityEvent(Base):
     __tablename__ = "security_events"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
-    event_type: Mapped[SecurityEventType] = mapped_column(Enum(SecurityEventType), nullable=False)
-    severity: Mapped[SecurityEventSeverity] = mapped_column(Enum(SecurityEventSeverity), default=SecurityEventSeverity.MEDIUM, nullable=False)
+    event_type: Mapped[SecurityEventType] = mapped_column(Enum(SecurityEventType, native_enum=False), nullable=False)
+    severity: Mapped[SecurityEventSeverity] = mapped_column(Enum(SecurityEventSeverity, native_enum=False), default=SecurityEventSeverity.MEDIUM, nullable=False)
     actor_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     actor_address: Mapped[str] = mapped_column(String(42), nullable=True)
     actor_role: Mapped[str] = mapped_column(String(20), nullable=True)
@@ -324,7 +326,7 @@ class AIAssetProposal(Base):
     ai_model: Mapped[str] = mapped_column(String(100), nullable=True)
     ai_prompt: Mapped[str] = mapped_column(Text, nullable=True)
     ai_response: Mapped[str] = mapped_column(Text, nullable=True)
-    status: Mapped[AIAssetProposalStatus] = mapped_column(Enum(AIAssetProposalStatus), default=AIAssetProposalStatus.DRAFT, nullable=False)
+    status: Mapped[AIAssetProposalStatus] = mapped_column(Enum(AIAssetProposalStatus, native_enum=False), default=AIAssetProposalStatus.DRAFT, nullable=False)
     reviewed_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     reviewed_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     review_notes: Mapped[str] = mapped_column(Text, nullable=True)

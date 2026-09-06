@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, TypeVar
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
@@ -12,14 +12,16 @@ from app.schemas import (
     TransferWithDetails,
     PaginatedResponse,
 )
-from app.auth import get_current_active_user, require_owner, require_owner_or_manager
+from app.auth import get_current_active_user, require_admin, require_admin_or_manager
 from app.services.audit import AuditService
 from app.services.blockchain import BlockchainService
 
 router = APIRouter(prefix="/transfers", tags=["Asset Transfers"])
 
+TransferListResponse = PaginatedResponse[TransferWithDetails]
 
-@router.get("", response_model=PaginatedResponse)
+
+@router.get("", response_model=TransferListResponse)
 async def list_transfers(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -34,7 +36,7 @@ async def list_transfers(
         selectinload(Transfer.recipient),
     )
 
-    if current_user.role not in [UserRole.OWNER, UserRole.MANAGER]:
+    if current_user.role not in [UserRole.ADMIN, UserRole.MANAGER]:
         query = query.where(
             (Transfer.initiator_id == current_user.id)
             | (Transfer.recipient_id == current_user.id)
@@ -54,7 +56,7 @@ async def list_transfers(
     result = await db.execute(query)
     transfers = result.scalars().all()
 
-    return PaginatedResponse(
+    return TransferListResponse(
         items=transfers,
         total=total,
         page=page,
@@ -83,7 +85,7 @@ async def get_transfer(
         raise HTTPException(status_code=404, detail="Transfer not found")
 
     if (
-        current_user.role not in [UserRole.OWNER, UserRole.MANAGER]
+        current_user.role not in [UserRole.ADMIN, UserRole.MANAGER]
         and transfer.initiator_id != current_user.id
         and transfer.recipient_id != current_user.id
     ):
@@ -106,7 +108,7 @@ async def cancel_transfer(
     if not transfer:
         raise HTTPException(status_code=404, detail="Transfer not found")
 
-    if transfer.initiator_id != current_user.id and current_user.role != UserRole.OWNER:
+    if transfer.initiator_id != current_user.id and current_user.role != UserRole.ADMIN:
         raise HTTPException(status_code=403, detail="Not authorized to cancel this transfer")
 
     if transfer.status != TransferStatus.PENDING:

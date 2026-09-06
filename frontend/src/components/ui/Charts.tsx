@@ -226,7 +226,6 @@ export function RadialBarChartComponent({ data, height = 250, colors = CHART_COL
         <RadialBar
           data={data}
           dataKey="value"
-          nameKey="name"
         >
           {data.map((_, i) => (
             <Cell key={`cell-${i}`} fill={colors[i % colors.length]} />
@@ -420,8 +419,9 @@ export function ProgressRing({ value, max = 100, size = 60, strokeWidth = 4, col
 }
 
 export function StatGrid({ children, columns = 6, className }: { children: ReactNode; columns?: number; className?: string }) {
+  const gridColClass = columns === 4 ? 'xl:grid-cols-4' : columns === 5 ? 'xl:grid-cols-5' : 'xl:grid-cols-6';
   return (
-    <div className={cn('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4', className)}>
+    <div className={cn('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3', gridColClass, 'gap-4', className)}>
       {children}
     </div>
   );

@@ -56,7 +56,7 @@ export function useFocusRestore() {
 }
 
 export function useAnnouncer() {
-  const announcerRef = useRef<HTMLDivElement>(null);
+  const announcerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!announcerRef.current) {
@@ -196,14 +196,8 @@ export function useAriaDescribedBy(errorId?: string, hintId?: string) {
 }
 
 export function LiveRegion() {
-  const [message, setMessage] = useState('');
-  const [priority, setPriority] = useState<'polite' | 'assertive'>('polite');
-
-  const announce = useCallback((msg: string, pri: 'polite' | 'assertive' = 'polite') => {
-    setPriority(pri);
-    setMessage('');
-    setTimeout(() => setMessage(msg), 0);
-  }, []);
+  const [message] = useState('');
+  const [priority] = useState<'polite' | 'assertive'>('polite');
 
   return (
     <div

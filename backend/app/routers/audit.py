@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, TypeVar
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
@@ -12,14 +12,16 @@ from app.schemas import (
     VerificationResponse,
     PaginatedResponse,
 )
-from app.auth import get_current_active_user, require_employee, require_owner_or_manager
+from app.auth import get_current_active_user, require_auditor, require_admin_or_manager
 from app.services.audit import AuditService
 from app.services.blockchain import BlockchainService
 
 router = APIRouter(prefix="/audit", tags=["Audit Trail"])
 
+AuditLogListResponse = PaginatedResponse[AuditLogWithActor]
 
-@router.get("", response_model=PaginatedResponse)
+
+@router.get("", response_model=AuditLogListResponse)
 async def list_audit_logs(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -27,7 +29,7 @@ async def list_audit_logs(
     resource_type: Optional[str] = None,
     actor_id: Optional[int] = None,
     blockchain_verified: Optional[bool] = None,
-    current_user: User = Depends(require_owner_or_manager),
+    current_user: User = Depends(require_auditor),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(AuditLog).options(selectinload(AuditLog.actor))
@@ -50,7 +52,7 @@ async def list_audit_logs(
     result = await db.execute(query)
     logs = result.scalars().all()
 
-    return PaginatedResponse(
+    return AuditLogListResponse(
         items=logs,
         total=total,
         page=page,
@@ -62,7 +64,7 @@ async def list_audit_logs(
 @router.get("/{log_id}", response_model=AuditLogWithActor)
 async def get_audit_log(
     log_id: int,
-    current_user: User = Depends(require_owner_or_manager),
+    current_user: User = Depends(require_auditor),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
@@ -77,7 +79,7 @@ async def get_audit_log(
 @router.post("/verify", response_model=VerificationResponse)
 async def verify_on_blockchain(
     request: VerificationRequest,
-    current_user: User = Depends(require_owner_or_manager),
+    current_user: User = Depends(require_auditor),
     db: AsyncSession = Depends(get_db),
 ):
     if not request.tx_hash and not request.token_id and not request.did:

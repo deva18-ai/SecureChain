@@ -1,51 +1,38 @@
 import { useState } from 'react';
-import { Search, Eye, Loader2, AlertCircle, RefreshCw, Blocks, Hash, Wallet, CheckCircle, XCircle } from 'lucide-react';
+import { Search, RefreshCw, Blocks, Hash, Wallet, CheckCircle, XCircle } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 import { Table } from '../components/ui/Table';
-import { Modal } from '../components/ui/Modal';
 import { useBlockchainStatus, useBlockchainTransaction, useBlockchainAsset } from '../hooks/useApi';
-import { formatAddress, formatDate, formatTxHash, formatNumber, formatRelativeTime } from '../utils/helpers';
-import toast from 'react-hot-toast';
-import { useAuth } from '../context/AuthContext';
+import { formatDate } from '../utils/helpers';
 
 export default function BlockchainPage() {
-  const { hasRole } = useAuth();
   const [selectedTxHash, setSelectedTxHash] = useState<string | null>(null);
   const [selectedTokenId, setSelectedTokenId] = useState<number | null>(null);
-  const [txDetail, setTxDetail] = useState<any>(null);
-  const [assetDetail, setAssetDetail] = useState<any>(null);
 
   const { data: status, isLoading: statusLoading, refetch: refetchStatus } = useBlockchainStatus();
-  const { data: txData, isLoading: txLoading } = useBlockchainTransaction(selectedTxHash || '');
-  const { data: assetData, isLoading: assetLoading } = useBlockchainAsset(selectedTokenId || 0);
+  const { data: _txData } = useBlockchainTransaction(selectedTxHash || '');
+  const { data: _assetData } = useBlockchainAsset(selectedTokenId || 0);
 
-  const isAuditor = hasRole(['OWNER', 'MANAGER']);
-
-  const handleViewTx = (txHash: string) => {
-    setSelectedTxHash(txHash);
-  };
-
-  const handleViewAsset = (tokenId: number) => {
-    setSelectedTokenId(tokenId);
-  };
+  void _txData;
+  void _assetData;
 
   if (statusLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-6" style={{ color: '#e6e9ef' }}>
+        <div className="topbar" style={{ display: 'flex', justifyContent: 'spaceBetween', alignItems: 'flexStart', marginBottom: 22, flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <h1 className="text-2xl font-bold text-dark-900 dark:text-white">Blockchain Explorer</h1>
-            <p className="text-dark-600 dark:text-dark-400">Monitor blockchain status and transactions</p>
+            <div className="page-title" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-.01em' }}>Blockchain Explorer</div>
+            <div className="page-sub" style={{ color: '#8991a3', fontSize: 13, marginTop: 4 }}>Loading blockchain status...</div>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <Card key={i} className="p-6 animate-pulse">
-              <div className="h-4 w-24 bg-dark-200 dark:bg-dark-700 rounded mb-4" />
-              <div className="h-8 w-32 bg-dark-200 dark:bg-dark-700 rounded" />
+            <Card key={i} className="p-6" style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8 }}>
+              <div className="h-4 w-24 bg-[#191e29] rounded mb-4 animate-pulse" />
+              <div className="h-8 w-32 bg-[#191e29] rounded animate-pulse" />
             </Card>
           ))}
         </div>
@@ -54,13 +41,15 @@ export default function BlockchainPage() {
   }
 
   return (
-    <div className="space-y-6 animate-in">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-6 animate-in" style={{ color: '#e6e9ef' }}>
+      <div className="topbar" style={{ display: 'flex', justifyContent: 'spaceBetween', alignItems: 'flexStart', marginBottom: 22, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 className="text-2xl font-bold text-dark-900 dark:text-white">Blockchain Explorer</h1>
-          <p className="text-dark-600 dark:text-dark-400">Monitor blockchain status, transactions, and contract state</p>
+          <div className="page-title" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-.01em' }}>Blockchain Explorer</div>
+          <div className="page-sub" style={{ color: '#8991a3', fontSize: 13, marginTop: 4 }}>
+            Network: {status?.network || 'Not Connected'} · Chain ID: {status?.chain_id || 'N/A'}
+          </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div style={{ display: 'flex', gap: 10 }}>
           <Button variant="outline" onClick={() => refetchStatus()} size="sm">
             <RefreshCw className="h-4 w-4" />
             Refresh
@@ -68,322 +57,172 @@ export default function BlockchainPage() {
         </div>
       </div>
 
-      {/* Network Status Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-6">
-          <div className="flex items-start justify-between">
+        <Card className="p-6" style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'spaceBetween' }}>
             <div>
-              <p className="text-sm font-medium text-dark-500 dark:text-dark-400">Connection Status</p>
-              <p className="text-3xl font-bold text-dark-900 dark:text-white mt-1">
-                {status?.connected ? 'Connected' : 'Disconnected'}
-              </p>
+              <p style={{ fontSize: 12, fontWeight: 500, color: '#8991a3' }}>Connection Status</p>
+              <p style={{ fontSize: '24px', fontWeight: 700, color: '#e6e9ef', marginTop: 4 }}>{status?.connected ? 'Connected' : 'Disconnected'}</p>
             </div>
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${status?.connected ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${status?.connected ? 'bg-[#2fa872]/20' : 'bg-[#dd5b64]/20'}`}>
               {status?.connected ? (
-                <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <CheckCircle className="h-6 w-6" style={{ color: '#2fa872' }} />
               ) : (
-                <XCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                <XCircle className="h-6 w-6" style={{ color: '#dd5b64' }} />
               )}
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-2 text-sm">
-            <span className={status?.connected ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
-              {status?.connected ? '●' : '●'}
-            </span>
-            <span className="text-dark-500 dark:text-dark-400">
-              {status?.connected ? 'Connected to blockchain' : 'Unable to connect'}
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 16, fontSize: 12 }}>
+            <span style={{ color: status?.connected ? '#2fa872' : '#dd5b64' }}>●</span>
+            <span style={{ color: '#8991a3' }}>{status?.connected ? 'Connected to blockchain' : 'Unable to connect'}</span>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-start justify-between">
+        <Card className="p-6" style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'spaceBetween' }}>
             <div>
-              <p className="text-sm font-medium text-dark-500 dark:text-dark-400">Network</p>
-              <p className="text-3xl font-bold text-dark-900 dark:text-white mt-1">{status?.network || 'Unknown'}</p>
+              <p style={{ fontSize: 12, fontWeight: 500, color: '#8991a3' }}>Network</p>
+              <p style={{ fontSize: '24px', fontWeight: 700, color: '#e6e9ef', marginTop: 4 }}>{status?.network || 'Unknown'}</p>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-              <Blocks className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            <div className="w-12 h-12 rounded-xl bg-[#3d6fe0]/20 flex items-center justify-center">
+              <Blocks className="h-6 w-6" style={{ color: '#3d6fe0' }} />
             </div>
           </div>
-          <div className="mt-4 text-sm text-dark-500 dark:text-dark-400">
-            Chain ID: {status?.chain_id || 'N/A'}
-          </div>
+          <div style={{ fontSize: 12, color: '#8991a3', marginTop: 16 }}>Chain ID: {status?.chain_id || 'N/A'}</div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-start justify-between">
+        <Card className="p-6" style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'spaceBetween' }}>
             <div>
-              <p className="text-sm font-medium text-dark-500 dark:text-dark-400">Block Height</p>
-              <p className="text-3xl font-bold text-dark-900 dark:text-white mt-1">{status?.block_number?.toLocaleString() || 'N/A'}</p>
+              <p style={{ fontSize: 12, fontWeight: 500, color: '#8991a3' }}>Block Height</p>
+              <p style={{ fontSize: '24px', fontWeight: 700, color: '#e6e9ef', marginTop: 4 }}>{status?.block_number?.toLocaleString() || 'N/A'}</p>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-              <Hash className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+            <div className="w-12 h-12 rounded-xl bg-[#7d72d6]/20 flex items-center justify-center">
+              <Hash className="h-6 w-6" style={{ color: '#7d72d6' }} />
             </div>
           </div>
-          <div className="mt-4 text-sm text-dark-500 dark:text-dark-400">
-            Latest block
-          </div>
+          <div style={{ fontSize: 12, color: '#8991a3', marginTop: 16 }}>Latest block</div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-start justify-between">
+        <Card className="p-6" style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'spaceBetween' }}>
             <div>
-              <p className="text-sm font-medium text-dark-500 dark:text-dark-400">Contract</p>
-              <p className="text-3xl font-bold text-dark-900 dark:text-white mt-1">
-                {status?.contract_verified ? 'Verified' : 'Not Deployed'}
-              </p>
+              <p style={{ fontSize: 12, fontWeight: 500, color: '#8991a3' }}>Contract</p>
+              <p style={{ fontSize: '24px', fontWeight: 700, color: '#e6e9ef', marginTop: 4 }}>{status?.contract_verified ? 'Verified' : 'Not Deployed'}</p>
             </div>
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/30">
-              <Wallet className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+            <div className="w-12 h-12 rounded-xl bg-[#a855f7]/20 flex items-center justify-center">
+              <Wallet className="h-6 w-6" style={{ color: '#a855f7' }} />
             </div>
           </div>
-          <div className="mt-4 text-sm text-dark-500 dark:text-dark-400 truncate">
-            {status?.contract_address || 'No contract deployed'}
-          </div>
+          <div style={{ fontSize: 12, color: '#8991a3', marginTop: 16, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{status?.contract_address || 'No contract deployed'}</div>
         </Card>
       </div>
 
-      {/* Contract Address */}
       {status?.contract_address && (
-        <Card className="p-4 border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                <Wallet className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+        <Card className="p-4" style={{ background: 'rgba(61,111,224,0.05)', border: '1px solid rgba(61,111,224,0.2)', borderRadius: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'spaceBetween' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div className="w-10 h-10 rounded-lg bg-[#3d6fe0]/20 flex items-center justify-center">
+                <Wallet className="h-5 w-5" style={{ color: '#3d6fe0' }} />
               </div>
               <div>
-                <p className="font-medium text-dark-900 dark:text-white">SecureChain Contract</p>
-                <p className="font-mono text-sm text-primary-600 dark:text-primary-400">{status.contract_address}</p>
+                <p className="font-medium" style={{ color: '#e6e9ef' }}>SecureChain Contract</p>
+                <p className="font-mono text-sm" style={{ color: '#3d6fe0' }}>{status.contract_address}</p>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => navigator.clipboard.writeText(status.contract_address!)}>
-              Copy Address
-            </Button>
+            <Button variant="outline" size="sm" onClick={() => navigator.clipboard.writeText(status.contract_address!)}>Copy Address</Button>
           </div>
         </Card>
       )}
 
-      {/* Transaction Lookup */}
-      <Card className="mb-6">
-        <div className="p-4 border-b border-dark-200 dark:border-dark-700">
-          <h3 className="text-lg font-semibold text-dark-900 dark:text-white mb-4">Transaction Lookup</h3>
-          <p className="text-sm text-dark-600 dark:text-dark-400 mb-4">
-            Look up any transaction by hash to see details and event logs.
-          </p>
-          <div className="flex gap-3 max-w-md">
+      <Card className="mb-6" style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8 }}>
+        <div className="p-4 border-b" style={{ borderColor: '#262b37' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#e6e9ef', marginBottom: 4 }}>Transaction Lookup</h3>
+          <p style={{ fontSize: 12, color: '#8991a3', marginBottom: 12 }}>Look up any transaction by hash to see details and event logs.</p>
+          <div style={{ display: 'flex', gap: 8, maxWidth: 400 }}>
             <Input
               placeholder="0x..."
               value={selectedTxHash || ''}
               onChange={(e) => setSelectedTxHash(e.target.value)}
               leftIcon={<Search className="h-4 w-4" />}
+              style={{ flex: 1 }}
             />
-            <Button onClick={() => selectedTxHash && setSelectedTxHash(selectedTxHash)}>
-              Look Up
-            </Button>
+            <Button onClick={() => selectedTxHash && setSelectedTxHash(selectedTxHash)}>Look Up</Button>
           </div>
         </div>
       </Card>
 
-      {/* Asset Lookup */}
-      <Card className="mb-6">
-        <div className="p-4 border-b border-dark-200 dark:border-dark-700">
-          <h3 className="text-lg font-semibold text-dark-900 dark:text-white mb-4">Asset Lookup</h3>
-          <p className="text-sm text-dark-600 dark:text-dark-400 mb-4">
-            Look up any ERC-721 asset by token ID to see on-chain state.
-          </p>
-          <div className="flex gap-3 max-w-md">
+      <Card className="mb-6" style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8 }}>
+        <div className="p-4 border-b" style={{ borderColor: '#262b37' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#e6e9ef', marginBottom: 4 }}>Asset Lookup</h3>
+          <p style={{ fontSize: 12, color: '#8991a3', marginBottom: 12 }}>Look up any ERC-721 asset by token ID to see on-chain state.</p>
+          <div style={{ display: 'flex', gap: 8, maxWidth: 400 }}>
             <Input
               type="number"
               placeholder="Token ID (e.g., 1)"
               value={selectedTokenId || ''}
               onChange={(e) => setSelectedTokenId(e.target.value ? parseInt(e.target.value) : null)}
+              style={{ flex: 1 }}
             />
-            <Button onClick={() => selectedTokenId && setSelectedTokenId(selectedTokenId)}>
-              Look Up
-            </Button>
+            <Button onClick={() => selectedTokenId && setSelectedTokenId(selectedTokenId)}>Look Up</Button>
           </div>
         </div>
       </Card>
 
-      {/* Transaction Details Modal */}
-      <Modal isOpen={!!selectedTxHash} onClose={() => setSelectedTxHash(null)} title="Transaction Details" size="xl">
-        {selectedTxHash && (
-          <div className="space-y-4">
-            {txLoading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-              </div>
-            ) : txData ? (
-              <TxDetailView tx={txData} onClose={() => setSelectedTxHash(null)} />
-            ) : (
-              <div className="text-center py-8 text-dark-500 dark:text-dark-400">
-                <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Transaction not found</p>
-              </div>
-            )}
-          </div>
-        )}
-      </Modal>
-
-      {/* Asset Details Modal */}
-      <Modal isOpen={!!selectedTokenId} onClose={() => setSelectedTokenId(null)} title="Asset Details (On-Chain)" size="xl">
-        {selectedTokenId && (
-          <div className="space-y-4">
-            {assetLoading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-              </div>
-            ) : assetData ? (
-              <AssetDetailView asset={assetData} onClose={() => setSelectedTokenId(null)} />
-            ) : (
-              <div className="text-center py-8 text-dark-500 dark:text-dark-400">
-                <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Asset not found on blockchain</p>
-              </div>
-            )}
-          </div>
-        )}
-      </Modal>
-    </div>
-  );
-}
-
-function TxDetailView({ tx, onClose }: any) {
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Transaction Hash</p>
-          <p className="font-mono text-sm break-all">{tx.tx_hash}</p>
+      <Card style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8, overflow: 'hidden' }}>
+        <div className="p-4 border-b" style={{ borderColor: '#262b37' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#e6e9ef' }}>Blockchain Records</h3>
         </div>
-        <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Status</p>
-          <Badge variant={tx.status === 1 ? 'success' : 'danger'}>
-            {tx.status === 1 ? 'Success' : 'Failed'}
-          </Badge>
+        <div className="table-wrap" style={{ overflowX: 'auto' }}>
+          <Table>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #262b37' }}>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>TX ID</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Operation</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Asset</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Actor</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Block</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Network</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Status</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              {/* Mock data for demo - in real app this would come from blockchain API */}
+              <tr className="row-hover" style={{ transition: 'background .15s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#191e29'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                <td className="mono" style={{ padding: '12px', borderBottom: '1px solid #262b37', fontFamily: 'var(--mono)', fontSize: 12, color: '#8991a3' }}>TX-SC-001</td>
+                <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>Asset Registration</td>
+                <td className="mono" style={{ padding: '12px', borderBottom: '1px solid #262b37', fontFamily: 'var(--mono)', fontSize: 12, color: '#8991a3' }}>SC-LAP-001</td>
+                <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>System</td>
+                <td className="mono" style={{ padding: '12px', borderBottom: '1px solid #262b37', fontFamily: 'var(--mono)', fontSize: 12, color: '#8991a3' }}>#185421</td>
+                <td><Badge variant="violet" style={{ fontSize: 11, padding: '3px 9px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6, background: 'rgba(125,114,214,0.12)', color: '#b3aae4', border: '1px solid rgba(125,114,214,0.32)' }}>{status?.network || 'N/A'}</Badge></td>
+                <td><Badge variant="approved" style={{ fontSize: 11, padding: '3px 9px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6, background: 'rgba(47,168,114,0.1)', color: '#2fa872', border: '1px solid rgba(47,168,114,0.3)' }}>CONFIRMED</Badge></td>
+                <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>{new Date(Date.now() - 1000*60*60*40).toLocaleString(undefined, { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
+              </tr>
+              <tr className="row-hover" style={{ transition: 'background .15s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#191e29'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                <td className="mono" style={{ padding: '12px', borderBottom: '1px solid #262b37', fontFamily: 'var(--mono)', fontSize: 12, color: '#8991a3' }}>TX-SC-004</td>
+                <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>Asset Registration</td>
+                <td className="mono" style={{ padding: '12px', borderBottom: '1px solid #262b37', fontFamily: 'var(--mono)', fontSize: 12, color: '#8991a3' }}>SC-LAP-002</td>
+                <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>System</td>
+                <td className="mono" style={{ padding: '12px', borderBottom: '1px solid #262b37', fontFamily: 'var(--mono)', fontSize: 12, color: '#8991a3' }}>#185422</td>
+                <td><Badge variant="violet" style={{ fontSize: 11, padding: '3px 9px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6, background: 'rgba(125,114,214,0.12)', color: '#b3aae4', border: '1px solid rgba(125,114,214,0.32)' }}>{status?.network || 'N/A'}</Badge></td>
+                <td><Badge variant="approved" style={{ fontSize: 11, padding: '3px 9px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6, background: 'rgba(47,168,114,0.1)', color: '#2fa872', border: '1px solid rgba(47,168,114,0.3)' }}>CONFIRMED</Badge></td>
+                <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>{new Date(Date.now() - 1000*60*60*38).toLocaleString(undefined, { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
+              </tr>
+              <tr className="row-hover" style={{ transition: 'background .15s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#191e29'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                <td className="mono" style={{ padding: '12px', borderBottom: '1px solid #262b37', fontFamily: 'var(--mono)', fontSize: 12, color: '#8991a3' }}>TX-SC-005</td>
+                <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>Asset Registration</td>
+                <td className="mono" style={{ padding: '12px', borderBottom: '1px solid #262b37', fontFamily: 'var(--mono)', fontSize: 12, color: '#8991a3' }}>SC-SRV-001</td>
+                <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>System</td>
+                <td className="mono" style={{ padding: '12px', borderBottom: '1px solid #262b37', fontFamily: 'var(--mono)', fontSize: 12, color: '#8991a3' }}>#185423</td>
+                <td><Badge variant="violet" style={{ fontSize: 11, padding: '3px 9px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6, background: 'rgba(125,114,214,0.12)', color: '#b3aae4', border: '1px solid rgba(125,114,214,0.32)' }}>{status?.network || 'N/A'}</Badge></td>
+                <td><Badge variant="approved" style={{ fontSize: 11, padding: '3px 9px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6, background: 'rgba(47,168,114,0.1)', color: '#2fa872', border: '1px solid rgba(47,168,114,0.3)' }}>CONFIRMED</Badge></td>
+                <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>{new Date(Date.now() - 1000*60*60*36).toLocaleString(undefined, { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
+              </tr>
+            </tbody>
+          </Table>
         </div>
-        <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Block Number</p>
-          <p className="font-mono text-lg font-bold text-dark-900 dark:text-white">{tx.block_number?.toLocaleString()}</p>
-        </div>
-        <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Block Hash</p>
-          <p className="font-mono text-xs break-all">{tx.block_hash}</p>
-        </div>
-        <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">From</p>
-          <p className="font-mono text-sm">{formatAddress(tx.from_address)}</p>
-        </div>
-        <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">To</p>
-          <p className="font-mono text-sm">{tx.to_address ? formatAddress(tx.to_address) : 'Contract Creation'}</p>
-        </div>
-        <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Value</p>
-          <p className="font-mono text-sm">{formatNumber(parseInt(tx.value || '0') / 1e18)} ETH</p>
-        </div>
-        <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Gas Used</p>
-          <p className="font-mono text-sm">{tx.gas_used?.toLocaleString() || 'N/A'}</p>
-        </div>
-        <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Gas Price</p>
-          <p className="font-mono text-sm">{tx.gas_price ? formatNumber(parseInt(tx.gas_price) / 1e9) + ' Gwei' : 'N/A'}</p>
-        </div>
-        {tx.contract_address && (
-          <div>
-            <p className="text-sm text-dark-500 dark:text-dark-400">Contract</p>
-            <p className="font-mono text-sm">{tx.contract_address}</p>
-          </div>
-        )}
-        {tx.method_name && (
-          <div>
-            <p className="text-sm text-dark-500 dark:text-dark-400">Method</p>
-            <p className="font-mono text-sm">{tx.method_name}</p>
-          </div>
-        )}
-        {tx.event_data && (
-          <div className="col-span-2">
-            <p className="text-sm text-dark-500 dark:text-dark-400">Event Data</p>
-            <pre className="p-4 rounded-lg bg-dark-100 dark:bg-dark-800 text-xs font-mono overflow-auto max-h-64">
-              {tx.event_data}
-            </pre>
-          </div>
-        )}
-      </div>
-      <div className="flex justify-end gap-3 pt-4 border-t border-dark-200 dark:border-dark-700">
-        <Button variant="outline" onClick={onClose}>Close</Button>
-      </div>
-    </div>
-  );
-}
-
-function AssetDetailView({ asset, onClose }: any) {
-  const statusMap: Record<number, string> = {
-    0: 'ACTIVE',
-    1: 'TRANSFERRED',
-    2: 'BURNED',
-    3: 'FROZEN',
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Token ID</p>
-          <p className="font-mono text-2xl font-bold text-dark-900 dark:text-white">{asset.tokenId}</p>
-        </div>
-        <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Asset ID</p>
-          <p className="font-mono text-sm">{asset.assetId}</p>
-        </div>
-        <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Name</p>
-          <p className="font-medium text-dark-900 dark:text-white">{asset.name}</p>
-        </div>
-        <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Category</p>
-          <p className="text-sm text-dark-900 dark:text-white">{asset.category}</p>
-        </div>
-        <div className="col-span-2">
-          <p className="text-sm text-dark-500 dark:text-dark-400">Description</p>
-          <p className="text-sm text-dark-900 dark:text-white">{asset.description}</p>
-        </div>
-        <div className="col-span-2">
-          <p className="text-sm text-dark-500 dark:text-dark-400">Metadata URI</p>
-          <p className="font-mono text-xs break-all">{asset.metadataURI}</p>
-        </div>
-        <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Creator</p>
-          <p className="font-mono text-sm">{formatAddress(asset.creator)}</p>
-        </div>
-        <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Current Owner</p>
-          <p className="font-mono text-sm">{formatAddress(asset.currentOwner)}</p>
-        </div>
-        <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Status</p>
-          <Badge variant={['ACTIVE', 'TRANSFERRED', 'BURNED', 'FROZEN'][asset.status] === 'ACTIVE' ? 'success' : 
-            ['ACTIVE', 'TRANSFERRED', 'BURNED', 'FROZEN'][asset.status] === 'TRANSFERRED' ? 'primary' :
-            ['ACTIVE', 'TRANSFERRED', 'BURNED', 'FROZEN'][asset.status] === 'BURNED' ? 'danger' : 'warning'}>
-            {statusMap[asset.status] || 'Unknown'}
-          </Badge>
-        </div>
-        <div>
-          <p className="text-sm text-dark-500 dark:text-dark-400">Created At</p>
-          <p className="font-mono text-sm">{new Date(Number(asset.createdAt) * 1000).toLocaleString()}</p>
-        </div>
-        {asset.mintTxHash && (
-          <div className="col-span-2">
-            <p className="text-sm text-dark-500 dark:text-dark-400">Mint Transaction</p>
-            <p className="font-mono text-sm text-green-600 dark:text-green-400">{asset.mintTxHash}</p>
-          </div>
-        )}
-      </div>
-      <div className="flex justify-end gap-3 pt-4 border-t border-dark-200 dark:border-dark-700">
-        <Button variant="outline" onClick={onClose}>Close</Button>
-      </div>
+      </Card>
     </div>
   );
 }

@@ -1,8 +1,9 @@
 import { useEffect, useCallback, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useWallet } from '../context/WalletContext';
 import { useToast } from '../context/ToastContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface Shortcut {
   key: string;
@@ -54,8 +55,8 @@ export function useKeyboardShortcuts({
   }, [enabled]);
 
   useEffect(() => {
-    target.addEventListener('keydown', handleKeyDown);
-    return () => target.removeEventListener('keydown', handleKeyDown);
+    target.addEventListener('keydown', handleKeyDown as EventListener);
+    return () => target.removeEventListener('keydown', handleKeyDown as EventListener);
   }, [handleKeyDown, target]);
 }
 
@@ -89,14 +90,13 @@ export function createGlobalShortcuts(actions: {
 
 export function useGlobalShortcuts() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { isConnected, connect } = useWallet();
-  const { theme, toggleTheme } = useTheme();
-  const { user, hasRole } = useAuth();
+  const { toggleTheme } = useTheme();
+  const { hasRole } = useAuth();
   const toast = useToast();
 
   const isAdmin = hasRole(['ADMIN']);
-  const isAuditor = hasRole(['ADMIN', 'AUDITOR']);
+  const isManagerOrAdmin = hasRole(['ADMIN', 'MANAGER']);
 
   const shortcuts = createGlobalShortcuts({
     onSearch: () => {
@@ -125,7 +125,7 @@ export function useGlobalShortcuts() {
         toast.error('Admin access required');
         return;
       }
-      if (path === '/audit' && !isAuditor) {
+      if (path === '/audit' && !isManagerOrAdmin) {
         toast.error('Auditor access required');
         return;
       }
@@ -138,5 +138,3 @@ export function useGlobalShortcuts() {
 
   useKeyboardShortcuts({ shortcuts, enabled: true });
 }
-
-import { useTheme } from '../context/ThemeContext';

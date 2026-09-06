@@ -1,3 +1,6 @@
+/* Import original SecureChain HTML styles for exact visual matching */
+@import './styles/securechain-original.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

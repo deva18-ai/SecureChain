@@ -1,19 +1,23 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, TypeVar, Generic
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from enum import Enum
 
+T = TypeVar('T', bound=BaseModel)
+
 
 class UserRole(str, Enum):
-    OWNER = "OWNER"
+    ADMIN = "ADMIN"
     MANAGER = "MANAGER"
-    EMPLOYEE = "EMPLOYEE"
+    AUDITOR = "AUDITOR"
+    USER = "USER"
 
 
 class WalletType(str, Enum):
-    OWNER = "OWNER"
+    ADMIN = "ADMIN"
     MANAGER = "MANAGER"
-    EMPLOYEE = "EMPLOYEE"
+    AUDITOR = "AUDITOR"
+    USER = "USER"
 
 
 class BlockchainTxStatus(str, Enum):
@@ -23,14 +27,14 @@ class BlockchainTxStatus(str, Enum):
 
 
 class UserBase(BaseModel):
-    email: EmailStr
+    email: str = Field(..., min_length=1, max_length=255, pattern=r"^[^@]+@[^@]+\.[^@]+$")
     full_name: str = Field(..., min_length=1, max_length=255)
     wallet_address: Optional[str] = Field(None, pattern=r"^0x[a-fA-F0-9]{40}$")
 
 
 class UserCreate(UserBase):
     password: str = Field(..., min_length=8, max_length=128)
-    role: UserRole = UserRole.EMPLOYEE
+    role: UserRole = UserRole.USER
 
 
 class UserUpdate(BaseModel):
@@ -75,7 +79,7 @@ class TokenData(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: str = Field(..., min_length=1, max_length=255, pattern=r"^[^@]+@[^@]+\.[^@]+$")
     password: str
 
 
@@ -352,10 +356,10 @@ class DashboardStats(BaseModel):
     recent_activity: List[dict]
 
 
-class PaginatedResponse(BaseModel):
+class PaginatedResponse(BaseModel, Generic[T]):
     model_config = ConfigDict(from_attributes=True)
 
-    items: List[BaseModel]
+    items: List[T]
     total: int
     page: int
     page_size: int

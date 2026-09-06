@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, TypeVar
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
@@ -18,17 +18,19 @@ from app.schemas import (
     AIAssetProposalResponse,
     AIAssetProposalWithDetails,
 )
-from app.auth import get_current_active_user, require_owner, require_owner_or_manager
+from app.auth import get_current_active_user, require_admin, require_admin_or_manager
 from app.services.audit import AuditService
 from app.services.blockchain import BlockchainService
 
 router = APIRouter(prefix="/assets", tags=["Digital Assets (NFTs)"])
 
+AssetListResponse = PaginatedResponse[AssetWithDetails]
+
 
 @router.post("", response_model=AssetResponse, status_code=status.HTTP_201_CREATED)
 async def create_asset(
     request: AssetCreate,
-    current_user: User = Depends(require_owner),
+    current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
     http_request: Request = None,
 ):
@@ -108,7 +110,7 @@ async def create_asset(
     return asset
 
 
-@router.get("", response_model=PaginatedResponse)
+@router.get("", response_model=AssetListResponse)
 async def list_assets(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -120,17 +122,17 @@ async def list_assets(
     db: AsyncSession = Depends(get_db),
 ):
     query = select(Asset).options(
-        selectinload(Asset.creator), selectinload(Asset.owner)
+        selectinload(Asset.creator), selectinload(Asset.owner), selectinload(Asset.transfers)
     )
 
-    if current_user.role not in [UserRole.OWNER, UserRole.MANAGER]:
+    if current_user.role not in [UserRole.ADMIN, UserRole.MANAGER]:
         query = query.where(Asset.owner_id == current_user.id)
 
     if status:
         query = query.where(Asset.status == status)
     if category:
         query = query.where(Asset.category == category)
-    if owner_id and current_user.role in [UserRole.OWNER, UserRole.MANAGER]:
+    if owner_id and current_user.role in [UserRole.ADMIN, UserRole.MANAGER]:
         query = query.where(Asset.owner_id == owner_id)
     if search:
         query = query.where(
@@ -172,7 +174,7 @@ async def list_assets(
             )
         )
 
-    return PaginatedResponse(
+    return AssetListResponse(
         items=items,
         total=total,
         page=page,
@@ -196,7 +198,7 @@ async def get_asset(
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
 
-    if current_user.role not in [UserRole.OWNER, UserRole.MANAGER] and asset.owner_id != current_user.id:
+    if current_user.role not in [UserRole.ADMIN, UserRole.MANAGER] and asset.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to view this asset")
 
     return AssetWithDetails(
@@ -224,7 +226,7 @@ async def get_asset(
 async def update_asset(
     asset_id: int,
     request: AssetUpdate,
-    current_user: User = Depends(require_owner),
+    current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
     http_request: Request = None,
 ):
@@ -267,7 +269,7 @@ async def update_asset(
 async def allocate_asset(
     asset_id: int,
     new_owner_id: int,
-    current_user: User = Depends(require_owner_or_manager),
+    current_user: User = Depends(require_admin_or_manager),
     db: AsyncSession = Depends(get_db),
     http_request: Request = None,
 ):
@@ -344,7 +346,7 @@ async def allocate_asset(
 @router.post("/{asset_id}/revoke", response_model=AssetResponse)
 async def revoke_assignment(
     asset_id: int,
-    current_user: User = Depends(require_owner_or_manager),
+    current_user: User = Depends(require_admin_or_manager),
     db: AsyncSession = Depends(get_db),
     http_request: Request = None,
 ):
@@ -412,12 +414,15 @@ async def revoke_assignment(
     return asset
 
 
-@router.get("/proposals", response_model=PaginatedResponse)
+AIAssetProposalListResponse = PaginatedResponse[AIAssetProposalWithDetails]
+
+
+@router.get("/proposals", response_model=AIAssetProposalListResponse)
 async def list_ai_proposals(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     status: Optional[AIAssetProposalStatus] = None,
-    current_user: User = Depends(require_owner_or_manager),
+    current_user: User = Depends(require_admin_or_manager),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(AIAssetProposal).options(
@@ -467,7 +472,7 @@ async def list_ai_proposals(
             )
         )
 
-    return PaginatedResponse(
+    return AIAssetProposalListResponse(
         items=items,
         total=total,
         page=page,
@@ -479,7 +484,7 @@ async def list_ai_proposals(
 @router.post("/proposals", response_model=AIAssetProposalResponse, status_code=status.HTTP_201_CREATED)
 async def create_ai_proposal(
     request: AIAssetProposalCreate,
-    current_user: User = Depends(require_owner),
+    current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
     http_request: Request = None,
 ):
@@ -518,7 +523,7 @@ async def create_ai_proposal(
 @router.get("/proposals/{proposal_id}", response_model=AIAssetProposalWithDetails)
 async def get_ai_proposal(
     proposal_id: int,
-    current_user: User = Depends(require_owner_or_manager),
+    current_user: User = Depends(require_admin_or_manager),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
@@ -564,7 +569,7 @@ async def get_ai_proposal(
 async def update_ai_proposal(
     proposal_id: int,
     request: AIAssetProposalUpdate,
-    current_user: User = Depends(require_owner),
+    current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
     http_request: Request = None,
 ):
@@ -611,7 +616,7 @@ async def update_ai_proposal(
 async def review_ai_proposal(
     proposal_id: int,
     request: AIAssetProposalReview,
-    current_user: User = Depends(require_owner),
+    current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
     http_request: Request = None,
 ):

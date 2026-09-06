@@ -1,5 +1,5 @@
 import { forwardRef, HTMLAttributes, useMemo, useState, useRef, useEffect } from 'react';
-import { X, LogOut, Settings, Shield, User } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from './Button';
 import { cn } from '../../utils/helpers';
 

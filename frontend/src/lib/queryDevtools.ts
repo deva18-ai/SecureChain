@@ -1,5 +1,11 @@
 import { QueryClient } from '@tanstack/react-query';
 
+declare global {
+  interface Window {
+    __QUERY_CLIENT__?: QueryClient;
+  }
+}
+
 export function createQueryClient() {
   return new QueryClient({
     defaultOptions: {
@@ -106,7 +112,7 @@ export function getMutationCache() {
 }
 
 if (import.meta.env.DEV) {
-  (window as any).__QUERY_CLIENT__ = queryClient;
+  window.__QUERY_CLIENT__ = queryClient;
   console.log('[Query] DevTools available at window.__QUERY_CLIENT__');
 }
 

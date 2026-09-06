@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, ReactNode, useRef } from 'react';
+import { useState, useEffect, ReactNode, useRef } from 'react';
 import { cn } from '../../utils/helpers';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -8,7 +8,7 @@ const pageVariants = {
   exit: { opacity: 0, y: -20 },
 };
 
-const pageTransition = { duration: 0.3, ease: [0.4, 0, 0.2, 1] };
+const pageTransition = { duration: 0.3, ease: [0.4, 0, 0.2, 1] as const };
 
 export function PageTransition({ children, className }: { children: ReactNode; className?: string }) {
   return (
@@ -73,7 +73,7 @@ export function SlideUp({ children, delay = 0, distance = 20, duration = 0.4, cl
     <motion.div
       initial={{ opacity: 0, y: distance }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration, delay, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration, delay, ease: [0.4, 0, 0.2, 1] as const }}
       className={className}
     >
       {children}
@@ -93,7 +93,7 @@ export function SlideIn({ children, direction = 'left', delay = 0, duration = 0.
     <motion.div
       initial={{ opacity: 0, ...directions[direction] }}
       animate={{ opacity: 1, x: 0, y: 0 }}
-      transition={{ duration, delay, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration, delay, ease: [0.4, 0, 0.2, 1] as const }}
       className={className}
     >
       {children}
@@ -106,7 +106,7 @@ export function ScaleIn({ children, delay = 0, duration = 0.2, className }: { ch
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration, delay, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration, delay, ease: [0.4, 0, 0.2, 1] as const }}
       className={className}
     >
       {children}
@@ -235,7 +235,6 @@ export function Ripple({ children, color = 'rgba(34, 211, 238, 0.3)', className 
   );
 }
 
-import { useState } from 'react';
 
 interface ShimmerProps {
   className?: string;
@@ -334,7 +333,7 @@ export function RevealOnScroll({
       ref={ref}
       initial={{ opacity: 0, y: 30 }}
       animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-      transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] as const }}
       className={className}
     >
       {children}
@@ -396,7 +395,9 @@ export function Counter({ end, start = 0, duration = 2, decimals = 0, prefix = '
 export function TabTransition({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <AnimatePresence mode="wait">
-      {children}
+      <div className={className}>
+        {children}
+      </div>
     </AnimatePresence>
   );
 }
@@ -407,7 +408,7 @@ export function ModalTransition({ children, className }: { children: ReactNode; 
       initial={{ opacity: 0, scale: 0.95, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: 20 }}
-      transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] as const }}
       className={cn('fixed inset-0 z-50 flex items-center justify-center p-4', className)}
     >
       <motion.div
@@ -453,7 +454,6 @@ export function TabsTransition({ children, className }: { children: ReactNode; c
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        key={children}
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
@@ -471,7 +471,7 @@ export function AccordionTransition({ children, isOpen, className }: { children:
     <motion.div
       initial={false}
       animate={{ height: isOpen ? 'auto' : 0, opacity: isOpen ? 1 : 0 }}
-      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] as const }}
       className={cn('overflow-hidden', className)}
     >
       {children}

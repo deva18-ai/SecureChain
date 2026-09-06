@@ -1,0 +1,743 @@
+INFO:     Started server process [33824]
+INFO:     Waiting for application startup.
+2026-09-06 15:01:02,633 INFO sqlalchemy.engine.Engine select pg_catalog.version()
+2026-09-06 15:01:02,633 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-09-06 15:01:02,635 INFO sqlalchemy.engine.Engine select current_schema()
+2026-09-06 15:01:02,635 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-09-06 15:01:02,636 INFO sqlalchemy.engine.Engine show standard_conforming_strings
+2026-09-06 15:01:02,636 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-09-06 15:01:02,636 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:01:02,638 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-09-06 15:01:02,638 INFO sqlalchemy.engine.Engine [generated in 0.00013s] ('users', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-09-06 15:01:02,640 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-09-06 15:01:02,640 INFO sqlalchemy.engine.Engine [cached since 0.001875s ago] ('dids', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-09-06 15:01:02,641 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-09-06 15:01:02,641 INFO sqlalchemy.engine.Engine [cached since 0.002304s ago] ('wallet_associations', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-09-06 15:01:02,641 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-09-06 15:01:02,641 INFO sqlalchemy.engine.Engine [cached since 0.002658s ago] ('assets', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-09-06 15:01:02,641 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-09-06 15:01:02,641 INFO sqlalchemy.engine.Engine [cached since 0.0031s ago] ('transfers', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-09-06 15:01:02,642 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-09-06 15:01:02,642 INFO sqlalchemy.engine.Engine [cached since 0.003599s ago] ('audit_logs', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-09-06 15:01:02,642 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-09-06 15:01:02,642 INFO sqlalchemy.engine.Engine [cached since 0.003933s ago] ('security_events', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-09-06 15:01:02,642 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-09-06 15:01:02,642 INFO sqlalchemy.engine.Engine [cached since 0.004156s ago] ('blockchain_transactions', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-09-06 15:01:02,643 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-09-06 15:01:02,643 INFO sqlalchemy.engine.Engine [cached since 0.004532s ago] ('ai_asset_proposals', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-09-06 15:01:02,644 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+2026-09-06 15:01:05,872 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:01:05,887 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:01:05,887 INFO sqlalchemy.engine.Engine [generated in 0.00017s] (3,)
+2026-09-06 15:01:05,897 INFO sqlalchemy.engine.Engine SELECT count(users.id) AS count_1 
+FROM users
+2026-09-06 15:01:05,897 INFO sqlalchemy.engine.Engine [generated in 0.00014s] ()
+2026-09-06 15:01:05,898 INFO sqlalchemy.engine.Engine SELECT count(dids.id) AS count_1 
+FROM dids 
+WHERE dids.verified = true
+2026-09-06 15:01:05,898 INFO sqlalchemy.engine.Engine [generated in 0.00014s] ()
+2026-09-06 15:01:05,901 INFO sqlalchemy.engine.Engine SELECT count(assets.id) AS count_1 
+FROM assets
+2026-09-06 15:01:05,901 INFO sqlalchemy.engine.Engine [generated in 0.00013s] ()
+2026-09-06 15:01:05,902 INFO sqlalchemy.engine.Engine SELECT count(transfers.id) AS count_1 
+FROM transfers 
+WHERE transfers.status = $1
+2026-09-06 15:01:05,903 INFO sqlalchemy.engine.Engine [generated in 0.00021s] ('PENDING',)
+2026-09-06 15:01:05,909 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs 
+WHERE audit_logs.blockchain_tx_hash IS NOT NULL
+2026-09-06 15:01:05,909 INFO sqlalchemy.engine.Engine [generated in 0.00016s] ()
+2026-09-06 15:01:05,910 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs
+2026-09-06 15:01:05,910 INFO sqlalchemy.engine.Engine [generated in 0.00013s] ()
+2026-09-06 15:01:05,912 INFO sqlalchemy.engine.Engine SELECT users.role, count(users.id) AS count_1 
+FROM users GROUP BY users.role
+2026-09-06 15:01:05,912 INFO sqlalchemy.engine.Engine [generated in 0.00013s] ()
+2026-09-06 15:01:05,917 INFO sqlalchemy.engine.Engine SELECT audit_logs.id, audit_logs.actor_id, audit_logs.actor_address, audit_logs.action, audit_logs.resource_type, audit_logs.resource_id, audit_logs.role, audit_logs.blockchain_tx_hash, audit_logs.blockchain_block_number, audit_logs.blockchain_verified, audit_logs.details, audit_logs.ip_address, audit_logs.user_agent, audit_logs.created_at 
+FROM audit_logs ORDER BY audit_logs.created_at DESC 
+ LIMIT $1::INTEGER
+2026-09-06 15:01:05,917 INFO sqlalchemy.engine.Engine [generated in 0.00020s] (10,)
+2026-09-06 15:01:05,923 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.wallet_address AS users_wallet_address, users.role AS users_role, users.is_active AS users_is_active, users.is_verified AS users_is_verified, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.id IN ($1::INTEGER, $2::INTEGER)
+2026-09-06 15:01:05,923 INFO sqlalchemy.engine.Engine [generated in 0.00028s] (1, 3)
+Blockchain service initialization failed: The private key must be exactly 32 bytes long, instead of 42 bytes.
+2026-09-06 15:01:05,962 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57674 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+2026-09-06 15:01:10,859 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:01:10,859 INFO sqlalchemy.engine.Engine SELECT 1
+2026-09-06 15:01:10,859 INFO sqlalchemy.engine.Engine [generated in 0.00010s] ()
+2026-09-06 15:01:10,860 INFO sqlalchemy.engine.Engine COMMIT
+Blockchain service initialization failed: The private key must be exactly 32 bytes long, instead of 42 bytes.
+INFO:     127.0.0.1:63680 - "GET /health HTTP/1.1" 200 OK
+2026-09-06 15:01:17,219 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:01:17,219 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2026-09-06 15:01:17,219 INFO sqlalchemy.engine.Engine [generated in 0.00013s] ('devavardhan.test@gmail.com',)
+2026-09-06 15:01:17,411 INFO sqlalchemy.engine.Engine UPDATE users SET updated_at=$1::TIMESTAMP WITHOUT TIME ZONE, last_login=$2::TIMESTAMP WITHOUT TIME ZONE WHERE users.id = $3::INTEGER
+2026-09-06 15:01:17,411 INFO sqlalchemy.engine.Engine [generated in 0.00016s] (datetime.datetime(2026, 9, 6, 9, 31, 17, 411843), datetime.datetime(2026, 9, 6, 9, 31, 17, 410841), 1)
+2026-09-06 15:01:17,412 INFO sqlalchemy.engine.Engine COMMIT
+2026-09-06 15:01:17,415 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:01:17,416 INFO sqlalchemy.engine.Engine INSERT INTO audit_logs (actor_id, actor_address, action, resource_type, resource_id, role, blockchain_tx_hash, blockchain_block_number, blockchain_verified, details, ip_address, user_agent, created_at) VALUES ($1::INTEGER, $2::VARCHAR, $3, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::BIGINT, $9::BOOLEAN, $10::VARCHAR, $11::VARCHAR, $12::VARCHAR, $13::TIMESTAMP WITHOUT TIME ZONE) RETURNING audit_logs.id
+2026-09-06 15:01:17,416 INFO sqlalchemy.engine.Engine [generated in 0.00015s] (1, '0x59164327930d3fF474159f21e7668669e7EB4398', 'LOGIN', 'USER', '1', 'ADMIN', None, None, False, 'User logged in', '127.0.0.1', 'Mozilla/5.0 (Windows NT; Windows NT 10.0; en-IN) WindowsPowerShell/5.1.26100.9278', datetime.datetime(2026, 9, 6, 9, 31, 17, 416480))
+2026-09-06 15:01:17,418 INFO sqlalchemy.engine.Engine COMMIT
+2026-09-06 15:01:17,419 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:01:17,420 INFO sqlalchemy.engine.Engine SELECT audit_logs.id, audit_logs.actor_id, audit_logs.actor_address, audit_logs.action, audit_logs.resource_type, audit_logs.resource_id, audit_logs.role, audit_logs.blockchain_tx_hash, audit_logs.blockchain_block_number, audit_logs.blockchain_verified, audit_logs.details, audit_logs.ip_address, audit_logs.user_agent, audit_logs.created_at 
+FROM audit_logs 
+WHERE audit_logs.id = $1::INTEGER
+2026-09-06 15:01:17,420 INFO sqlalchemy.engine.Engine [generated in 0.00010s] (109,)
+2026-09-06 15:01:17,421 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:63688 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+2026-09-06 15:01:17,467 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:01:17,467 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:01:17,467 INFO sqlalchemy.engine.Engine [cached since 11.58s ago] (1,)
+2026-09-06 15:01:17,469 INFO sqlalchemy.engine.Engine SELECT count(security_events.id) AS count_1 
+FROM security_events
+2026-09-06 15:01:17,469 INFO sqlalchemy.engine.Engine [generated in 0.00019s] ()
+2026-09-06 15:01:17,470 INFO sqlalchemy.engine.Engine SELECT count(security_events.id) AS count_1 
+FROM security_events 
+WHERE security_events.resolved = false
+2026-09-06 15:01:17,470 INFO sqlalchemy.engine.Engine [generated in 0.00010s] ()
+2026-09-06 15:01:17,471 INFO sqlalchemy.engine.Engine SELECT count(security_events.id) AS count_1 
+FROM security_events 
+WHERE security_events.resolved = false AND security_events.severity = $1
+2026-09-06 15:01:17,472 INFO sqlalchemy.engine.Engine [generated in 0.00010s] ('CRITICAL',)
+2026-09-06 15:01:17,476 INFO sqlalchemy.engine.Engine SELECT count(security_events.id) AS count_1 
+FROM security_events 
+WHERE security_events.resolved = false AND security_events.severity = $1
+2026-09-06 15:01:17,476 INFO sqlalchemy.engine.Engine [cached since 0.004166s ago] ('HIGH',)
+2026-09-06 15:01:17,477 INFO sqlalchemy.engine.Engine SELECT security_events.event_type, count(security_events.id) AS count_1 
+FROM security_events 
+WHERE security_events.resolved = false GROUP BY security_events.event_type
+2026-09-06 15:01:17,477 INFO sqlalchemy.engine.Engine [generated in 0.00010s] ()
+2026-09-06 15:01:17,479 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:63688 - "GET /api/v1/security/stats HTTP/1.1" 200 OK
+2026-09-06 15:01:27,967 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:01:27,967 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2026-09-06 15:01:27,967 INFO sqlalchemy.engine.Engine [cached since 10.75s ago] ('devavardhan.test@gmail.com',)
+2026-09-06 15:01:28,156 INFO sqlalchemy.engine.Engine UPDATE users SET updated_at=$1::TIMESTAMP WITHOUT TIME ZONE, last_login=$2::TIMESTAMP WITHOUT TIME ZONE WHERE users.id = $3::INTEGER
+2026-09-06 15:01:28,157 INFO sqlalchemy.engine.Engine [cached since 10.74s ago] (datetime.datetime(2026, 9, 6, 9, 31, 28, 156232), datetime.datetime(2026, 9, 6, 9, 31, 28, 156232), 1)
+2026-09-06 15:01:28,157 INFO sqlalchemy.engine.Engine COMMIT
+2026-09-06 15:01:28,158 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:01:28,158 INFO sqlalchemy.engine.Engine INSERT INTO audit_logs (actor_id, actor_address, action, resource_type, resource_id, role, blockchain_tx_hash, blockchain_block_number, blockchain_verified, details, ip_address, user_agent, created_at) VALUES ($1::INTEGER, $2::VARCHAR, $3, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::BIGINT, $9::BOOLEAN, $10::VARCHAR, $11::VARCHAR, $12::VARCHAR, $13::TIMESTAMP WITHOUT TIME ZONE) RETURNING audit_logs.id
+2026-09-06 15:01:28,158 INFO sqlalchemy.engine.Engine [cached since 10.74s ago] (1, '0x59164327930d3fF474159f21e7668669e7EB4398', 'LOGIN', 'USER', '1', 'ADMIN', None, None, False, 'User logged in', '127.0.0.1', 'Mozilla/5.0 (Windows NT; Windows NT 10.0; en-IN) WindowsPowerShell/5.1.26100.9278', datetime.datetime(2026, 9, 6, 9, 31, 28, 158233))
+2026-09-06 15:01:28,159 INFO sqlalchemy.engine.Engine COMMIT
+2026-09-06 15:01:28,159 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:01:28,159 INFO sqlalchemy.engine.Engine SELECT audit_logs.id, audit_logs.actor_id, audit_logs.actor_address, audit_logs.action, audit_logs.resource_type, audit_logs.resource_id, audit_logs.role, audit_logs.blockchain_tx_hash, audit_logs.blockchain_block_number, audit_logs.blockchain_verified, audit_logs.details, audit_logs.ip_address, audit_logs.user_agent, audit_logs.created_at 
+FROM audit_logs 
+WHERE audit_logs.id = $1::INTEGER
+2026-09-06 15:01:28,159 INFO sqlalchemy.engine.Engine [cached since 10.74s ago] (110,)
+2026-09-06 15:01:28,160 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:63703 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63703 - "POST /api/v1/users/register HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:63703 - "POST /api/v1/users/register HTTP/1.1" 405 Method Not Allowed
+2026-09-06 15:01:28,211 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:01:28,211 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:01:28,211 INFO sqlalchemy.engine.Engine [cached since 22.32s ago] (1,)
+2026-09-06 15:01:28,213 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT users.id AS id, users.email AS email, users.hashed_password AS hashed_password, users.full_name AS full_name, users.wallet_address AS wallet_address, users.role AS role, users.is_active AS is_active, users.is_verified AS is_verified, users.created_at AS created_at, users.updated_at AS updated_at, users.last_login AS last_login 
+FROM users ORDER BY users.created_at DESC) AS anon_1
+2026-09-06 15:01:28,213 INFO sqlalchemy.engine.Engine [generated in 0.00014s] ()
+2026-09-06 15:01:28,216 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users ORDER BY users.created_at DESC 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2026-09-06 15:01:28,216 INFO sqlalchemy.engine.Engine [generated in 0.00020s] (50, 0)
+2026-09-06 15:01:28,219 INFO sqlalchemy.engine.Engine SELECT dids.user_id AS dids_user_id, dids.id AS dids_id, dids.did AS dids_did, dids.wallet_address AS dids_wallet_address, dids.identity_hash AS dids_identity_hash, dids.verified AS dids_verified, dids.verification_tx_hash AS dids_verification_tx_hash, dids.created_at AS dids_created_at, dids.verified_at AS dids_verified_at, dids.blockchain_tx_hash AS dids_blockchain_tx_hash, dids.blockchain_block_number AS dids_blockchain_block_number, dids.blockchain_tx_status AS dids_blockchain_tx_status 
+FROM dids 
+WHERE dids.user_id IN ($1::INTEGER, $2::INTEGER, $3::INTEGER, $4::INTEGER, $5::INTEGER, $6::INTEGER, $7::INTEGER, $8::INTEGER, $9::INTEGER, $10::INTEGER, $11::INTEGER, $12::INTEGER, $13::INTEGER, $14::INTEGER, $15::INTEGER, $16::INTEGER, $17::INTEGER, $18::INTEGER, $19::INTEGER)
+2026-09-06 15:01:28,219 INFO sqlalchemy.engine.Engine [generated in 0.00022s] (19, 18, 20, 21, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
+2026-09-06 15:01:28,221 INFO sqlalchemy.engine.Engine SELECT assets.owner_id AS assets_owner_id, assets.id AS assets_id, assets.token_id AS assets_token_id, assets.asset_id AS assets_asset_id, assets.name AS assets_name, assets.description AS assets_description, assets.category AS assets_category, assets.metadata_uri AS assets_metadata_uri, assets.creator_id AS assets_creator_id, assets.status AS assets_status, assets.created_at AS assets_created_at, assets.updated_at AS assets_updated_at, assets.blockchain_tx_hash AS assets_blockchain_tx_hash, assets.blockchain_block_number AS assets_blockchain_block_number, assets.blockchain_tx_status AS assets_blockchain_tx_status, assets.blockchain_network AS assets_blockchain_network, assets.contract_address AS assets_contract_address 
+FROM assets 
+WHERE assets.owner_id IN ($1::INTEGER, $2::INTEGER, $3::INTEGER, $4::INTEGER, $5::INTEGER, $6::INTEGER, $7::INTEGER, $8::INTEGER, $9::INTEGER, $10::INTEGER, $11::INTEGER, $12::INTEGER, $13::INTEGER, $14::INTEGER, $15::INTEGER, $16::INTEGER, $17::INTEGER, $18::INTEGER, $19::INTEGER)
+2026-09-06 15:01:28,222 INFO sqlalchemy.engine.Engine [generated in 0.00024s] (19, 18, 20, 21, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
+2026-09-06 15:01:28,227 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:63703 - "GET /api/v1/users?page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63711 - "GET /openapi.json HTTP/1.1" 200 OK
+2026-09-06 15:01:55,315 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:01:55,315 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2026-09-06 15:01:55,315 INFO sqlalchemy.engine.Engine [cached since 38.09s ago] ('phase5.employee@securechain.dev',)
+2026-09-06 15:01:55,503 INFO sqlalchemy.engine.Engine INSERT INTO users (email, hashed_password, full_name, wallet_address, role, is_active, is_verified, created_at, updated_at, last_login) VALUES ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5, $6::BOOLEAN, $7::BOOLEAN, $8::TIMESTAMP WITHOUT TIME ZONE, $9::TIMESTAMP WITHOUT TIME ZONE, $10::TIMESTAMP WITHOUT TIME ZONE) RETURNING users.id
+2026-09-06 15:01:55,503 INFO sqlalchemy.engine.Engine [generated in 0.00024s] ('phase5.employee@securechain.dev', '$2b$12$hxxag5fOzJAH9LS/C6yrdO4REfAr3scj5mDsaHIIX5hVBWP/dQRQC', 'Phase5 Employee', None, 'USER', True, False, datetime.datetime(2026, 9, 6, 9, 31, 55, 503897), datetime.datetime(2026, 9, 6, 9, 31, 55, 503897), None)
+2026-09-06 15:01:55,505 INFO sqlalchemy.engine.Engine COMMIT
+2026-09-06 15:01:55,508 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:01:55,509 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:01:55,509 INFO sqlalchemy.engine.Engine [generated in 0.00009s] (23,)
+2026-09-06 15:01:55,510 INFO sqlalchemy.engine.Engine INSERT INTO audit_logs (actor_id, actor_address, action, resource_type, resource_id, role, blockchain_tx_hash, blockchain_block_number, blockchain_verified, details, ip_address, user_agent, created_at) VALUES ($1::INTEGER, $2::VARCHAR, $3, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::BIGINT, $9::BOOLEAN, $10::VARCHAR, $11::VARCHAR, $12::VARCHAR, $13::TIMESTAMP WITHOUT TIME ZONE) RETURNING audit_logs.id
+2026-09-06 15:01:55,510 INFO sqlalchemy.engine.Engine [cached since 38.09s ago] (23, None, 'USER_CREATED', 'USER', '23', 'USER', None, None, False, 'User registered with role USER', '127.0.0.1', 'Mozilla/5.0 (Windows NT; Windows NT 10.0; en-IN) WindowsPowerShell/5.1.26100.9278', datetime.datetime(2026, 9, 6, 9, 31, 55, 510925))
+2026-09-06 15:01:55,510 INFO sqlalchemy.engine.Engine COMMIT
+2026-09-06 15:01:55,511 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:01:55,511 INFO sqlalchemy.engine.Engine SELECT audit_logs.id, audit_logs.actor_id, audit_logs.actor_address, audit_logs.action, audit_logs.resource_type, audit_logs.resource_id, audit_logs.role, audit_logs.blockchain_tx_hash, audit_logs.blockchain_block_number, audit_logs.blockchain_verified, audit_logs.details, audit_logs.ip_address, audit_logs.user_agent, audit_logs.created_at 
+FROM audit_logs 
+WHERE audit_logs.id = $1::INTEGER
+2026-09-06 15:01:55,511 INFO sqlalchemy.engine.Engine [cached since 38.09s ago] (111,)
+2026-09-06 15:01:55,514 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:60504 - "POST /api/v1/auth/register HTTP/1.1" 201 Created
+2026-09-06 15:01:55,561 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:01:55,562 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2026-09-06 15:01:55,562 INFO sqlalchemy.engine.Engine [cached since 38.34s ago] ('phase5.manager@securechain.dev',)
+2026-09-06 15:01:55,749 INFO sqlalchemy.engine.Engine INSERT INTO users (email, hashed_password, full_name, wallet_address, role, is_active, is_verified, created_at, updated_at, last_login) VALUES ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5, $6::BOOLEAN, $7::BOOLEAN, $8::TIMESTAMP WITHOUT TIME ZONE, $9::TIMESTAMP WITHOUT TIME ZONE, $10::TIMESTAMP WITHOUT TIME ZONE) RETURNING users.id
+2026-09-06 15:01:55,749 INFO sqlalchemy.engine.Engine [cached since 0.2454s ago] ('phase5.manager@securechain.dev', '$2b$12$ioFXsEwCpMpkCtbVsAdJ9u90JsWLLkTHtLM1.KNnQh3yfn8.W1pJ6', 'Phase5 Manager', None, 'MANAGER', True, False, datetime.datetime(2026, 9, 6, 9, 31, 55, 749258), datetime.datetime(2026, 9, 6, 9, 31, 55, 749258), None)
+2026-09-06 15:01:55,750 INFO sqlalchemy.engine.Engine COMMIT
+2026-09-06 15:01:55,751 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:01:55,751 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:01:55,751 INFO sqlalchemy.engine.Engine [cached since 0.2426s ago] (24,)
+2026-09-06 15:01:55,752 INFO sqlalchemy.engine.Engine INSERT INTO audit_logs (actor_id, actor_address, action, resource_type, resource_id, role, blockchain_tx_hash, blockchain_block_number, blockchain_verified, details, ip_address, user_agent, created_at) VALUES ($1::INTEGER, $2::VARCHAR, $3, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::BIGINT, $9::BOOLEAN, $10::VARCHAR, $11::VARCHAR, $12::VARCHAR, $13::TIMESTAMP WITHOUT TIME ZONE) RETURNING audit_logs.id
+2026-09-06 15:01:55,752 INFO sqlalchemy.engine.Engine [cached since 38.33s ago] (24, None, 'USER_CREATED', 'USER', '24', 'MANAGER', None, None, False, 'User registered with role MANAGER', '127.0.0.1', 'Mozilla/5.0 (Windows NT; Windows NT 10.0; en-IN) WindowsPowerShell/5.1.26100.9278', datetime.datetime(2026, 9, 6, 9, 31, 55, 752668))
+2026-09-06 15:01:55,753 INFO sqlalchemy.engine.Engine COMMIT
+2026-09-06 15:01:55,754 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:01:55,754 INFO sqlalchemy.engine.Engine SELECT audit_logs.id, audit_logs.actor_id, audit_logs.actor_address, audit_logs.action, audit_logs.resource_type, audit_logs.resource_id, audit_logs.role, audit_logs.blockchain_tx_hash, audit_logs.blockchain_block_number, audit_logs.blockchain_verified, audit_logs.details, audit_logs.ip_address, audit_logs.user_agent, audit_logs.created_at 
+FROM audit_logs 
+WHERE audit_logs.id = $1::INTEGER
+2026-09-06 15:01:55,754 INFO sqlalchemy.engine.Engine [cached since 38.33s ago] (112,)
+2026-09-06 15:01:55,755 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:60504 - "POST /api/v1/auth/register HTTP/1.1" 201 Created
+2026-09-06 15:02:02,587 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:02:02,587 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2026-09-06 15:02:02,588 INFO sqlalchemy.engine.Engine [cached since 45.37s ago] ('devavardhan.test@gmail.com',)
+2026-09-06 15:02:02,778 INFO sqlalchemy.engine.Engine UPDATE users SET updated_at=$1::TIMESTAMP WITHOUT TIME ZONE, last_login=$2::TIMESTAMP WITHOUT TIME ZONE WHERE users.id = $3::INTEGER
+2026-09-06 15:02:02,778 INFO sqlalchemy.engine.Engine [cached since 45.36s ago] (datetime.datetime(2026, 9, 6, 9, 32, 2, 778652), datetime.datetime(2026, 9, 6, 9, 32, 2, 778652), 1)
+2026-09-06 15:02:02,779 INFO sqlalchemy.engine.Engine COMMIT
+2026-09-06 15:02:02,781 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:02:02,781 INFO sqlalchemy.engine.Engine INSERT INTO audit_logs (actor_id, actor_address, action, resource_type, resource_id, role, blockchain_tx_hash, blockchain_block_number, blockchain_verified, details, ip_address, user_agent, created_at) VALUES ($1::INTEGER, $2::VARCHAR, $3, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::BIGINT, $9::BOOLEAN, $10::VARCHAR, $11::VARCHAR, $12::VARCHAR, $13::TIMESTAMP WITHOUT TIME ZONE) RETURNING audit_logs.id
+2026-09-06 15:02:02,781 INFO sqlalchemy.engine.Engine [cached since 45.36s ago] (1, '0x59164327930d3fF474159f21e7668669e7EB4398', 'LOGIN', 'USER', '1', 'ADMIN', None, None, False, 'User logged in', '127.0.0.1', 'Mozilla/5.0 (Windows NT; Windows NT 10.0; en-IN) WindowsPowerShell/5.1.26100.9278', datetime.datetime(2026, 9, 6, 9, 32, 2, 781982))
+2026-09-06 15:02:02,783 INFO sqlalchemy.engine.Engine COMMIT
+2026-09-06 15:02:02,784 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:02:02,784 INFO sqlalchemy.engine.Engine SELECT audit_logs.id, audit_logs.actor_id, audit_logs.actor_address, audit_logs.action, audit_logs.resource_type, audit_logs.resource_id, audit_logs.role, audit_logs.blockchain_tx_hash, audit_logs.blockchain_block_number, audit_logs.blockchain_verified, audit_logs.details, audit_logs.ip_address, audit_logs.user_agent, audit_logs.created_at 
+FROM audit_logs 
+WHERE audit_logs.id = $1::INTEGER
+2026-09-06 15:02:02,784 INFO sqlalchemy.engine.Engine [cached since 45.36s ago] (113,)
+2026-09-06 15:02:02,785 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:60514 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+2026-09-06 15:02:02,822 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:02:02,822 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:02:02,822 INFO sqlalchemy.engine.Engine [cached since 56.93s ago] (1,)
+2026-09-06 15:02:02,823 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT users.id AS id, users.email AS email, users.hashed_password AS hashed_password, users.full_name AS full_name, users.wallet_address AS wallet_address, users.role AS role, users.is_active AS is_active, users.is_verified AS is_verified, users.created_at AS created_at, users.updated_at AS updated_at, users.last_login AS last_login 
+FROM users ORDER BY users.created_at DESC) AS anon_1
+2026-09-06 15:02:02,823 INFO sqlalchemy.engine.Engine [cached since 34.61s ago] ()
+2026-09-06 15:02:02,824 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users ORDER BY users.created_at DESC 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2026-09-06 15:02:02,824 INFO sqlalchemy.engine.Engine [generated in 0.00009s] (50, 0)
+2026-09-06 15:02:02,825 INFO sqlalchemy.engine.Engine SELECT dids.user_id AS dids_user_id, dids.id AS dids_id, dids.did AS dids_did, dids.wallet_address AS dids_wallet_address, dids.identity_hash AS dids_identity_hash, dids.verified AS dids_verified, dids.verification_tx_hash AS dids_verification_tx_hash, dids.created_at AS dids_created_at, dids.verified_at AS dids_verified_at, dids.blockchain_tx_hash AS dids_blockchain_tx_hash, dids.blockchain_block_number AS dids_blockchain_block_number, dids.blockchain_tx_status AS dids_blockchain_tx_status 
+FROM dids 
+WHERE dids.user_id IN ($1::INTEGER, $2::INTEGER, $3::INTEGER, $4::INTEGER, $5::INTEGER, $6::INTEGER, $7::INTEGER, $8::INTEGER, $9::INTEGER, $10::INTEGER, $11::INTEGER, $12::INTEGER, $13::INTEGER, $14::INTEGER, $15::INTEGER, $16::INTEGER, $17::INTEGER, $18::INTEGER, $19::INTEGER, $20::INTEGER, $21::INTEGER)
+2026-09-06 15:02:02,825 INFO sqlalchemy.engine.Engine [cached since 34.6s ago] (19, 18, 20, 21, 24, 23, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
+2026-09-06 15:02:02,826 INFO sqlalchemy.engine.Engine SELECT assets.owner_id AS assets_owner_id, assets.id AS assets_id, assets.token_id AS assets_token_id, assets.asset_id AS assets_asset_id, assets.name AS assets_name, assets.description AS assets_description, assets.category AS assets_category, assets.metadata_uri AS assets_metadata_uri, assets.creator_id AS assets_creator_id, assets.status AS assets_status, assets.created_at AS assets_created_at, assets.updated_at AS assets_updated_at, assets.blockchain_tx_hash AS assets_blockchain_tx_hash, assets.blockchain_block_number AS assets_blockchain_block_number, assets.blockchain_tx_status AS assets_blockchain_tx_status, assets.blockchain_network AS assets_blockchain_network, assets.contract_address AS assets_contract_address 
+FROM assets 
+WHERE assets.owner_id IN ($1::INTEGER, $2::INTEGER, $3::INTEGER, $4::INTEGER, $5::INTEGER, $6::INTEGER, $7::INTEGER, $8::INTEGER, $9::INTEGER, $10::INTEGER, $11::INTEGER, $12::INTEGER, $13::INTEGER, $14::INTEGER, $15::INTEGER, $16::INTEGER, $17::INTEGER, $18::INTEGER, $19::INTEGER, $20::INTEGER, $21::INTEGER)
+2026-09-06 15:02:02,826 INFO sqlalchemy.engine.Engine [cached since 34.6s ago] (19, 18, 20, 21, 24, 23, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
+2026-09-06 15:02:02,827 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:60514 - "GET /api/v1/users?page_size=50 HTTP/1.1" 200 OK
+2026-09-06 15:02:05,561 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:02:05,561 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:02:05,561 INFO sqlalchemy.engine.Engine [cached since 59.67s ago] (3,)
+2026-09-06 15:02:05,562 INFO sqlalchemy.engine.Engine SELECT count(users.id) AS count_1 
+FROM users
+2026-09-06 15:02:05,563 INFO sqlalchemy.engine.Engine [cached since 59.66s ago] ()
+2026-09-06 15:02:05,564 INFO sqlalchemy.engine.Engine SELECT count(dids.id) AS count_1 
+FROM dids 
+WHERE dids.verified = true
+2026-09-06 15:02:05,564 INFO sqlalchemy.engine.Engine [cached since 59.66s ago] ()
+2026-09-06 15:02:05,565 INFO sqlalchemy.engine.Engine SELECT count(assets.id) AS count_1 
+FROM assets
+2026-09-06 15:02:05,565 INFO sqlalchemy.engine.Engine [cached since 59.66s ago] ()
+2026-09-06 15:02:05,565 INFO sqlalchemy.engine.Engine SELECT count(transfers.id) AS count_1 
+FROM transfers 
+WHERE transfers.status = $1
+2026-09-06 15:02:05,565 INFO sqlalchemy.engine.Engine [cached since 59.66s ago] ('PENDING',)
+2026-09-06 15:02:05,566 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs 
+WHERE audit_logs.blockchain_tx_hash IS NOT NULL
+2026-09-06 15:02:05,566 INFO sqlalchemy.engine.Engine [cached since 59.65s ago] ()
+2026-09-06 15:02:05,567 INFO sqlalchemy.engine.Engine SELECT count(audit_logs.id) AS count_1 
+FROM audit_logs
+2026-09-06 15:02:05,567 INFO sqlalchemy.engine.Engine [cached since 59.65s ago] ()
+2026-09-06 15:02:05,567 INFO sqlalchemy.engine.Engine SELECT users.role, count(users.id) AS count_1 
+FROM users GROUP BY users.role
+2026-09-06 15:02:05,567 INFO sqlalchemy.engine.Engine [cached since 59.65s ago] ()
+2026-09-06 15:02:05,568 INFO sqlalchemy.engine.Engine SELECT audit_logs.id, audit_logs.actor_id, audit_logs.actor_address, audit_logs.action, audit_logs.resource_type, audit_logs.resource_id, audit_logs.role, audit_logs.blockchain_tx_hash, audit_logs.blockchain_block_number, audit_logs.blockchain_verified, audit_logs.details, audit_logs.ip_address, audit_logs.user_agent, audit_logs.created_at 
+FROM audit_logs ORDER BY audit_logs.created_at DESC 
+ LIMIT $1::INTEGER
+2026-09-06 15:02:05,568 INFO sqlalchemy.engine.Engine [cached since 59.65s ago] (10,)
+2026-09-06 15:02:05,569 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.wallet_address AS users_wallet_address, users.role AS users_role, users.is_active AS users_is_active, users.is_verified AS users_is_verified, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.id IN ($1::INTEGER, $2::INTEGER, $3::INTEGER)
+2026-09-06 15:02:05,569 INFO sqlalchemy.engine.Engine [cached since 59.64s ago] (1, 23, 24)
+Blockchain service initialization failed: The private key must be exactly 32 bytes long, instead of 42 bytes.
+2026-09-06 15:02:05,587 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:63673 - "GET /api/v1/dashboard/stats HTTP/1.1" 200 OK
+2026-09-06 15:02:11,517 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:02:11,517 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2026-09-06 15:02:11,517 INFO sqlalchemy.engine.Engine [cached since 54.29s ago] ('devavardhan.test@gmail.com',)
+2026-09-06 15:02:11,701 INFO sqlalchemy.engine.Engine UPDATE users SET updated_at=$1::TIMESTAMP WITHOUT TIME ZONE, last_login=$2::TIMESTAMP WITHOUT TIME ZONE WHERE users.id = $3::INTEGER
+2026-09-06 15:02:11,701 INFO sqlalchemy.engine.Engine [cached since 54.29s ago] (datetime.datetime(2026, 9, 6, 9, 32, 11, 701440), datetime.datetime(2026, 9, 6, 9, 32, 11, 701440), 1)
+2026-09-06 15:02:11,702 INFO sqlalchemy.engine.Engine COMMIT
+2026-09-06 15:02:11,705 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:02:11,705 INFO sqlalchemy.engine.Engine INSERT INTO audit_logs (actor_id, actor_address, action, resource_type, resource_id, role, blockchain_tx_hash, blockchain_block_number, blockchain_verified, details, ip_address, user_agent, created_at) VALUES ($1::INTEGER, $2::VARCHAR, $3, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::BIGINT, $9::BOOLEAN, $10::VARCHAR, $11::VARCHAR, $12::VARCHAR, $13::TIMESTAMP WITHOUT TIME ZONE) RETURNING audit_logs.id
+2026-09-06 15:02:11,705 INFO sqlalchemy.engine.Engine [cached since 54.29s ago] (1, '0x59164327930d3fF474159f21e7668669e7EB4398', 'LOGIN', 'USER', '1', 'ADMIN', None, None, False, 'User logged in', '127.0.0.1', 'Mozilla/5.0 (Windows NT; Windows NT 10.0; en-IN) WindowsPowerShell/5.1.26100.9278', datetime.datetime(2026, 9, 6, 9, 32, 11, 705443))
+2026-09-06 15:02:11,706 INFO sqlalchemy.engine.Engine COMMIT
+2026-09-06 15:02:11,707 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:02:11,707 INFO sqlalchemy.engine.Engine SELECT audit_logs.id, audit_logs.actor_id, audit_logs.actor_address, audit_logs.action, audit_logs.resource_type, audit_logs.resource_id, audit_logs.role, audit_logs.blockchain_tx_hash, audit_logs.blockchain_block_number, audit_logs.blockchain_verified, audit_logs.details, audit_logs.ip_address, audit_logs.user_agent, audit_logs.created_at 
+FROM audit_logs 
+WHERE audit_logs.id = $1::INTEGER
+2026-09-06 15:02:11,707 INFO sqlalchemy.engine.Engine [cached since 54.28s ago] (114,)
+2026-09-06 15:02:11,708 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:50274 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+2026-09-06 15:02:11,741 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:02:11,743 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:02:11,743 INFO sqlalchemy.engine.Engine [cached since 65.85s ago] (1,)
+2026-09-06 15:02:11,743 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:02:11,743 INFO sqlalchemy.engine.Engine [cached since 65.85s ago] (23,)
+2026-09-06 15:02:11,743 INFO sqlalchemy.engine.Engine SELECT assets.id, assets.token_id, assets.asset_id, assets.name, assets.description, assets.category, assets.metadata_uri, assets.creator_id, assets.owner_id, assets.status, assets.created_at, assets.updated_at, assets.blockchain_tx_hash, assets.blockchain_block_number, assets.blockchain_tx_status, assets.blockchain_network, assets.contract_address 
+FROM assets 
+WHERE assets.asset_id = $1::VARCHAR
+2026-09-06 15:02:11,743 INFO sqlalchemy.engine.Engine [generated in 0.00010s] ('PHASE5-LAPTOP-001',)
+2026-09-06 15:02:11,748 INFO sqlalchemy.engine.Engine INSERT INTO assets (token_id, asset_id, name, description, category, metadata_uri, creator_id, owner_id, status, created_at, updated_at, blockchain_tx_hash, blockchain_block_number, blockchain_tx_status, blockchain_network, contract_address) VALUES ($1::BIGINT, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::INTEGER, $8::INTEGER, $9, $10::TIMESTAMP WITHOUT TIME ZONE, $11::TIMESTAMP WITHOUT TIME ZONE, $12::VARCHAR, $13::BIGINT, $14, $15::VARCHAR, $16::VARCHAR) RETURNING assets.id
+2026-09-06 15:02:11,748 INFO sqlalchemy.engine.Engine [generated in 0.00018s] (0, 'PHASE5-LAPTOP-001', 'Phase5 Test Laptop', 'Test asset created in Phase 5', 'Laptop', 'ipfs://QmPhase5TestMetadata', 1, 23, 'ACTIVE', datetime.datetime(2026, 9, 6, 9, 32, 11, 748180), datetime.datetime(2026, 9, 6, 9, 32, 11, 748180), None, None, 'PENDING', None, None)
+2026-09-06 15:02:11,751 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:50274 - "POST /api/v1/assets HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 538, in _prepare_and_execute
+    self._rows = await prepared_stmt.fetch(*parameters)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 176, in fetch
+    data = await self.__bind_execute(args, 0, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 241, in __bind_execute
+    data, status, _ = await self.__do_execute(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 230, in __do_execute
+    return await executor(protocol)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg\protocol\protocol.pyx", line 207, in bind_execute
+asyncpg.exceptions.UniqueViolationError: duplicate key value violates unique constraint "ix_assets_token_id"
+DETAIL:  Key (token_id)=(0) already exists.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 924, in do_execute
+    cursor.execute(statement, parameters)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 572, in execute
+    self._adapt_connection.await_(
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 131, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 550, in _prepare_and_execute
+    self._handle_exception(error)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 501, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 789, in _handle_exception
+    raise translated_error from error
+sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.IntegrityError: <class 'asyncpg.exceptions.UniqueViolationError'>: duplicate key value violates unique constraint "ix_assets_token_id"
+DETAIL:  Key (token_id)=(0) already exists.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 399, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 70, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 65, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\routing.py", line 756, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\routing.py", line 776, in app
+    await route.handle(scope, receive, send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\routing.py", line 297, in handle
+    await self.app(scope, receive, send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\routing.py", line 77, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\routing.py", line 72, in app
+    response = await func(request)
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\fastapi\routing.py", line 278, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\fastapi\routing.py", line 191, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\app\routers\assets.py", line 58, in create_asset
+    await db.commit()
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 1009, in commit
+    await greenlet_spawn(self.sync_session.commit)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 203, in greenlet_spawn
+    result = context.switch(value)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2017, in commit
+    trans.commit(_to_root=True)
+  File "<string>", line 2, in commit
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1302, in commit
+    self._prepare_impl()
+  File "<string>", line 2, in _prepare_impl
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1277, in _prepare_impl
+    self.session.flush()
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4341, in flush
+    self._flush(objects)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4476, in _flush
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4437, in _flush
+    flush_context.execute()
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+             ^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1418, in execute
+    return meth(
+           ^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 515, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1640, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2353, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 924, in do_execute
+    cursor.execute(statement, parameters)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 572, in execute
+    self._adapt_connection.await_(
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 131, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 550, in _prepare_and_execute
+    self._handle_exception(error)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 501, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 789, in _handle_exception
+    raise translated_error from error
+sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.UniqueViolationError'>: duplicate key value violates unique constraint "ix_assets_token_id"
+DETAIL:  Key (token_id)=(0) already exists.
+[SQL: INSERT INTO assets (token_id, asset_id, name, description, category, metadata_uri, creator_id, owner_id, status, created_at, updated_at, blockchain_tx_hash, blockchain_block_number, blockchain_tx_status, blockchain_network, contract_address) VALUES ($1::BIGINT, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::INTEGER, $8::INTEGER, $9, $10::TIMESTAMP WITHOUT TIME ZONE, $11::TIMESTAMP WITHOUT TIME ZONE, $12::VARCHAR, $13::BIGINT, $14, $15::VARCHAR, $16::VARCHAR) RETURNING assets.id]
+[parameters: (0, 'PHASE5-LAPTOP-001', 'Phase5 Test Laptop', 'Test asset created in Phase 5', 'Laptop', 'ipfs://QmPhase5TestMetadata', 1, 23, 'ACTIVE', datetime.datetime(2026, 9, 6, 9, 32, 11, 748180), datetime.datetime(2026, 9, 6, 9, 32, 11, 748180), None, None, 'PENDING', None, None)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2026-09-06 15:02:12,782 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:02:12,782 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:02:12,783 INFO sqlalchemy.engine.Engine [cached since 66.89s ago] (1,)
+2026-09-06 15:02:12,785 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT assets.id AS id, assets.token_id AS token_id, assets.asset_id AS asset_id, assets.name AS name, assets.description AS description, assets.category AS category, assets.metadata_uri AS metadata_uri, assets.creator_id AS creator_id, assets.owner_id AS owner_id, assets.status AS status, assets.created_at AS created_at, assets.updated_at AS updated_at, assets.blockchain_tx_hash AS blockchain_tx_hash, assets.blockchain_block_number AS blockchain_block_number, assets.blockchain_tx_status AS blockchain_tx_status, assets.blockchain_network AS blockchain_network, assets.contract_address AS contract_address 
+FROM assets ORDER BY assets.created_at DESC) AS anon_1
+2026-09-06 15:02:12,785 INFO sqlalchemy.engine.Engine [generated in 0.00013s] ()
+2026-09-06 15:02:12,787 INFO sqlalchemy.engine.Engine SELECT assets.id, assets.token_id, assets.asset_id, assets.name, assets.description, assets.category, assets.metadata_uri, assets.creator_id, assets.owner_id, assets.status, assets.created_at, assets.updated_at, assets.blockchain_tx_hash, assets.blockchain_block_number, assets.blockchain_tx_status, assets.blockchain_network, assets.contract_address 
+FROM assets ORDER BY assets.created_at DESC 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2026-09-06 15:02:12,787 INFO sqlalchemy.engine.Engine [generated in 0.00011s] (20, 0)
+2026-09-06 15:02:12,789 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.wallet_address AS users_wallet_address, users.role AS users_role, users.is_active AS users_is_active, users.is_verified AS users_is_verified, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.id IN ($1::INTEGER, $2::INTEGER)
+2026-09-06 15:02:12,789 INFO sqlalchemy.engine.Engine [generated in 0.00013s] (1, 13)
+2026-09-06 15:02:12,790 INFO sqlalchemy.engine.Engine SELECT users.id AS users_id, users.email AS users_email, users.hashed_password AS users_hashed_password, users.full_name AS users_full_name, users.wallet_address AS users_wallet_address, users.role AS users_role, users.is_active AS users_is_active, users.is_verified AS users_is_verified, users.created_at AS users_created_at, users.updated_at AS users_updated_at, users.last_login AS users_last_login 
+FROM users 
+WHERE users.id IN ($1::INTEGER, $2::INTEGER, $3::INTEGER)
+2026-09-06 15:02:12,790 INFO sqlalchemy.engine.Engine [generated in 0.00012s] (2, 14, 15)
+2026-09-06 15:02:12,791 INFO sqlalchemy.engine.Engine SELECT transfers.asset_id AS transfers_asset_id, transfers.id AS transfers_id, transfers.initiator_id AS transfers_initiator_id, transfers.recipient_id AS transfers_recipient_id, transfers.from_address AS transfers_from_address, transfers.to_address AS transfers_to_address, transfers.status AS transfers_status, transfers.blockchain_tx_hash AS transfers_blockchain_tx_hash, transfers.blockchain_block_number AS transfers_blockchain_block_number, transfers.blockchain_tx_status AS transfers_blockchain_tx_status, transfers.error_message AS transfers_error_message, transfers.created_at AS transfers_created_at, transfers.updated_at AS transfers_updated_at, transfers.completed_at AS transfers_completed_at 
+FROM transfers 
+WHERE transfers.asset_id IN ($1::INTEGER, $2::INTEGER, $3::INTEGER)
+2026-09-06 15:02:12,791 INFO sqlalchemy.engine.Engine [generated in 0.00013s] (6, 5, 1)
+2026-09-06 15:02:12,792 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:50276 - "GET /api/v1/assets HTTP/1.1" 200 OK
+2026-09-06 15:02:19,794 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:02:19,794 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2026-09-06 15:02:19,795 INFO sqlalchemy.engine.Engine [cached since 62.57s ago] ('devavardhan.test@gmail.com',)
+2026-09-06 15:02:19,985 INFO sqlalchemy.engine.Engine UPDATE users SET updated_at=$1::TIMESTAMP WITHOUT TIME ZONE, last_login=$2::TIMESTAMP WITHOUT TIME ZONE WHERE users.id = $3::INTEGER
+2026-09-06 15:02:19,985 INFO sqlalchemy.engine.Engine [cached since 62.57s ago] (datetime.datetime(2026, 9, 6, 9, 32, 19, 985402), datetime.datetime(2026, 9, 6, 9, 32, 19, 985402), 1)
+2026-09-06 15:02:19,986 INFO sqlalchemy.engine.Engine COMMIT
+2026-09-06 15:02:19,989 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:02:19,989 INFO sqlalchemy.engine.Engine INSERT INTO audit_logs (actor_id, actor_address, action, resource_type, resource_id, role, blockchain_tx_hash, blockchain_block_number, blockchain_verified, details, ip_address, user_agent, created_at) VALUES ($1::INTEGER, $2::VARCHAR, $3, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::BIGINT, $9::BOOLEAN, $10::VARCHAR, $11::VARCHAR, $12::VARCHAR, $13::TIMESTAMP WITHOUT TIME ZONE) RETURNING audit_logs.id
+2026-09-06 15:02:19,989 INFO sqlalchemy.engine.Engine [cached since 62.57s ago] (1, '0x59164327930d3fF474159f21e7668669e7EB4398', 'LOGIN', 'USER', '1', 'ADMIN', None, None, False, 'User logged in', '127.0.0.1', 'Mozilla/5.0 (Windows NT; Windows NT 10.0; en-IN) WindowsPowerShell/5.1.26100.9278', datetime.datetime(2026, 9, 6, 9, 32, 19, 989766))
+2026-09-06 15:02:19,989 INFO sqlalchemy.engine.Engine COMMIT
+2026-09-06 15:02:19,990 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:02:19,990 INFO sqlalchemy.engine.Engine SELECT audit_logs.id, audit_logs.actor_id, audit_logs.actor_address, audit_logs.action, audit_logs.resource_type, audit_logs.resource_id, audit_logs.role, audit_logs.blockchain_tx_hash, audit_logs.blockchain_block_number, audit_logs.blockchain_verified, audit_logs.details, audit_logs.ip_address, audit_logs.user_agent, audit_logs.created_at 
+FROM audit_logs 
+WHERE audit_logs.id = $1::INTEGER
+2026-09-06 15:02:19,990 INFO sqlalchemy.engine.Engine [cached since 62.57s ago] (115,)
+2026-09-06 15:02:19,991 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:50285 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+2026-09-06 15:02:20,023 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-09-06 15:02:20,023 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:02:20,023 INFO sqlalchemy.engine.Engine [cached since 74.13s ago] (1,)
+2026-09-06 15:02:20,024 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.hashed_password, users.full_name, users.wallet_address, users.role, users.is_active, users.is_verified, users.created_at, users.updated_at, users.last_login 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-09-06 15:02:20,024 INFO sqlalchemy.engine.Engine [cached since 74.13s ago] (23,)
+2026-09-06 15:02:20,025 INFO sqlalchemy.engine.Engine SELECT assets.id, assets.token_id, assets.asset_id, assets.name, assets.description, assets.category, assets.metadata_uri, assets.creator_id, assets.owner_id, assets.status, assets.created_at, assets.updated_at, assets.blockchain_tx_hash, assets.blockchain_block_number, assets.blockchain_tx_status, assets.blockchain_network, assets.contract_address 
+FROM assets 
+WHERE assets.asset_id = $1::VARCHAR
+2026-09-06 15:02:20,025 INFO sqlalchemy.engine.Engine [cached since 8.281s ago] ('PHASE5-LAPTOP-001',)
+2026-09-06 15:02:20,025 INFO sqlalchemy.engine.Engine INSERT INTO assets (token_id, asset_id, name, description, category, metadata_uri, creator_id, owner_id, status, created_at, updated_at, blockchain_tx_hash, blockchain_block_number, blockchain_tx_status, blockchain_network, contract_address) VALUES ($1::BIGINT, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::INTEGER, $8::INTEGER, $9, $10::TIMESTAMP WITHOUT TIME ZONE, $11::TIMESTAMP WITHOUT TIME ZONE, $12::VARCHAR, $13::BIGINT, $14, $15::VARCHAR, $16::VARCHAR) RETURNING assets.id
+2026-09-06 15:02:20,025 INFO sqlalchemy.engine.Engine [cached since 8.278s ago] (0, 'PHASE5-LAPTOP-001', 'Phase5 Test Laptop', 'Test asset', 'Laptop', 'ipfs://QmPhase5TestMetadata', 1, 23, 'ACTIVE', datetime.datetime(2026, 9, 6, 9, 32, 20, 25387), datetime.datetime(2026, 9, 6, 9, 32, 20, 25387), None, None, 'PENDING', None, None)
+2026-09-06 15:02:20,026 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:50285 - "POST /api/v1/assets HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 538, in _prepare_and_execute
+    self._rows = await prepared_stmt.fetch(*parameters)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 176, in fetch
+    data = await self.__bind_execute(args, 0, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 241, in __bind_execute
+    data, status, _ = await self.__do_execute(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\asyncpg\prepared_stmt.py", line 230, in __do_execute
+    return await executor(protocol)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg\protocol\protocol.pyx", line 207, in bind_execute
+asyncpg.exceptions.UniqueViolationError: duplicate key value violates unique constraint "ix_assets_token_id"
+DETAIL:  Key (token_id)=(0) already exists.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 924, in do_execute
+    cursor.execute(statement, parameters)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 572, in execute
+    self._adapt_connection.await_(
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 131, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 550, in _prepare_and_execute
+    self._handle_exception(error)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 501, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 789, in _handle_exception
+    raise translated_error from error
+sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.IntegrityError: <class 'asyncpg.exceptions.UniqueViolationError'>: duplicate key value violates unique constraint "ix_assets_token_id"
+DETAIL:  Key (token_id)=(0) already exists.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 399, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 70, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 65, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\routing.py", line 756, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\routing.py", line 776, in app
+    await route.handle(scope, receive, send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\routing.py", line 297, in handle
+    await self.app(scope, receive, send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\routing.py", line 77, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\starlette\routing.py", line 72, in app
+    response = await func(request)
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\fastapi\routing.py", line 278, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\fastapi\routing.py", line 191, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\app\routers\assets.py", line 58, in create_asset
+    await db.commit()
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 1009, in commit
+    await greenlet_spawn(self.sync_session.commit)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 203, in greenlet_spawn
+    result = context.switch(value)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2017, in commit
+    trans.commit(_to_root=True)
+  File "<string>", line 2, in commit
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1302, in commit
+    self._prepare_impl()
+  File "<string>", line 2, in _prepare_impl
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1277, in _prepare_impl
+    self.session.flush()
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4341, in flush
+    self._flush(objects)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4476, in _flush
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4437, in _flush
+    flush_context.execute()
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 1233, in _emit_insert_statements
+    result = connection.execute(
+             ^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1418, in execute
+    return meth(
+           ^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 515, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1640, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2353, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 924, in do_execute
+    cursor.execute(statement, parameters)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 572, in execute
+    self._adapt_connection.await_(
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 131, in await_only
+    return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 550, in _prepare_and_execute
+    self._handle_exception(error)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 501, in _handle_exception
+    self._adapt_connection._handle_exception(error)
+  File "C:\Projects\SIH\SecureChain\backend\.venv\Lib\site-packages\sqlalchemy\dialects\postgresql\asyncpg.py", line 789, in _handle_exception
+    raise translated_error from error
+sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.UniqueViolationError'>: duplicate key value violates unique constraint "ix_assets_token_id"
+DETAIL:  Key (token_id)=(0) already exists.
+[SQL: INSERT INTO assets (token_id, asset_id, name, description, category, metadata_uri, creator_id, owner_id, status, created_at, updated_at, blockchain_tx_hash, blockchain_block_number, blockchain_tx_status, blockchain_network, contract_address) VALUES ($1::BIGINT, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::INTEGER, $8::INTEGER, $9, $10::TIMESTAMP WITHOUT TIME ZONE, $11::TIMESTAMP WITHOUT TIME ZONE, $12::VARCHAR, $13::BIGINT, $14, $15::VARCHAR, $16::VARCHAR) RETURNING assets.id]
+[parameters: (0, 'PHASE5-LAPTOP-001', 'Phase5 Test Laptop', 'Test asset', 'Laptop', 'ipfs://QmPhase5TestMetadata', 1, 23, 'ACTIVE', datetime.datetime(2026, 9, 6, 9, 32, 20, 25387), datetime.datetime(2026, 9, 6, 9, 32, 20, 25387), None, None, 'PENDING', None, None)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)

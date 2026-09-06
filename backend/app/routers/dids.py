@@ -1,6 +1,6 @@
 import hashlib
 import secrets
-from typing import List, Optional
+from typing import List, Optional, TypeVar
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
@@ -14,12 +14,14 @@ from app.schemas import (
     DIDWithUser,
     PaginatedResponse,
 )
-from app.auth import get_current_active_user, require_owner, require_owner_or_manager, require_employee
+from app.auth import get_current_active_user, require_admin, require_admin_or_manager
 from app.services.did import DIDService
 from app.services.audit import AuditService
 from app.services.blockchain import BlockchainService
 
 router = APIRouter(prefix="/dids", tags=["Decentralized Identifiers"])
+
+DIDListResponse = PaginatedResponse[DIDWithUser]
 
 
 def generate_did() -> str:
@@ -35,7 +37,7 @@ def generate_identity_hash(wallet_address: str, did: str) -> str:
 @router.post("", response_model=DIDResponse, status_code=status.HTTP_201_CREATED)
 async def create_did(
     request: DIDCreate = None,
-    current_user: User = Depends(require_owner),
+    current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
     http_request: Request = None,
 ):
@@ -130,13 +132,13 @@ async def get_my_did(
     return did
 
 
-@router.get("", response_model=PaginatedResponse)
+@router.get("", response_model=DIDListResponse)
 async def list_dids(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     verified: Optional[bool] = None,
     search: Optional[str] = None,
-    current_user: User = Depends(require_owner_or_manager),
+    current_user: User = Depends(require_admin_or_manager),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(DID).options(selectinload(DID.user))
@@ -146,7 +148,7 @@ async def list_dids(
     if search:
         query = query.where(DID.did.ilike(f"%{search}%"))
 
-    if current_user.role not in [UserRole.OWNER, UserRole.MANAGER]:
+    if current_user.role not in [UserRole.ADMIN, UserRole.MANAGER]:
         query = query.where(DID.user_id == current_user.id)
 
     query = query.order_by(desc(DID.created_at))
@@ -158,7 +160,7 @@ async def list_dids(
     result = await db.execute(query)
     dids = result.scalars().all()
 
-    return PaginatedResponse(
+    return DIDListResponse(
         items=dids,
         total=total,
         page=page,
@@ -170,7 +172,7 @@ async def list_dids(
 @router.get("/{did_id}", response_model=DIDWithUser)
 async def get_did(
     did_id: int,
-    current_user: User = Depends(require_owner_or_manager),
+    current_user: User = Depends(require_admin_or_manager),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
@@ -180,7 +182,7 @@ async def get_did(
     if not did:
         raise HTTPException(status_code=404, detail="DID not found")
 
-    if current_user.role not in [UserRole.OWNER, UserRole.MANAGER] and did.user_id != current_user.id:
+    if current_user.role not in [UserRole.ADMIN, UserRole.MANAGER] and did.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to view this DID")
 
     return DIDWithUser(
@@ -203,7 +205,7 @@ async def get_did(
 async def verify_did(
     did_id: int,
     request: DIDVerify,
-    current_user: User = Depends(require_owner),
+    current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
     http_request: Request = None,
 ):

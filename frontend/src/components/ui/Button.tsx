@@ -97,7 +97,7 @@ export function ButtonGroup({ children, className, vertical = false }: ButtonGro
     >
       {React.Children.map(children, (child, index) => {
         if (!React.isValidElement(child)) return child;
-        return React.cloneElement(child as React.ReactElement<any>, {
+        return React.cloneElement(child as React.ReactElement<{ className?: string }>, {
           className: cn(
             'rounded-none border-0 focus:ring-0 hover:z-10',
             index === 0 && !vertical ? 'rounded-l-lg' : '',
@@ -255,7 +255,8 @@ function MenuContent({ children, align = 'start', className }: { children: React
     <div
       className={cn(
         'absolute top-full mt-1.5 bg-cyber-panel border border-cyber-border rounded-lg shadow-lg py-1.5 animate-in',
-        align === 'end' ? 'right-0' : 'left-0'
+        align === 'end' ? 'right-0' : 'left-0',
+        className
       )}
     >
       {children}

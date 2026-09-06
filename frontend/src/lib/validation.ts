@@ -75,7 +75,7 @@ export const registerSchema = z.object({
   password: passwordSchema,
   confirmPassword: z.string(),
   wallet_address: walletAddressSchema,
-}).refine(data => data.password === data.confirmPassword, {
+}).refine((data: { password?: string; confirmPassword?: string }) => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'],
 });
@@ -84,7 +84,7 @@ export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
   newPassword: passwordSchema,
   confirmPassword: z.string(),
-}).refine(data => data.newPassword === data.confirmPassword, {
+}).refine((data: { newPassword?: string; confirmPassword?: string }) => data.newPassword === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'],
 });
@@ -132,12 +132,12 @@ export const updateUserSchema = z.object({
   email: emailSchema.optional(),
   wallet_address: walletAddressSchema,
   is_active: z.boolean().optional(),
-  role: z.enum(['ADMIN', 'MANAGER', 'AUDITOR', 'USER']).optional(),
+  role: z.enum(['OWNER', 'MANAGER', 'EMPLOYEE']).optional(),
 });
 
 export const assignRoleSchema = z.object({
   user_id: z.number().positive('User ID is required'),
-  role: z.enum(['MANAGER', 'AUDITOR', 'MINTER', 'IDENTITY_VERIFIER']),
+  role: z.enum(['MANAGER', 'EMPLOYEE']),
 });
 
 export const verifyAuditSchema = z.object({
@@ -145,7 +145,7 @@ export const verifyAuditSchema = z.object({
   audit_id: z.number().positive().optional(),
   resource_type: z.string().min(1).optional(),
   resource_id: z.string().min(1).optional(),
-}).refine(data => data.tx_hash || data.audit_id || (data.resource_type && data.resource_id), {
+}).refine((data: { tx_hash?: string; audit_id?: number; resource_type?: string; resource_id?: string }) => data.tx_hash || data.audit_id || (data.resource_type && data.resource_id), {
   message: 'At least one verification parameter is required',
 });
 

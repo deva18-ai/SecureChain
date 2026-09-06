@@ -1,5 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import type { Token, ErrorResponse } from '../types';
+import type { Token, ErrorResponse, User, RegisterRequest } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
@@ -37,8 +37,8 @@ api.interceptors.response.use(
 );
 
 export const authApi = {
-  register: (data: { email: string; full_name: string; password: string; wallet_address?: string }) =>
-    api.post<Token>('/auth/register', data),
+  register: (data: RegisterRequest) =>
+    api.post<User>('/auth/register', data),
   login: (data: { email: string; password: string }) =>
     api.post<Token>('/auth/login', data),
   me: () => api.get<import('../types').User>('/auth/me'),
@@ -54,6 +54,8 @@ export const usersApi = {
   updateRole: (id: number, role: string) =>
     api.patch<import('../types').User>(`/users/${id}/role`, { role }),
   delete: (id: number) => api.delete(`/users/${id}`),
+  register: (data: import('../types').RegisterRequest) =>
+    api.post<import('../types').User>('/auth/register', data),
   // Wallet associations
   listWallets: (userId: number) =>
     api.get<import('../types').PaginatedResponse<import('../types').WalletAssociation>>(`/users/${userId}/wallets`),
@@ -126,6 +128,15 @@ export const blockchainApi = {
   asset: (tokenId: number) => api.get(`/blockchain/assets/${tokenId}`),
   transactions: (params?: { page?: number; page_size?: number; from_address?: string; contract_address?: string }) =>
     api.get<import('../types').PaginatedResponse<import('../types').BlockchainTransaction>>('/blockchain/transactions', { params }),
+};
+
+export const securityApi = {
+  list: (params?: { page?: number; page_size?: number; status?: string; severity?: string }) =>
+    api.get('/security', { params }),
+  stats: () => api.get('/security/stats'),
+  get: (id: number) => api.get(`/security/${id}`),
+  resolve: (id: number, data: { resolution_notes?: string }) =>
+    api.post(`/security/${id}/resolve`, data),
 };
 
 export const dashboardApi = {

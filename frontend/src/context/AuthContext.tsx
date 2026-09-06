@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import type { User, Token, UserRole } from '../types';
+import type { User, UserRole } from '../types';
 import { authApi } from '../services/api';
 
 interface AuthContextType {
@@ -8,7 +8,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (data: { email: string; full_name: string; password: string; wallet_address?: string }) => Promise<void>;
+  register: (data: { email: string; full_name: string; password: string; wallet_address?: string; role?: UserRole }) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   hasRole: (roles: UserRole[]) => boolean;
@@ -48,14 +48,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const response = await authApi.login({ email, password });
-    const { access_token, token_type, expires_in } = response.data;
+    const { access_token } = response.data;
     localStorage.setItem('access_token', access_token);
     setToken(access_token);
     await refreshUser();
   };
 
-  const register = async (data: { email: string; full_name: string; password: string; wallet_address?: string }) => {
-    const response = await authApi.register(data);
+  const register = async (data: { email: string; full_name: string; password: string; wallet_address?: string; role?: UserRole }) => {
+    await authApi.register(data);
+    const response = await authApi.login({ email: data.email, password: data.password });
     const { access_token } = response.data;
     localStorage.setItem('access_token', access_token);
     setToken(access_token);

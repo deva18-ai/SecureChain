@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, TypeVar
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
@@ -16,20 +16,22 @@ from app.schemas import (
     WalletAssociationResponse,
     WalletAssociationWithUser,
 )
-from app.auth import get_current_active_user, require_owner, require_owner_or_manager
+from app.auth import get_current_active_user, require_admin, require_admin_or_manager
 from app.services.audit import AuditService
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
+UserListResponse = PaginatedResponse[UserWithDetails]
 
-@router.get("", response_model=PaginatedResponse)
+
+@router.get("", response_model=UserListResponse)
 async def list_users(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     role: Optional[UserRole] = None,
     is_active: Optional[bool] = None,
     search: Optional[str] = None,
-    current_user: User = Depends(require_owner_or_manager),
+    current_user: User = Depends(require_admin_or_manager),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(User).options(selectinload(User.dids), selectinload(User.assets))
@@ -72,7 +74,7 @@ async def list_users(
             )
         )
 
-    return PaginatedResponse(
+    return UserListResponse(
         items=items,
         total=total,
         page=page,
@@ -84,7 +86,7 @@ async def list_users(
 @router.get("/{user_id}", response_model=UserWithDetails)
 async def get_user(
     user_id: int,
-    current_user: User = Depends(require_owner_or_manager),
+    current_user: User = Depends(require_admin_or_manager),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
@@ -117,11 +119,11 @@ async def get_user(
 async def update_user(
     user_id: int,
     request: UserUpdate,
-    current_user: User = Depends(require_owner_or_manager),
+    current_user: User = Depends(require_admin_or_manager),
     db: AsyncSession = Depends(get_db),
     http_request: Request = None,
 ):
-    if current_user.id == user_id and current_user.role != UserRole.OWNER:
+    if current_user.id == user_id and current_user.role != UserRole.ADMIN:
         raise HTTPException(status_code=403, detail="Cannot modify own account unless admin")
 
     result = await db.execute(select(User).where(User.id == user_id))
@@ -175,7 +177,7 @@ async def update_user(
 async def update_user_role(
     user_id: int,
     request: UserRoleUpdate,
-    current_user: User = Depends(require_owner),
+    current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
     http_request: Request = None,
 ):
@@ -211,7 +213,7 @@ async def update_user_role(
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
     user_id: int,
-    current_user: User = Depends(require_owner),
+    current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
     http_request: Request = None,
 ):
@@ -240,12 +242,15 @@ async def delete_user(
     )
 
 
-@router.get("/{user_id}/wallets", response_model=PaginatedResponse)
+WalletAssociationListResponse = PaginatedResponse[WalletAssociationWithUser]
+
+
+@router.get("/{user_id}/wallets", response_model=WalletAssociationListResponse)
 async def list_user_wallets(
     user_id: int,
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
-    current_user: User = Depends(require_owner_or_manager),
+    current_user: User = Depends(require_admin_or_manager),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(select(User).where(User.id == user_id))
@@ -281,7 +286,7 @@ async def list_user_wallets(
             )
         )
 
-    return PaginatedResponse(
+    return WalletAssociationListResponse(
         items=items,
         total=total,
         page=page,
@@ -294,7 +299,7 @@ async def list_user_wallets(
 async def create_user_wallet(
     user_id: int,
     request: WalletAssociationCreate,
-    current_user: User = Depends(require_owner),
+    current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
     http_request: Request = None,
 ):
@@ -352,7 +357,7 @@ async def create_user_wallet(
 async def get_user_wallet(
     user_id: int,
     wallet_id: int,
-    current_user: User = Depends(require_owner_or_manager),
+    current_user: User = Depends(require_admin_or_manager),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
@@ -385,7 +390,7 @@ async def update_user_wallet(
     user_id: int,
     wallet_id: int,
     request: WalletAssociationUpdate,
-    current_user: User = Depends(require_owner),
+    current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
     http_request: Request = None,
 ):
@@ -454,7 +459,7 @@ async def update_user_wallet(
 async def delete_user_wallet(
     user_id: int,
     wallet_id: int,
-    current_user: User = Depends(require_owner),
+    current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
     http_request: Request = None,
 ):

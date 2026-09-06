@@ -17,7 +17,7 @@ from app.auth import (
     get_password_hash,
     create_access_token,
     get_current_active_user,
-    require_owner,
+    require_admin,
 )
 from app.services.audit import AuditService
 
@@ -47,10 +47,10 @@ async def register(
                 detail="Wallet address already registered",
             )
 
-    if request.role == UserRole.OWNER:
+    if request.role == UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Cannot register as owner",
+            detail="Cannot register as admin",
         )
 
     hashed_password = get_password_hash(request.password)

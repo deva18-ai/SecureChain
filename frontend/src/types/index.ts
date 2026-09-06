@@ -1,6 +1,5 @@
-export type UserRole = 'OWNER' | 'MANAGER' | 'EMPLOYEE';
-
-export type WalletType = 'OWNER' | 'MANAGER' | 'EMPLOYEE';
+export type UserRole = 'ADMIN' | 'MANAGER' | 'AUDITOR' | 'USER';
+export type WalletType = 'ADMIN' | 'MANAGER' | 'AUDITOR' | 'USER';
 
 export type BlockchainTxStatus = 'PENDING' | 'CONFIRMED' | 'FAILED';
 
@@ -15,6 +14,7 @@ export interface User {
   created_at: string;
   updated_at: string;
   last_login: string | null;
+  did?: string;
   dids_count?: number;
   assets_count?: number;
   transfers_count?: number;
@@ -262,6 +262,19 @@ export interface WalletAssociation {
   created_at: string;
   updated_at: string;
   user?: User;
+}
+
+export interface WalletAssociationCreate {
+  wallet_address: string;
+  wallet_type?: WalletType;
+  did?: string;
+  is_primary?: boolean;
+}
+
+export interface WalletAssociationUpdate {
+  wallet_type?: WalletType;
+  did?: string;
+  is_primary?: boolean;
 }
 
 export type AIAssetProposalStatus = 'DRAFT' | 'PROPOSED' | 'APPROVED' | 'REJECTED' | 'MINTED';

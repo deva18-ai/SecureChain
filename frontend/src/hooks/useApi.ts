@@ -4,7 +4,7 @@ import type {
   User, DID, Asset, Transfer, AuditLog, BlockchainStatus,
   BlockchainTransaction, DashboardStats, PaginatedResponse,
   AssetCreate, AssetUpdate, VerificationRequest,
-  UserRole, WalletAssociation, WalletAssociationCreate,
+  UserRole, RegisterRequest, WalletAssociation, WalletAssociationCreate,
   WalletAssociationUpdate, AIAssetProposal, AIAssetProposalCreate,
   AIAssetProposalUpdate, AIAssetProposalReview
 } from '../types';
@@ -172,11 +172,22 @@ export function useAllocateAsset() {
   });
 }
 
+export function useCreateUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: RegisterRequest) => api.post<User>('/auth/register', data).then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
+    },
+  });
+}
+
 export function useRevokeAssignment() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => api.post<Asset>(`/assets/${id}/revoke`).then(r => r.data),
-    onSuccess: (_, { id }) => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['assets'] });
       queryClient.invalidateQueries({ queryKey: ['asset', id] });
       queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
@@ -337,6 +348,25 @@ export function useReviewAssetProposal() {
       queryClient.invalidateQueries({ queryKey: ['assets', 'proposals', id] });
       queryClient.invalidateQueries({ queryKey: ['assets'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] });
+    },
+  });
+}
+
+// Security Event hooks
+export function useSecurityEvents(params?: { page?: number; page_size?: number; status?: string; severity?: string }) {
+  return useQuery({
+    queryKey: ['security', params],
+    queryFn: () => api.get('/security', { params }).then(r => r.data),
+  });
+}
+
+export function useResolveSecurityEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, resolution_notes }: { id: number; resolution_notes?: string }) =>
+      api.post(`/security/${id}/resolve`, { resolution_notes }).then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['security'] });
     },
   });
 }

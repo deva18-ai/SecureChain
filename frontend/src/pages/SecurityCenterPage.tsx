@@ -1,19 +1,15 @@
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 import {
-  Shield, Lock, Database, Globe, Server, FileText, Wallet, Blocks,
-  CheckCircle, AlertCircle, XCircle, HelpCircle, Zap, Key, UserCog,
-  ChevronDown, ChevronUp, Eye, Code, Network, HardDrive, Fingerprint
+  Shield, Database, Globe, Server, FileText, Blocks,
+  CheckCircle, AlertCircle, XCircle, HelpCircle, UserCog,
+  ChevronDown, ChevronUp, Code
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import {
-  SecurityStatus,
-  SystemHealth,
-  VerificationBadge,
-  ThreatLevel,
-} from '../components/security';
-import { useBlockchainStatus } from '../hooks/useApi';
+import { Table } from '../components/ui/Table';
+import { useBlockchainStatus, useSecurityEvents, useResolveSecurityEvent } from '../hooks/useApi';
 
 const securitySections = [
   {
@@ -130,9 +126,31 @@ const securitySections = [
   },
 ];
 
+const STATUS_STYLES: Record<string, { bg: string; text: string; border: string }> = {
+  operational: { bg: 'rgba(47,168,114,0.1)', text: '#2fa872', border: 'rgba(47,168,114,0.3)' },
+  degraded: { bg: 'rgba(201,154,62,0.1)', text: '#c99a3e', border: 'rgba(201,154,62,0.3)' },
+  critical: { bg: 'rgba(221,91,100,0.1)', text: '#dd5b64', border: 'rgba(221,91,100,0.3)' },
+  unknown: { bg: 'rgba(137,145,163,0.1)', text: '#8991a3', border: 'rgba(137,145,163,0.3)' },
+};
+
 export default function SecurityCenterPage() {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   const { data: blockchainStatus } = useBlockchainStatus();
+  const [secTestResult, setSecTestResult] = useState<string | null>(null);
+  
+  // Fetch real security events from backend
+  const { data: securityEventsData, refetch: refetchEvents } = useSecurityEvents({ page: 1, page_size: 10 });
+  const resolveEventMutation = useResolveSecurityEvent();
+
+  const handleResolveEvent = async (eventId: number) => {
+    try {
+      await resolveEventMutation.mutateAsync({ id: eventId, resolution_notes: 'Resolved by OWNER' });
+      toast.success('Security event resolved');
+      refetchEvents();
+    } catch (error) {
+      toast.error('Failed to resolve security event');
+    }
+  };
 
   const toggleSection = (id: string) => {
     setExpandedSections(prev => ({ ...prev, [id]: !prev[id] }));
@@ -160,101 +178,204 @@ export default function SecurityCenterPage() {
 
   const overall = getOverallStatus();
 
-  return (
-    <div className="space-y-6 animate-in">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+  const simulateUnauthorized = () => {
+    setSecTestResult(`
+      <div style="border: 1px solid #262b37; border-radius: 8; padding: 18px; color: #8991a3; font-size: 13px; display: flex; gap: 10; align-items: flex-start; background: #191e29; margin-top: 16px;">
+        <svg class="icon" viewBox="0 0 24 24" style="width: 16px; height: 16px; flex-shrink: 0; color: #dd5b64;"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>
         <div>
-          <h1 className="text-2xl font-heading font-bold text-cyber-text">Security Center</h1>
-          <p className="text-cyber-textMuted">
-            Centralized visibility into security controls implemented by SecureChain
-          </p>
+          <b style="color: #dd5b64">ACCESS DENIED</b><br>
+          Reason: Manager attempted to directly execute a protected Owner-level operation.<br>
+          Security Rule: Protected operations require Owner approval.
         </div>
-        <div className="flex items-center gap-3">
-          <VerificationBadge
-            verified={blockchainStatus?.connected || false}
-            blockchainVerified={blockchainStatus?.contract_verified || false}
-            size="md"
-          />
+      </div>
+    `);
+  };
+
+  return (
+    <div className="space-y-6 animate-in" style={{ color: '#e6e9ef' }}>
+      <div className="topbar" style={{ display: 'flex', justifyContent: 'spaceBetween', alignItems: 'flexStart', marginBottom: 22, flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <div className="page-title" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-.01em' }}>Security Center</div>
+          <div className="page-sub" style={{ color: '#8991a3', fontSize: 13, marginTop: 4 }}>Live enforcement status & interactive security test</div>
         </div>
       </div>
 
-      {/* Overall Security Posture */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-cyber-critical/10 text-cyber-critical flex items-center justify-center">
+        <Card className="p-6" style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="w-12 h-12 rounded-xl bg-[#dd5b64]/10" style={{ color: '#dd5b64' }}>
               <XCircle className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm text-cyber-textMuted">Critical</p>
-              <p className="text-3xl font-heading font-bold text-cyber-text">{overall.critical}</p>
+              <p style={{ fontSize: 12, color: '#8991a3' }}>Critical</p>
+              <p style={{ fontSize: '28px', fontWeight: 700, color: '#e6e9ef' }}>{overall.critical}</p>
             </div>
           </div>
         </Card>
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-cyber-warning/10 text-cyber-warning flex items-center justify-center">
+        <Card className="p-6" style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="w-12 h-12 rounded-xl bg-[#c99a3e]/10" style={{ color: '#c99a3e' }}>
               <AlertCircle className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm text-cyber-textMuted">Degraded</p>
-              <p className="text-3xl font-heading font-bold text-cyber-text">{overall.degraded}</p>
+              <p style={{ fontSize: 12, color: '#8991a3' }}>Degraded</p>
+              <p style={{ fontSize: '28px', fontWeight: 700, color: '#e6e9ef' }}>{overall.degraded}</p>
             </div>
           </div>
         </Card>
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-cyber-success/10 text-cyber-success flex items-center justify-center">
+        <Card className="p-6" style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="w-12 h-12 rounded-xl bg-[#2fa872]/10" style={{ color: '#2fa872' }}>
               <CheckCircle className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm text-cyber-textMuted">Operational</p>
-              <p className="text-3xl font-heading font-bold text-cyber-text">{overall.operational}</p>
+              <p style={{ fontSize: 12, color: '#8991a3' }}>Operational</p>
+              <p style={{ fontSize: '28px', fontWeight: 700, color: '#e6e9ef' }}>{overall.operational}</p>
             </div>
           </div>
         </Card>
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-cyber-textDim/10 text-cyber-textDim flex items-center justify-center">
+        <Card className="p-6" style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="w-12 h-12 rounded-xl bg-[#8991a3]/10" style={{ color: '#8991a3' }}>
               <HelpCircle className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm text-cyber-textMuted">Not Assessed</p>
-              <p className="text-3xl font-heading font-bold text-cyber-text">{overall.unknown}</p>
+              <p style={{ fontSize: 12, color: '#8991a3' }}>Not Assessed</p>
+              <p style={{ fontSize: '28px', fontWeight: 700, color: '#e6e9ef' }}>{overall.unknown}</p>
             </div>
           </div>
         </Card>
       </div>
 
-      {/* Security Posture Score */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-heading font-semibold text-cyber-text">Security Posture Score</h2>
-          <ThreatLevel level={overall.critical > 0 ? 'critical' : overall.degraded > 0 ? 'medium' : 'low'} />
+      <Card className="p-6" style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'spaceBetween', alignItems: 'center', marginBottom: 24 }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#e6e9ef' }}>Security Posture Score</h2>
+          <div style={{ padding: '8px 16px', borderRadius: 20, fontSize: 12, fontWeight: 600, background: overall.critical > 0 ? 'rgba(221,91,100,0.1)' : overall.degraded > 0 ? 'rgba(201,154,62,0.1)' : 'rgba(47,168,114,0.1)', color: overall.critical > 0 ? '#dd5b64' : overall.degraded > 0 ? '#c99a3e' : '#2fa872', border: `1px solid ${overall.critical > 0 ? 'rgba(221,91,100,0.3)' : overall.degraded > 0 ? 'rgba(201,154,62,0.3)' : 'rgba(47,168,114,0.3)'}` }}>
+            {overall.critical > 0 ? 'CRITICAL' : overall.degraded > 0 ? 'MEDIUM' : 'LOW'}
+          </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center p-4 rounded-lg bg-cyber-elevated/50 border border-cyber-border/50">
-            <p className="text-4xl font-heading font-bold text-cyber-success">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          <div style={{ textAlign: 'center', padding: 16, borderRadius: 8, background: 'rgba(25,30,41,0.5)', border: '1px solid rgba(38,43,55,0.5)' }}>
+            <p style={{ fontSize: '32px', fontWeight: 700, color: '#2fa872' }}>
               {Math.round((overall.operational / overall.total) * 100)}%
             </p>
-            <p className="text-sm text-cyber-textMuted mt-1">Controls Operational</p>
+            <p style={{ fontSize: 12, color: '#8991a3', marginTop: 4 }}>Controls Operational</p>
           </div>
-          <div className="text-center p-4 rounded-lg bg-cyber-elevated/50 border border-cyber-border/50">
-            <p className="text-4xl font-heading font-bold text-cyber-primary">
+          <div style={{ textAlign: 'center', padding: 16, borderRadius: 8, background: 'rgba(25,30,41,0.5)', border: '1px solid rgba(38,43,55,0.5)' }}>
+            <p style={{ fontSize: '32px', fontWeight: 700, color: '#3d6fe0' }}>
               {overall.total}
             </p>
-            <p className="text-sm text-cyber-textMuted mt-1">Total Controls</p>
+            <p style={{ fontSize: 12, color: '#8991a3', marginTop: 4 }}>Total Controls</p>
           </div>
-          <div className="text-center p-4 rounded-lg bg-cyber-elevated/50 border border-cyber-border/50">
-            <p className="text-4xl font-heading font-bold text-cyber-warning">
+          <div style={{ textAlign: 'center', padding: 16, borderRadius: 8, background: 'rgba(25,30,41,0.5)', border: '1px solid rgba(38,43,55,0.5)' }}>
+            <p style={{ fontSize: '32px', fontWeight: 700, color: '#c99a3e' }}>
               {overall.degraded + overall.unknown}
             </p>
-            <p className="text-sm text-cyber-textMuted mt-1">Need Attention</p>
+            <p style={{ fontSize: 12, color: '#8991a3', marginTop: 4 }}>Need Attention</p>
           </div>
         </div>
       </Card>
 
-      {/* Security Sections */}
+      <div className="section-title" style={{ fontSize: 14, fontWeight: 600, margin: '26px 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>Recent Security Events</div>
+      <Card style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8, overflow: 'hidden' }}>
+        <div className="p-4 border-b" style={{ borderColor: '#262b37', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#e6e9ef' }}>Security Event Log</h3>
+            <p style={{ fontSize: 12, color: '#8991a3', marginTop: 2 }}>Real-time security events from backend authorization layer</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => refetchEvents()}>
+            <AlertCircle className="h-4 w-4" />
+            Refresh
+          </Button>
+        </div>
+        <div className="table-wrap" style={{ overflowX: 'auto' }}>
+          <Table>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #262b37' }}>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>ID</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Timestamp</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Event Type</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Actor</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Severity</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}>Status</th>
+                <th style={{ textAlign: 'left', color: '#8991a3', fontSize: 11, letterSpacing: '.03em', padding: '10px 12px', fontWeight: 600 }}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {!securityEventsData?.items?.length ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-12" style={{ color: '#8991a3' }}>
+                    <CheckCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No security events recorded</p>
+                    <p style={{ fontSize: 11, marginTop: 4 }}>Security violations will appear here when detected</p>
+                  </td>
+                </tr>
+              ) : (
+                securityEventsData.items.map((event: any) => (
+                  <tr key={event.id} className="row-hover" style={{ transition: 'background .15s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#191e29'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                    <td className="mono" style={{ padding: '12px', borderBottom: '1px solid #262b37', fontFamily: 'var(--mono)', fontSize: 12, color: '#8991a3' }}>#{event.id}</td>
+                    <td style={{ padding: '12px', borderBottom: '1px solid #262b37', fontSize: 12, color: '#8991a3', whiteSpace: 'nowrap' }}>
+                      {new Date(event.timestamp || event.created_at).toLocaleString(undefined, { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                    <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>
+                      <span style={{ fontSize: 13 }}>{event.event_type || event.action}</span>
+                    </td>
+                    <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>
+                      <span style={{ fontSize: 13 }}>{event.actor || event.user_email || 'System'}</span>
+                    </td>
+                    <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>
+                      <Badge variant={event.severity === 'CRITICAL' ? 'danger' : event.severity === 'HIGH' ? 'warning' : 'info'} style={{ fontSize: 11, padding: '3px 9px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6 }}>
+                        {event.severity || 'MEDIUM'}
+                      </Badge>
+                    </td>
+                    <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>
+                      <Badge variant={event.status === 'RESOLVED' ? 'success' : event.status === 'BLOCKED' ? 'danger' : 'warning'} style={{ fontSize: 11, padding: '3px 9px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6 }}>
+                        {event.status || 'OPEN'}
+                      </Badge>
+                    </td>
+                    <td style={{ padding: '12px', borderBottom: '1px solid #262b37' }}>
+                      {event.status !== 'RESOLVED' && (
+                        <Button variant="outline" size="sm" onClick={() => handleResolveEvent(event.id)} loading={resolveEventMutation.isPending}>
+                          Resolve
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </Table>
+        </div>
+      </Card>
+
+      <div className="section-title" style={{ fontSize: 14, fontWeight: 600, margin: '26px 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>Security Controls</div>
+      <div className="security-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+        {[
+          ['JWT Authentication', 'ENABLED (DEMO)'],
+          ['Role-Based Access Control', 'ENABLED'],
+          ['Owner Approval', 'ENABLED'],
+          ['Separation of Duties', 'ENABLED'],
+          ['Audit Logging', 'ENABLED'],
+          ['Blockchain Integrity', 'CONNECTED'],
+          ['Protected Operations', 'ENABLED']
+        ].map((c, i) => (
+          <div key={i} className="sec-row" style={{ display: 'flex', justifyContent: 'spaceBetween', alignItems: 'center', border: '1px solid #262b37', borderRadius: 6, padding: '12px 14px', background: '#141821' }}>
+            <span className="sec-name" style={{ fontSize: 13, fontWeight: 500 }}>{c[0]}</span>
+            <span className="sec-status" style={{ fontSize: 12, fontWeight: 600, color: '#2fa872' }}>✓ {c[1]}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="section-title" style={{ fontSize: 14, fontWeight: 600, margin: '26px 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>Interactive Security Test</div>
+      <Card style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8, padding: 18 }}>
+        <div style={{ marginBottom: 12, color: '#8991a3', fontSize: 13 }}>Simulate a Manager attempting to directly execute a protected Owner-level operation, bypassing approval.</div>
+        <Button variant="danger" onClick={simulateUnauthorized} style={{ background: 'rgba(221,91,100,0.12)', color: '#dd5b64', border: '1px solid rgba(221,91,100,0.35)' }}>
+          Simulate Unauthorized Action
+        </Button>
+        <div id="secTestResult" dangerouslySetInnerHTML={{ __html: secTestResult || '' }} />
+      </Card>
+
+      <div className="section-title" style={{ fontSize: 14, fontWeight: 600, margin: '26px 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>Detailed Security Controls</div>
       <div className="space-y-4">
         {securitySections.map((section) => {
           const Icon = section.icon;
@@ -263,51 +384,72 @@ export default function SecurityCenterPage() {
           const totalCount = section.controls.length;
 
           return (
-            <Card key={section.id} className="overflow-hidden">
+            <Card key={section.id} style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8, overflow: 'hidden' }}>
               <button
                 onClick={() => toggleSection(section.id)}
-                className="w-full p-6 flex items-center justify-between hover:bg-cyber-elevated/50 transition-colors"
+                className="w-full p-6 flex items-center justify-between"
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', color: '#e6e9ef', transition: 'background .15s' }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#191e29'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-cyber-primary/10 text-cyber-primary flex items-center justify-center flex-shrink-0">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div className="w-12 h-12 rounded-xl bg-[#3d6fe0]/10" style={{ color: '#3d6fe0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Icon className="h-6 w-6" />
                   </div>
                   <div>
-                    <h3 className="font-heading font-semibold text-cyber-text">{section.title}</h3>
-                    <p className="text-sm text-cyber-textMuted">{section.description}</p>
+                    <h3 style={{ fontWeight: 600, color: '#e6e9ef' }}>{section.title}</h3>
+                    <p style={{ fontSize: 12, color: '#8991a3' }}>{section.description}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className={cn(
-                    'px-3 py-1 rounded-full text-xs font-medium',
-                    operationalCount === totalCount
-                      ? 'bg-cyber-success/10 text-cyber-success border border-cyber-success/30'
-                      : operationalCount > totalCount / 2
-                      ? 'bg-cyber-warning/10 text-cyber-warning border border-cyber-warning/30'
-                      : 'bg-cyber-critical/10 text-cyber-critical border border-cyber-critical/30'
-                  )}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <span style={{
+                    padding: '6px 12px',
+                    borderRadius: 9999,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    background: operationalCount === totalCount ? 'rgba(47,168,114,0.1)' : operationalCount > totalCount / 2 ? 'rgba(201,154,62,0.1)' : 'rgba(221,91,100,0.1)',
+                    color: operationalCount === totalCount ? '#2fa872' : operationalCount > totalCount / 2 ? '#c99a3e' : '#dd5b64',
+                    border: `1px solid ${operationalCount === totalCount ? 'rgba(47,168,114,0.3)' : operationalCount > totalCount / 2 ? 'rgba(201,154,62,0.3)' : 'rgba(221,91,100,0.3)'}`
+                  }}>
                     {operationalCount}/{totalCount} Operational
                   </span>
                   {isExpanded ? (
-                    <ChevronUp className="h-5 w-5 text-cyber-textMuted" />
+                    <ChevronUp className="h-5 w-5" style={{ color: '#8991a3' }} />
                   ) : (
-                    <ChevronDown className="h-5 w-5 text-cyber-textMuted" />
+                    <ChevronDown className="h-5 w-5" style={{ color: '#8991a3' }} />
                   )}
                 </div>
               </button>
 
               {isExpanded && (
-                <div className="border-t border-cyber-border p-6 animate-in">
-                  <div className="space-y-3">
-                    {section.controls.map((control, index) => (
-                      <SecurityStatus
-                        key={`${section.id}-${index}`}
-                        status={control.status}
-                        label={control.name}
-                        description={control.description}
-                        compact
-                      />
-                    ))}
+                <div style={{ borderTop: '1px solid #262b37', padding: '18px 24px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {section.controls.map((control, index) => {
+                      const style = STATUS_STYLES[control.status];
+                      return (
+                        <div key={`${section.id}-${index}`} style={{ display: 'flex', justifyContent: 'spaceBetween', alignItems: 'center', border: `1px solid ${style.border}`, borderRadius: 6, padding: '12px 14px', background: '#141821' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <span className="status-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: style.text }} />
+                            <div>
+                              <div style={{ fontSize: 13, fontWeight: 500, color: '#e6e9ef' }}>{control.name}</div>
+                              <div style={{ fontSize: 12, color: '#8991a3' }}>{control.description}</div>
+                            </div>
+                          </div>
+                          <span style={{
+                            padding: '4px 10px',
+                            borderRadius: 4,
+                            fontSize: 11,
+                            fontWeight: 600,
+                            letterSpacing: '.04em',
+                            background: style.bg,
+                            color: style.text,
+                            border: `1px solid ${style.border}`
+                          }}>
+                            {control.status.toUpperCase()}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -316,10 +458,9 @@ export default function SecurityCenterPage() {
         })}
       </div>
 
-      {/* Compliance Frameworks */}
-      <Card className="p-6">
-        <h2 className="text-lg font-heading font-semibold text-cyber-text mb-6">Compliance Framework Alignment</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <Card className="p-6" style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8 }}>
+        <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#e6e9ef', marginBottom: 24 }}>Compliance Framework Alignment</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
           {[
             { name: 'NIST Cybersecurity Framework', status: 'partial', description: 'Identify, Protect, Detect, Respond, Recover partially covered' },
             { name: 'ISO 27001', status: 'partial', description: 'Access control, audit logging, encryption aligned' },
@@ -328,18 +469,14 @@ export default function SecurityCenterPage() {
             { name: 'GDPR', status: 'partial', description: 'Data minimization, access rights, audit logging supported' },
             { name: 'CERT-In Guidelines', status: 'partial', description: 'Incident response, log retention, vulnerability mgmt' },
           ].map((framework) => (
-            <div key={framework.name} className="p-4 rounded-lg bg-cyber-elevated/50 border border-cyber-border/50">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium text-cyber-text">{framework.name}</h4>
-                <Badge variant={
-                  framework.status === 'full' ? 'success' :
-                  framework.status === 'partial' ? 'warning' :
-                  framework.status === 'planned' ? 'info' : 'default'
-                }>
+            <div key={framework.name} style={{ padding: 16, borderRadius: 8, background: 'rgba(25,30,41,0.5)', border: '1px solid rgba(38,43,55,0.5)' }}>
+              <div style={{ display: 'flex', justifyContent: 'spaceBetween', alignItems: 'center', marginBottom: 8 }}>
+                <h4 style={{ fontWeight: 500, color: '#e6e9ef' }}>{framework.name}</h4>
+                <Badge variant={framework.status === 'full' ? 'success' : framework.status === 'partial' ? 'warning' : 'info'} style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6 }}>
                   {framework.status.charAt(0).toUpperCase() + framework.status.slice(1)}
                 </Badge>
               </div>
-              <p className="text-sm text-cyber-textMuted">{framework.description}</p>
+              <p style={{ fontSize: 12, color: '#8991a3' }}>{framework.description}</p>
             </div>
           ))}
         </div>

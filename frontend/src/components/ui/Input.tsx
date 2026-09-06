@@ -1,24 +1,116 @@
-import { forwardRef, InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes } from 'react';
+import { forwardRef, InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes, ReactNode } from 'react';
 import { cn } from '../../utils/helpers';
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+export type InputOption = { value: string; label: string };
+
+type BaseInputProps = {
   label?: string;
   error?: string;
   helperText?: string;
-  leftIcon?: React.ReactNode;
-}
+  leftIcon?: ReactNode;
+  id?: string;
+  className?: string;
+};
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, helperText, id, leftIcon, ...props }, ref) => {
+type NormalInputProps = BaseInputProps & Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | keyof BaseInputProps> & {
+  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | 'date' | 'time' | 'datetime-local' | 'month' | 'week' | 'color' | 'file';
+};
+
+type SelectInputProps = BaseInputProps & Omit<SelectHTMLAttributes<HTMLSelectElement>, keyof BaseInputProps> & {
+  type: 'select';
+  options: InputOption[];
+};
+
+type TextareaInputProps = BaseInputProps & Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, keyof BaseInputProps> & {
+  type: 'textarea';
+  rows?: number;
+};
+
+export type InputProps = NormalInputProps | SelectInputProps | TextareaInputProps;
+
+export const Input = forwardRef<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement, InputProps>(
+  (props, ref) => {
+    const { className, label, error, helperText, id, type } = props;
     const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
 
+    const wrapperClass = 'w-full';
+    const labelEl = label && (
+      <label htmlFor={inputId} className="block text-sm font-medium text-cyber-textMuted mb-1.5">
+        {label}
+      </label>
+    );
+    const errorEl = error && (
+      <p id={`${inputId}-error`} className="mt-1.5 text-sm text-cyber-critical" role="alert">
+        {error}
+      </p>
+    );
+    const helperEl = helperText && !error && (
+      <p id={`${inputId}-helper`} className="mt-1.5 text-sm text-cyber-textDim">
+        {helperText}
+      </p>
+    );
+
+    if (type === 'select') {
+      const { options, ...selectProps } = props as SelectInputProps;
+      const { label: _, error: __, helperText: ___, leftIcon: ____, id: _____, className: ______, type: _______, ...restSelectProps } = selectProps;
+      
+      return (
+        <div className={wrapperClass}>
+          {labelEl}
+          <select
+            ref={ref as React.Ref<HTMLSelectElement>}
+            id={inputId}
+            className={cn(
+              'w-full px-4 py-2.5 rounded-lg bg-cyber-elevated border text-cyber-text focus:outline-none focus:ring-2 focus:ring-cyber-primary focus:border-transparent transition-all duration-200 appearance-none',
+              error ? 'border-cyber-critical focus:ring-cyber-critical' : 'border-cyber-border',
+              className
+            )}
+            aria-invalid={error ? 'true' : 'false'}
+            aria-describedby={error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined}
+            {...restSelectProps}
+          >
+            {options.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          {errorEl}
+          {helperEl}
+        </div>
+      );
+    }
+
+    if (type === 'textarea') {
+      const { rows, ...textareaProps } = props as TextareaInputProps;
+      const { label: _, error: __, helperText: ___, leftIcon: ____, id: _____, className: ______, type: _______, ...restTextareaProps } = textareaProps;
+      
+      return (
+        <div className={wrapperClass}>
+          {labelEl}
+          <textarea
+            ref={ref as React.Ref<HTMLTextAreaElement>}
+            id={inputId}
+            rows={rows}
+            className={cn(
+              'w-full px-4 py-2.5 rounded-lg bg-cyber-elevated border text-cyber-text placeholder-cyber-textDim focus:outline-none focus:ring-2 focus:ring-cyber-primary focus:border-transparent transition-all duration-200 resize-y min-h-[100px]',
+              error ? 'border-cyber-critical focus:ring-cyber-critical' : 'border-cyber-border',
+              className
+            )}
+            aria-invalid={error ? 'true' : 'false'}
+            aria-describedby={error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined}
+            {...restTextareaProps}
+          />
+          {errorEl}
+          {helperEl}
+        </div>
+      );
+    }
+
+    const { leftIcon, ...inputProps } = props as NormalInputProps;
+    const { label: _, error: __, helperText: ___, id: ____, className: _____, ...restInputProps } = inputProps;
+    
     return (
-      <div className="w-full">
-        {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-cyber-textMuted mb-1.5">
-            {label}
-          </label>
-        )}
+      <div className={wrapperClass}>
+        {labelEl}
         <div className="relative">
           {leftIcon && (
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-cyber-textDim">
@@ -26,7 +118,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             </div>
           )}
           <input
-            ref={ref}
+            ref={ref as React.Ref<HTMLInputElement>}
             id={inputId}
             className={cn(
               'w-full px-4 py-2.5 rounded-lg bg-cyber-elevated border text-cyber-text placeholder-cyber-textDim focus:outline-none focus:ring-2 focus:ring-cyber-primary focus:border-transparent transition-all duration-200',
@@ -36,25 +128,18 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             )}
             aria-invalid={error ? 'true' : 'false'}
             aria-describedby={error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined}
-            {...props}
+            {...restInputProps}
           />
         </div>
-        {error && (
-          <p id={`${inputId}-error`} className="mt-1.5 text-sm text-cyber-critical" role="alert">
-            {error}
-          </p>
-        )}
-        {helperText && !error && (
-          <p id={`${inputId}-helper`} className="mt-1.5 text-sm text-cyber-textDim">
-            {helperText}
-          </p>
-        )}
+        {errorEl}
+        {helperEl}
       </div>
     );
   }
 );
 
 Input.displayName = 'Input';
+
 
 interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
@@ -106,7 +191,7 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
   helperText?: string;
-  options: Array<{ value: string; label: string }>;
+  options: InputOption[];
   placeholder?: string;
 }
 

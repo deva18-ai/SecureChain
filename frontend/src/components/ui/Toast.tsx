@@ -2,7 +2,7 @@ import { forwardRef, HTMLAttributes } from 'react';
 import { cn } from '../../utils/helpers';
 import { X } from 'lucide-react';
 
-interface ToastProps extends HTMLAttributes<HTMLDivElement> {
+export interface ToastProps extends HTMLAttributes<HTMLDivElement> {
   type?: 'default' | 'success' | 'error' | 'warning' | 'info';
   onClose: () => void;
   message: string;

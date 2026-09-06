@@ -1,6 +1,6 @@
-import { forwardRef, InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes, LabelHTMLAttributes } from 'react';
+import { forwardRef, InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes } from 'react';
 import { cn } from '../../utils/helpers';
-import { AlertCircle, CheckCircle, X } from 'lucide-react';
+import { AlertCircle, CheckCircle } from 'lucide-react';
 import { useId } from 'react';
 
 export interface FormFieldProps {
@@ -279,6 +279,7 @@ export interface RadioGroupProps extends FormFieldProps {
   value?: string;
   onChange?: (value: string) => void;
   inline?: boolean;
+  className?: string;
 }
 
 export const RadioGroup = forwardRef<HTMLDivElement, RadioGroupProps>(
@@ -354,10 +355,11 @@ export interface SwitchFieldProps extends FormFieldProps {
   checked?: boolean;
   onChange?: (checked: boolean) => void;
   size?: 'sm' | 'md' | 'lg';
+  className?: string;
 }
 
-export const SwitchField = forwardRef<HTMLInputElement, SwitchFieldProps>(
-  ({ className, label, error, helperText, required, checked, onChange, size = 'md', ...props }, ref) => {
+export const SwitchField = forwardRef<HTMLButtonElement, SwitchFieldProps>(
+  ({ className, label, error, helperText, required, checked, onChange, size = 'md' }, ref) => {
     const generatedId = useId();
     const inputId = generatedId;
     const errorId = `${inputId}-error`;

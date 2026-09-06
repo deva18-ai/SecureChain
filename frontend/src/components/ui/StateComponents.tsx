@@ -6,12 +6,8 @@ import {
   Search,
   AlertTriangle,
   WifiOff,
-  Server,
-  Database,
   Shield,
-  Key,
   Wallet,
-  GitBranch,
   Blocks,
   Activity,
   Settings,
@@ -20,16 +16,13 @@ import {
   RefreshCw,
   Plus,
   Link as LinkIcon,
-  ExternalLink,
   Loader2,
   XCircle,
   CheckCircle,
   Info,
-  AlertCircle,
   Home,
 } from 'lucide-react';
 import { Button } from './Button';
-import { Link } from 'react-router-dom';
 
 interface EmptyStateProps {
   icon?: ReactNode;

@@ -95,7 +95,7 @@ function Pagination({ page, pageSize, total, onPageChange, onPageSizeChange, pag
         {showPageSizeSelector && (
           <Select
             value={String(pageSize)}
-            onChange={onPageSizeChange}
+            onChange={(e) => onPageSizeChange(Number(e.target.value))}
             options={pageSizeOptions.map(n => ({ value: String(n), label: `${n} per page` }))}
             className="w-auto"
           />
@@ -223,8 +223,8 @@ export function DataTable<T extends Record<string, unknown>>({
 
   const isRowSelected = (rowKey: string) => selectedRows.has(rowKey);
 
-  const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setPageSize(parseInt(event.target.value, 10));
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
     setCurrentPage(1);
   };
 
@@ -311,7 +311,7 @@ export function DataTable<T extends Record<string, unknown>>({
                       rowClassName?.(row, rowIndex)
                     )}
                     onClick={onRowClick ? (e) => onRowClick(row, e) : undefined}
-                    onKeyDown={onRowClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick(row, e as any); }} : undefined}
+                    onKeyDown={onRowClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick(row, e as unknown as React.MouseEvent); }} : undefined}
                     tabIndex={onRowClick ? 0 : undefined}
                     role={onRowClick ? 'button' : undefined}
                     aria-selected={selectable ? isSelected : undefined}
@@ -413,7 +413,7 @@ export function DataTableToolbar({
           <Select
             key={index}
             value={filter.value || ''}
-            onChange={filter.onChange}
+            onChange={(e) => filter.onChange(e.target.value)}
             options={[{ value: '', label: `All ${filter.label}` }, ...filter.options]}
             placeholder={`Filter by ${filter.label}`}
             className="w-full sm:w-40"

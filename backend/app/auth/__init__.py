@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
+import bcrypt
 from jose import jwt, JWTError
-from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,16 +12,39 @@ from app.models import User, UserRole
 from app.schemas import TokenData, UserResponse
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    """
+    Verify a plain password against a bcrypt hashed password.
+    
+    Args:
+        plain_password: The plain text password to verify
+        hashed_password: The bcrypt hashed password from database
+    
+    Returns:
+        True if password matches, False otherwise
+    """
+    return bcrypt.checkpw(
+        plain_password.encode('utf-8'),
+        hashed_password.encode('utf-8')
+    )
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    """
+    Hash a password using bcrypt.
+    
+    Args:
+        password: The plain text password to hash
+    
+    Returns:
+        The bcrypt hashed password as a string
+    """
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed.decode('utf-8')
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -102,8 +125,9 @@ def require_role(*allowed_roles: UserRole):
     return role_checker
 
 
-require_owner = require_role(UserRole.OWNER)
-require_manager = require_role(UserRole.OWNER, UserRole.MANAGER)
-require_employee = require_role(UserRole.OWNER, UserRole.MANAGER, UserRole.EMPLOYEE)
-require_owner_or_manager = require_role(UserRole.OWNER, UserRole.MANAGER)
-require_any_authenticated = require_role(UserRole.OWNER, UserRole.MANAGER, UserRole.EMPLOYEE)
+require_admin = require_role(UserRole.ADMIN)
+require_manager = require_role(UserRole.ADMIN, UserRole.MANAGER)
+require_auditor = require_role(UserRole.ADMIN, UserRole.MANAGER, UserRole.AUDITOR)
+require_user = require_role(UserRole.ADMIN, UserRole.MANAGER, UserRole.AUDITOR, UserRole.USER)
+require_admin_or_manager = require_role(UserRole.ADMIN, UserRole.MANAGER)
+require_any_authenticated = require_role(UserRole.ADMIN, UserRole.MANAGER, UserRole.AUDITOR, UserRole.USER)

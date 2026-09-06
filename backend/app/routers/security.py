@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, TypeVar
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
@@ -11,21 +11,23 @@ from app.schemas import (
     PaginatedResponse,
     SecurityEventResolve,
 )
-from app.auth import get_current_active_user, require_owner, require_owner_or_manager, require_employee
+from app.auth import get_current_active_user, require_admin, require_admin_or_manager
 from app.services.security import SecurityService
 from app.services.audit import AuditService
 
 router = APIRouter(prefix="/security", tags=["Security Events"])
 
+SecurityEventListResponse = PaginatedResponse[SecurityEventWithDetails]
 
-@router.get("", response_model=PaginatedResponse)
+
+@router.get("", response_model=SecurityEventListResponse)
 async def list_security_events(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     event_type: Optional[SecurityEventType] = None,
     severity: Optional[SecurityEventSeverity] = None,
     resolved: Optional[bool] = None,
-    current_user: User = Depends(require_employee),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
     events, total = await SecurityService.get_security_events(
@@ -66,7 +68,7 @@ async def list_security_events(
             )
         )
 
-    return PaginatedResponse(
+    return SecurityEventListResponse(
         items=items,
         total=total,
         page=page,
@@ -77,7 +79,7 @@ async def list_security_events(
 
 @router.get("/stats", response_model=dict)
 async def get_security_stats(
-    current_user: User = Depends(require_employee),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
     stats = await SecurityService.get_security_stats(db)
@@ -86,7 +88,7 @@ async def get_security_stats(
 
 @router.get("/unresolved-critical-count", response_model=int)
 async def get_unresolved_critical_count(
-    current_user: User = Depends(require_employee),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
     count = await SecurityService.get_unresolved_critical_count(db)
@@ -96,7 +98,7 @@ async def get_unresolved_critical_count(
 @router.get("/{event_id}", response_model=SecurityEventWithDetails)
 async def get_security_event(
     event_id: int,
-    current_user: User = Depends(require_employee),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
     event = await SecurityService.get_security_event(db, event_id)
@@ -133,7 +135,7 @@ async def get_security_event(
 async def resolve_security_event(
     event_id: int,
     request: SecurityEventResolve,
-    current_user: User = Depends(require_owner_or_manager),
+    current_user: User = Depends(require_admin_or_manager),
     db: AsyncSession = Depends(get_db),
     http_request: Request = None,
 ):
