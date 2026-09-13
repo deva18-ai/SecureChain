@@ -1,4 +1,4 @@
-﻿import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Users,
   Shield,
@@ -8,58 +8,80 @@ import {
   Box,
   Activity,
   Zap,
+  ArrowRight,
+  ChevronRight,
+  CheckCircle,
 } from 'lucide-react';
-import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 
 const features = [
   {
-    icon: Users,
-    title: 'Role-Based Access',
-    desc: 'Owner, Manager, and Employee roles each see exactly what they\'re permitted to \u2014 enforced in code, not just hidden UI.',
+    icon: Key,
+    title: 'Digital Identity',
+    desc: 'Decentralized identifiers anchored to wallet addresses — no central authority required.',
+    color: 'blue',
   },
   {
-    icon: FileText,
+    icon: Users,
+    title: 'Role-Based Access',
+    desc: 'Owner, Manager, Employee roles with cryptographically enforced permissions.',
+    color: 'green',
+  },
+  {
+    icon: Box,
+    title: 'Digital Asset Ownership',
+    desc: 'Blockchain-verified assets with immutable ownership records and transfer history.',
+    color: 'violet',
+  },
+  {
+    icon: Shield,
     title: 'Owner Approval Workflow',
-    desc: 'Managers submit requests for protected operations; nothing executes until the Owner reviews and approves it.',
+    desc: 'Protected operations require explicit Owner approval before execution.',
+    color: 'amber',
   },
   {
     icon: Blocks,
     title: 'Blockchain-Verified Records',
-    desc: 'Every executed action is written to the blockchain ledger with a transaction ID, block number, and confirmation status.',
-  },
-  {
-    icon: Key,
-    title: 'Digital Identity (DID)',
-    desc: 'Every user holds a decentralized identifier anchored to a wallet address instead of a central authority.',
+    desc: 'Every action recorded on-chain with transaction ID, block height, and confirmations.',
+    color: 'blue',
   },
   {
     icon: Activity,
-    title: 'Full Audit Trail',
-    desc: 'Every login, request, approval, rejection, and edit is logged chronologically for complete traceability.',
-  },
-  {
-    icon: Box,
-    title: 'Owner Asset & User Registry',
-    desc: 'Owners register employees and assets directly, then grant time-limited edit permissions to managers on request.',
-  },
-  {
-    icon: Shield,
     title: 'Security Center',
-    desc: 'Security events highlight blocked Owner-only operations and authorization outcomes from the backend.',
+    desc: 'Real-time monitoring of authorization events, blocked attempts, and audit trails.',
+    color: 'red',
+  },
+  {
+    icon: FileText,
+    title: 'Full Audit Trail',
+    desc: 'Chronological logs of every login, request, approval, and system event.',
+    color: 'gray',
   },
   {
     icon: Zap,
     title: 'Live Dashboard',
-    desc: 'Real-time counts of users, assets, pending approvals, and blockchain records tailored to each role.',
+    desc: 'Real-time metrics for users, assets, pending approvals, and blockchain status.',
+    color: 'green',
   },
 ];
 
-const flowSteps = [
-  'Manager/Admin requests a protected operation (transfer, freeze, update, or edit access).',
-  'Request enters Pending Owner Approval \u2014 it cannot be executed directly.',
-  'Owner reviews, then approves or rejects.',
-  'System executes the action, writes an audit log, and records a blockchain transaction.',
+const workflowSteps = [
+  { label: 'MANAGER', desc: 'Requests protected operation', icon: Users, color: 'blue' },
+  { label: 'REQUEST', desc: 'Enters pending approval queue', icon: FileText, color: 'amber' },
+  { label: 'OWNER APPROVAL', desc: 'Reviews and decides', icon: Shield, color: 'violet' },
+  { label: 'EXECUTION', desc: 'Approved action executes', icon: Zap, color: 'green' },
+  { label: 'AUDIT', desc: 'Logged immutably', icon: Activity, color: 'blue' },
+  { label: 'BLOCKCHAIN', desc: 'Recorded on-chain', icon: Blocks, color: 'blue' },
 ];
+
+const iconBgColors: Record<string, string> = {
+  blue: 'bg-blue-100 text-blue-600',
+  green: 'bg-green-100 text-green-600',
+  violet: 'bg-purple-100 text-purple-600',
+  amber: 'bg-amber-100 text-amber-600',
+  red: 'bg-red-100 text-red-600',
+  gray: 'bg-gray-100 text-gray-600',
+};
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -69,89 +91,281 @@ export default function LandingPage() {
   };
 
   const handleExploreFeatures = () => {
-    document.getElementById('landingFeatures')?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
-    <div
-      id="landingScreen"
-      className="min-h-screen flex flex-col"
-    >
-      <header className="landing-nav">
-        <div className="brand">
-          <div className="brand-mark">
-            <svg className="icon" style={{ width: 20, height: 20, stroke: '#eef2ff' }} viewBox="0 0 24 24">
-              <path d="M12 2l8 4v6c0 5-3.4 8.7-8 10-4.6-1.3-8-5-8-10V6l8-4z" />
-            </svg>
+    <div className="min-h-screen flex flex-col bg-white">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-lg border-b border-gray-200">
+        <div className="container mx-auto px-6 md:px-12 py-4">
+          <div className="flex items-center justify-between max-w-[1400px] mx-auto w-full">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <Shield className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <div className="font-heading font-bold text-xl text-gray-900 tracking-tight">SecureChain</div>
+                <div className="text-xs font-medium text-gray-600 uppercase tracking-wider">Blockchain Identity Platform</div>
+              </div>
+            </div>
+            <nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">
+              <a
+                href="#features"
+                onClick={(e) => { e.preventDefault(); handleExploreFeatures(); }}
+                className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                Features
+              </a>
+              <a
+                href="#workflow"
+                onClick={(e) => { e.preventDefault(); document.getElementById('workflow')?.scrollIntoView({ behavior: 'smooth' }); }}
+                className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                How it works
+              </a>
+              <a
+                href="#about"
+                className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                About
+              </a>
+              <Button variant="primary" size="sm" onClick={handleEnterPortal} className="ml-4">
+                Sign In
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </nav>
+            <button className="md:hidden p-2 text-gray-600 hover:text-gray-900" aria-label="Menu">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
           </div>
-          <div className="brand-name">SECURECHAIN</div>
-        </div>
-        <div className="landing-nav-links">
-          <a
-            href="#landingFeatures"
-            onClick={(e) => { e.preventDefault(); handleExploreFeatures(); }}
-          >
-            Features
-          </a>
-          <a
-            href="#landingFlow"
-            onClick={(e) => { e.preventDefault(); document.getElementById('landingFlow')?.scrollIntoView({ behavior: 'smooth' }); }}
-          >
-            How it works
-          </a>
-          <button className="btn btn-outline btn-sm" onClick={handleEnterPortal}>
-            Sign In
-          </button>
         </div>
       </header>
 
-      <div className="landing-hero">
-        <div className="hero-badge">\u26a1 SecureChain Platform</div>
-        <div className="hero-title">Blockchain-secured asset &<br /><span>identity management</span></div>
-        <div className="hero-sub">SecureChain gives owners cryptographic control over every protected operation \u2014 while managers work fast and every action is verified, approved, and permanently recorded.</div>
-        <div className="hero-ctas">
-<button className="btn btn-primary btn-lg" onClick={handleEnterPortal}>
-            Enter Portal \u2192
-          </button>
-          <button className="btn btn-outline btn-lg" onClick={handleExploreFeatures}>
-            Explore Features
-          </button>
-        </div>
-        <div className="hero-note">Powered by FastAPI, PostgreSQL, and Hardhat local blockchain</div>
-      </div>
-
-      <div className="landing-section" id="landingFeatures">
-        <div className="landing-feature-grid">
-          {features.map((feature, index) => (
-            <Card key={index} className="feature-card">
-              <div className="feature-icon">
-                <feature.icon className="icon" style={{ width: 18, height: 18 }} />
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-50 px-6 md:px-12 py-20 md:py-28 lg:py-36" aria-labelledby="hero-title">
+        {/* Background Grid Pattern */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-40" />
+        
+        {/* Background Gradient Orbs */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-blue-300/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        
+        <div className="relative max-w-[1400px] mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div className="text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 border border-blue-200 text-blue-700 text-xs font-semibold tracking-wider uppercase mb-6 md:mb-8">
+                <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse" />
+                BLOCKCHAIN-POWERED SECURITY
               </div>
-              <div className="feature-title">{feature.title}</div>
-              <div className="feature-desc">{feature.desc}</div>
-            </Card>
-          ))}
-        </div>
-      </div>
+              <h1 id="hero-title" className="font-heading font-bold tracking-tight leading-[1.1] mb-6 md:mb-8">
+                <span className="block text-5xl md:text-6xl lg:text-7xl text-gray-900 mb-2">SecureChain</span>
+                <span className="block text-4xl md:text-5xl lg:text-6xl bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+                  Identity. Access. Ownership.
+                </span>
+              </h1>
+              <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-8 md:mb-10 lg:mb-12 max-w-xl mx-auto lg:mx-0">
+                A decentralized platform for secure identity management, role-based access control, and digital asset management. Built on blockchain. Designed for trust.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                <Button 
+                  variant="primary" 
+                  size="lg" 
+                  onClick={handleEnterPortal} 
+                  className="w-full sm:w-auto px-8 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40"
+                >
+                  Enter Portal
+                  <ArrowRight className="h-5 w-5" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  onClick={handleExploreFeatures} 
+                  className="w-full sm:w-auto px-8"
+                >
+                  Explore Features
+                </Button>
+              </div>
+              <p className="text-sm text-gray-500 mt-6 md:mt-8 flex items-center justify-center lg:justify-start gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                Powered by FastAPI, PostgreSQL, and Hardhat blockchain
+              </p>
+            </div>
 
-      <div className="landing-section" id="landingFlow">
-        <div className="landing-flow-wrap">
-          <div className="landing-flow-title">How a protected operation gets executed</div>
-          {flowSteps.map((step, index) => (
-            <div key={index} className="flow-step" style={{ marginBottom: index === flowSteps.length - 1 ? 0 : 14 }}>
-              <div className="flow-dot" />
-              <div className="flow-text">
-                {step.split(' ').map((word, i) => (
-                  <span key={i} style={{ fontWeight: i < 2 ? 600 : 400 }}>{word} </span>
-                ))}
+            {/* Hero Visual */}
+            <div className="relative">
+              <div className="relative aspect-square max-w-md mx-auto">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-blue-50 rounded-3xl blur-2xl opacity-60" />
+                <div className="relative bg-white rounded-3xl border-2 border-gray-200 p-8 shadow-2xl">
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { icon: Key, label: 'Identity', count: '1.2k', color: 'blue' },
+                      { icon: Shield, label: 'Security', count: '99.9%', color: 'green' },
+                      { icon: Box, label: 'Assets', count: '5.4k', color: 'violet' },
+                      { icon: Activity, label: 'Audit', count: '100%', color: 'amber' },
+                    ].map((item, i) => (
+                      <div key={i} className="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:shadow-md transition-all">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${iconBgColors[item.color]}`}>
+                          <item.icon className="h-5 w-5" />
+                        </div>
+                        <div className="text-xs text-gray-600 mb-1">{item.label}</div>
+                        <div className="text-xl font-bold text-gray-900">{item.count}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+                      <div>
+                        <div className="text-xs text-gray-600">System Status</div>
+                        <div className="text-sm font-semibold text-gray-900">All Systems Operational</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          ))}
+          </div>
         </div>
-      </div>
+      </section>
 
-<footer className="landing-footer">
-        SecureChain \u2014 Decentralized Identity, NFT Asset Ownership & Immutable Audit Platform
+      {/* Features Section */}
+      <section className="px-6 md:px-12 py-16 md:py-20 bg-white" id="features" aria-labelledby="features-title">
+        <div className="max-w-[1400px] mx-auto">
+          <div className="text-center mb-12 md:mb-16">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 border border-blue-200 text-blue-700 text-xs font-semibold tracking-wider uppercase mb-4">
+              CORE CAPABILITIES
+            </span>
+            <h2 id="features-title" className="font-heading font-bold text-3xl md:text-4xl text-gray-900 mb-4">
+              Enterprise-Grade Security Features
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Comprehensive blockchain-powered features designed for maximum security and transparency
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 hover:-translate-y-1 transition-all duration-200 group"
+              >
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${iconBgColors[feature.color]} group-hover:scale-110 transition-transform`}>
+                  <feature.icon className="h-6 w-6" />
+                </div>
+                <h3 className="font-heading font-semibold text-lg text-gray-900 mb-3">{feature.title}</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Workflow Section */}
+      <section className="px-6 md:px-12 py-16 md:py-20 bg-gray-50" id="workflow" aria-labelledby="workflow-title">
+        <div className="max-w-[1400px] mx-auto">
+          <div className="text-center mb-12 md:mb-16">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 border border-blue-200 text-blue-700 text-xs font-semibold tracking-wider uppercase mb-4">
+              PROTECTED OPERATION FLOW
+            </span>
+            <h2 id="workflow-title" className="font-heading font-bold text-3xl md:text-4xl text-gray-900 mb-4">
+              How a Protected Operation Gets Executed
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Every critical operation follows a strict approval workflow with blockchain verification
+            </p>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-200 p-8 md:p-12 shadow-sm mb-12">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+              {workflowSteps.map((step, index) => (
+                <div key={step.label} className="flex flex-col items-center relative">
+                  <div className={`w-16 h-16 rounded-xl border-2 border-gray-200 flex items-center justify-center mb-3 ${iconBgColors[step.color]}`}>
+                    <step.icon className="h-6 w-6" />
+                  </div>
+                  <div className="font-heading font-bold text-xs text-gray-900 text-center mb-1">{step.label}</div>
+                  <div className="text-xs text-gray-600 text-center">{step.desc}</div>
+                  {index < workflowSteps.length - 1 && (
+                    <ChevronRight className="hidden lg:block absolute top-7 -right-5 h-5 w-5 text-gray-400" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { title: 'Cryptographic Identity', desc: 'DID-based authentication with wallet anchoring', icon: Key, color: 'blue' },
+              { title: 'Policy Enforcement', desc: 'RBAC enforced at API and blockchain layer', icon: Shield, color: 'green' },
+              { title: 'Immutable Audit', desc: 'Every action recorded on-chain permanently', icon: Blocks, color: 'violet' },
+            ].map((item, i) => (
+              <div key={i} className="bg-white rounded-xl border border-gray-200 p-6 text-center hover:shadow-md transition-all">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 ${iconBgColors[item.color]}`}>
+                  <item.icon className="h-6 w-6" />
+                </div>
+                <h3 className="font-heading font-semibold text-lg text-gray-900 mb-2">{item.title}</h3>
+                <p className="text-sm text-gray-600">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section className="px-6 md:px-12 py-16 md:py-20 bg-white" id="about" aria-labelledby="about-title">
+        <div className="max-w-[1400px] mx-auto">
+          <div className="text-center mb-12 md:mb-16">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 border border-blue-200 text-blue-700 text-xs font-semibold tracking-wider uppercase mb-4">
+              BUILT FOR TRUST
+            </span>
+            <h2 id="about-title" className="font-heading font-bold text-3xl md:text-4xl text-gray-900 mb-4">
+              Designed for Smart India Hackathon
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Production-ready platform built with enterprise-grade technology stack
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { icon: Blocks, title: 'Blockchain Backend', desc: 'Hardhat local network with Solidity smart contracts', color: 'blue' },
+              { icon: Shield, title: 'FastAPI + PostgreSQL', desc: 'High-performance async API with relational integrity', color: 'green' },
+              { icon: Key, title: 'JWT + RBAC', desc: 'Stateless auth with role-based access control', color: 'violet' },
+              { icon: Zap, title: 'React + TypeScript', desc: 'Modern frontend with full type safety', color: 'amber' },
+            ].map((item, i) => (
+              <div key={i} className="bg-white rounded-xl border border-gray-200 p-6 text-center hover:shadow-lg hover:border-blue-300 hover:-translate-y-1 transition-all">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 ${iconBgColors[item.color]}`}>
+                  <item.icon className="h-6 w-6" />
+                </div>
+                <h3 className="font-heading font-semibold text-lg text-gray-900 mb-2">{item.title}</h3>
+                <p className="text-sm text-gray-600">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-50 border-t border-gray-200 px-6 py-10 md:py-12">
+        <div className="max-w-[1400px] mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <Shield className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <div className="font-heading font-bold text-lg text-gray-900">SecureChain</div>
+                <div className="text-xs text-gray-600">Identity • Access • Ownership</div>
+              </div>
+            </div>
+            <div className="text-center md:text-right">
+              <p className="text-sm text-gray-600">Decentralized Identity, Asset Ownership & Immutable Audit Platform</p>
+              <p className="text-xs text-gray-500 mt-1">Built for Smart India Hackathon 2026</p>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );

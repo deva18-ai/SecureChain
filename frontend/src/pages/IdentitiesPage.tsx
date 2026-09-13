@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { AlertCircle, CheckCircle, Shield, Key, Plus, Loader2 } from 'lucide-react';
-import { Card } from '../components/ui/Card';
+import { AlertCircle, CheckCircle, Shield, Key, Plus, Loader2, Search, User, Hash, ExternalLink, Copy, BadgeCheck } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
+import { Input } from '../components/ui/Input';
 import { useDids, useCreateDID, useVerifyDID, useMyDid } from '../hooks/useApi';
 import { formatAddress, formatDate, formatTxHash } from '../utils/helpers';
 import toast from 'react-hot-toast';
@@ -19,6 +19,7 @@ export default function IdentitiesPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedDid, setSelectedDid] = useState<DID | null>(null);
   const [isVerifying, setIsVerifying] = useState<number | null>(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const { data: didsData, isLoading, refetch } = useDids({
     page,
@@ -63,35 +64,27 @@ export default function IdentitiesPage() {
     setSelectedDid(did);
   };
 
+  const handleCopy = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+    toast.success(`${field} copied`);
+  };
+
   if (isLoading && !didsData) {
     return (
-      <div className="space-y-6" style={{ color: '#e6e9ef' }}>
-        <div className="topbar" style={{ display: 'flex', justifyContent: 'spaceBetween', alignItems: 'flexStart', marginBottom: 22, flexWrap: 'wrap', gap: 12 }}>
-          <div>
-            <div className="page-title" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-.01em' }}>Digital Identity (DID)</div>
-            <div className="page-sub" style={{ color: '#8991a3', fontSize: 13, marginTop: 4 }}>Decentralized identifiers & verification status</div>
-          </div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <Button variant="outline" onClick={() => refetch()} size="sm">
-              <Loader2 className="h-4 w-4" />
-              Refresh
-            </Button>
-            {canCreate && (
-              <Button onClick={() => setShowCreateModal(true)} size="sm">
-                <Plus className="h-4 w-4" />
-                Create DID
-              </Button>
-            )}
-          </div>
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Digital Identity (DID)</h1>
+          <p className="text-gray-600 mt-1">Decentralized identifiers & verification status</p>
         </div>
-        <Card className="p-6" style={{ background: '#141821', border: '1px solid #262b37', borderRadius: 8 }}>
-          <div className="h-4 w-48 bg-[#191e29] rounded mb-4 animate-pulse" />
-          <div className="space-y-3">
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="space-y-4">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-[#191e29] rounded animate-pulse" />
+              <div key={i} className="h-20 bg-gray-100 rounded-lg animate-pulse" />
             ))}
           </div>
-        </Card>
+        </div>
       </div>
     );
   }
@@ -101,165 +94,325 @@ export default function IdentitiesPage() {
   const totalPages = didsData?.total_pages || 1;
 
   const targets = isAdmin ? dids : dids.filter((d) => d.user_id === user?.id);
+  const verifiedCount = targets.filter(d => d.verified).length;
+  const pendingCount = targets.filter(d => !d.verified).length;
 
   return (
-    <div className="space-y-6 animate-in" style={{ color: '#e6e9ef' }}>
-      <div className="topbar" style={{ display: 'flex', justifyContent: 'spaceBetween', alignItems: 'flexStart', marginBottom: 22, flexWrap: 'wrap', gap: 12 }}>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="mb-6 flex justify-between items-start">
         <div>
-          <div className="page-title" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-.01em' }}>Digital Identity (DID)</div>
-          <div className="page-sub" style={{ color: '#8991a3', fontSize: 13, marginTop: 4 }}>Decentralized identifiers & verification status</div>
+          <h1 className="text-3xl font-bold text-gray-900">Digital Identity (DID)</h1>
+          <p className="text-gray-600 mt-1">Decentralized identifiers anchored to blockchain wallets</p>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <Button variant="outline" onClick={() => refetch()} size="sm">
-            <Loader2 className="h-4 w-4" />
-            Refresh
-          </Button>
-          {canCreate && (
-            <Button onClick={() => setShowCreateModal(true)} size="sm">
-              <Plus className="h-4 w-4" />
-              Create DID
-            </Button>
-          )}
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" onClick={() => refetch()} leftIcon={<Loader2 className="h-4 w-4" />}>Refresh</Button>
+          {canCreate && <Button size="sm" onClick={() => setShowCreateModal(true)} leftIcon={<Plus className="h-4 w-4" />}>Create DID</Button>}
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total Identities</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{total}</p>
+            </div>
+            <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
+              <Key className="h-6 w-6 text-blue-600" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Verified</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{verifiedCount}</p>
+            </div>
+            <div className="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
+              <CheckCircle className="h-6 w-6 text-green-600" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Pending</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{pendingCount}</p>
+            </div>
+            <div className="h-12 w-12 rounded-lg bg-amber-100 flex items-center justify-center">
+              <Shield className="h-6 w-6 text-amber-600" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Your DID</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{myDid ? 'Active' : 'None'}</p>
+            </div>
+            <div className={`h-12 w-12 rounded-lg flex items-center justify-center ${myDid ? 'bg-green-100' : 'bg-gray-100'}`}>
+              <User className={`h-6 w-6 ${myDid ? 'text-green-600' : 'text-gray-400'}`} />
+            </div>
+          </div>
         </div>
       </div>
 
       {myDid && !isAdmin && !isManager && (
-        <Card className="p-4" style={{ background: '#141821', border: '1px solid rgba(61,111,224,0.3)', borderRadius: 8, marginBottom: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'spaceBetween' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div className="w-12 h-12 rounded-xl bg-[#3d6fe0]/10 flex items-center justify-center">
-                <CheckCircle className="h-6 w-6" style={{ color: '#3d6fe0' }} />
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl shadow-sm p-6 mb-6 text-white">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
+                <CheckCircle className="h-7 w-7" />
               </div>
               <div>
-                <p className="font-medium" style={{ color: '#e6e9ef' }}>Your DID</p>
-                <p className="font-mono text-sm" style={{ color: '#3d6fe0' }}>{myDid.did}</p>
+                <p className="font-semibold text-lg">Your Decentralized Identity</p>
+                <p className="font-mono text-sm mt-1 opacity-90">{myDid.did}</p>
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Badge variant={myDid.verified ? 'success' : 'warning'} style={{ fontSize: 11, padding: '3px 9px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6 }}>
-                {myDid.verified ? 'Verified' : 'Pending Verification'}
-              </Badge>
+            <div className="flex items-center gap-3 flex-wrap">
+              {myDid.verified ? (
+                <span className="px-3 py-1.5 bg-green-100 text-green-800 rounded-lg text-sm font-medium flex items-center gap-1">
+                  <BadgeCheck className="h-4 w-4" /> Verified
+                </span>
+              ) : (
+                <span className="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-sm font-medium flex items-center gap-1">
+                  <Shield className="h-4 w-4" /> Pending
+                </span>
+              )}
               {myDid.blockchain_tx_hash && (
-                <span className="text-xs font-mono" style={{ color: '#8991a3' }}>
+                <span className="font-mono text-xs px-3 py-1.5 bg-white/20 rounded-lg">
                   {formatTxHash(myDid.blockchain_tx_hash)}
                 </span>
               )}
             </div>
           </div>
-        </Card>
+        </div>
       )}
 
-      <div className="grid grid-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
-        {targets.map((x) => (
-          <Card key={x.id} className="glow" style={{ background: '#141821', border: '1px solid #333a4a', borderRadius: 8, padding: 18, boxShadow: '0 1px 2px rgba(0,0,0,0.18)' }}>
-            <div style={{ display: 'flex', justifyContent: 'spaceBetween', alignItems: 'center', marginBottom: 12 }}>
-              <div>
-                <b style={{ fontSize: '14.5px' }}>{x.user?.full_name || 'Unknown'}</b>
-                {x.user && (
-                  <Badge variant="info" style={{ fontSize: 10, marginLeft: 8, padding: '2px 6px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6 }}>
-                    {x.user.role === 'ADMIN' ? 'OWNER' : x.user.role === 'USER' ? 'EMPLOYEE' : x.user.role}
-                  </Badge>
+      <div className="bg-white rounded-xl shadow-sm">
+        <div className="p-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="search"
+              placeholder="Search DIDs..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+            />
+          </div>
+          <select
+            value={verifiedFilter !== undefined ? String(verifiedFilter) : ''}
+            onChange={(e) => { setVerifiedFilter(e.target.value === '' ? undefined : e.target.value === 'true'); setPage(1); }}
+            className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+          >
+            <option value="">All Status</option>
+            <option value="true">Verified</option>
+            <option value="false">Pending</option>
+          </select>
+        </div>
+
+        {targets.length === 0 ? (
+          <div className="p-12 text-center">
+            <Key className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <p className="text-lg font-medium text-gray-900 mb-1">No identities found</p>
+            <p className="text-sm text-gray-600">{isAdmin ? 'No DIDs have been created yet.' : 'Your DID will appear here once created.'}</p>
+            {canCreate && (
+              <Button className="mt-4" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreateModal(true)}>
+                Create Your First DID
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-200">
+            {targets.map((x) => (
+              <div key={x.id} className="p-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center flex-shrink-0">
+                      <Key className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="font-semibold text-gray-900">{x.user?.full_name || 'Unknown User'}</span>
+                        {x.user && (
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                            {x.user.role === 'ADMIN' ? 'OWNER' : x.user.role === 'USER' ? 'EMPLOYEE' : x.user.role}
+                          </span>
+                        )}
+                        {x.verified ? (
+                          <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs font-medium flex items-center gap-1">
+                            <BadgeCheck className="h-3 w-3" /> VERIFIED
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 bg-amber-100 text-amber-800 rounded text-xs font-medium flex items-center gap-1">
+                            <Shield className="h-3 w-3" /> PENDING
+                          </span>
+                        )}
+                      </div>
+                      <p className="font-mono text-xs text-gray-500 truncate mt-1">{x.did}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Button variant="ghost" size="xs" onClick={() => handleCopy(x.did, 'DID')} className="p-2">
+                      <Copy className={`h-4 w-4 ${copiedField === 'DID' ? 'text-blue-600' : 'text-gray-400'}`} />
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleViewDid(x)}>
+                      View
+                    </Button>
+                    {canVerify && !x.verified && (
+                      <Button size="sm" onClick={() => handleVerifyDID(x.id)} loading={isVerifying === x.id} leftIcon={<CheckCircle className="h-3.5 w-3.5" />}>
+                        Verify
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                  <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                    <p className="text-gray-500 text-xs font-medium mb-1">Wallet</p>
+                    <p className="font-mono text-gray-900 truncate">{formatAddress(x.wallet_address)}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                    <p className="text-gray-500 text-xs font-medium mb-1">Identity Hash</p>
+                    <p className="font-mono text-xs text-gray-900 truncate">{x.identity_hash}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                    <p className="text-gray-500 text-xs font-medium mb-1">Created</p>
+                    <p className="text-gray-900">{formatDate(x.created_at)}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                    <p className="text-gray-500 text-xs font-medium mb-1">Verified</p>
+                    <p className="text-gray-900">{x.verified_at ? formatDate(x.verified_at) : 'Not verified'}</p>
+                  </div>
+                </div>
+
+                {x.blockchain_tx_hash && (
+                  <div className="mt-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500 text-xs font-medium">Blockchain Transaction</span>
+                      <Button variant="ghost" size="xs" onClick={() => handleCopy(x.blockchain_tx_hash!, 'TX Hash')} className="p-1">
+                        <Copy className="h-3.5 w-3.5 text-gray-400" />
+                      </Button>
+                    </div>
+                    <p className="font-mono text-xs text-gray-900 truncate mt-1">{x.blockchain_tx_hash}</p>
+                    {x.blockchain_block_number && (
+                      <span className="text-xs text-gray-500 mt-1 inline-block">Block: {x.blockchain_block_number.toLocaleString()}</span>
+                    )}
+                  </div>
                 )}
               </div>
-              <Badge variant={x.verified ? 'success' : 'warning'} style={{ fontSize: 11, padding: '3px 9px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6 }}>
-                {x.verified ? 'VERIFIED' : 'PENDING'}
-              </Badge>
+            ))}
+          </div>
+        )}
+
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-gray-200 flex items-center justify-between">
+            <span className="text-sm text-gray-600">Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, total)} of {total}</span>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
+              <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Next</Button>
             </div>
-            <div className="kv" style={{ display: 'flex', justifyContent: 'spaceBetween', padding: '8px 0', borderBottom: '1px solid #262b37', fontSize: 13 }}>
-              <span style={{ color: '#8991a3' }}>DID</span>
-              <span className="mono" style={{ fontFamily: 'var(--mono)', fontSize: 12, color: '#8991a3' }}>{x.did}</span>
-            </div>
-            <div className="kv" style={{ display: 'flex', justifyContent: 'spaceBetween', padding: '8px 0', borderBottom: '1px solid #262b37', fontSize: 13 }}>
-              <span style={{ color: '#8991a3' }}>Wallet</span>
-              <span className="mono" style={{ fontFamily: 'var(--mono)', fontSize: 12, color: '#8991a3' }}>{formatAddress(x.wallet_address)}</span>
-            </div>
-            <div className="kv" style={{ display: 'flex', justifyContent: 'spaceBetween', padding: '8px 0', borderBottom: '1px solid #262b37', fontSize: 13 }}>
-              <span style={{ color: '#8991a3' }}>Identity Created</span>
-              <span>{formatDate(x.created_at)}</span>
-            </div>
-            <div className="kv" style={{ display: 'flex', justifyContent: 'spaceBetween', padding: '8px 0', borderBottom: '1px solid #262b37', fontSize: 13 }}>
-              <span style={{ color: '#8991a3' }}>Verification</span>
-              <Badge variant={x.verified ? 'success' : 'warning'} style={{ fontSize: 11, padding: '3px 9px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6 }}>
-                {x.verified ? 'VERIFIED' : 'PENDING'}
-              </Badge>
-            </div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 12, justifyContent: 'flex-end' }}>
-              <Button size="sm" variant="outline" onClick={() => handleViewDid(x)}>
-                <Shield className="h-3.5 w-3.5" />
-                View
-              </Button>
-              {canVerify && !x.verified && (
-                <Button size="sm" onClick={() => handleVerifyDID(x.id)} loading={isVerifying === x.id}>
-                  <CheckCircle className="h-3.5 w-3.5" />
-                  Verify
-                </Button>
-              )}
-            </div>
-          </Card>
-        ))}
+          </div>
+        )}
       </div>
 
-      <div className="login-note" style={{ marginTop: 20, fontSize: 12, color: '#8991a3', background: '#191e29', border: '1px solid #262b37', borderRadius: 8, padding: '12px 14px' }}>
-        A DID (Decentralized Identifier) represents a self-sovereign identity anchored to a blockchain wallet rather than a central authority.
-      </div>
-
-      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Create New DID">
-        <div className="space-y-4" style={{ color: '#e6e9ef' }}>
-          <p className="modal-sub" style={{ color: '#8991a3', fontSize: '12.5px', marginBottom: 18 }}>This will create a new decentralized identifier (DID) for your account. The DID will be registered on-chain if a wallet is connected.</p>
-          <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flexEnd', gap: 10, marginTop: 18 }}>
+      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Create New DID" size="md">
+        <div className="space-y-5">
+          <p className="text-gray-600 text-sm">This will create a new decentralized identifier (DID) for your account. The DID will be registered on-chain if a wallet is connected.</p>
+          <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+            <div className="flex items-center gap-3 text-gray-700 text-sm">
+              <Shield className="h-5 w-5 text-blue-600" />
+              <span>Self-sovereign identity • No central authority • Blockchain-anchored</span>
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
             <Button variant="outline" onClick={() => setShowCreateModal(false)}>Cancel</Button>
-            <Button onClick={handleCreateDID} loading={createDIDMutation.isPending}>
-              <Plus className="h-4 w-4" />
-              Create DID
-            </Button>
+            <Button onClick={handleCreateDID} loading={createDIDMutation.isPending} leftIcon={<Plus className="h-4 w-4" />}>Create DID</Button>
           </div>
         </div>
       </Modal>
 
       <Modal isOpen={!!selectedDid} onClose={() => setSelectedDid(null)} title="DID Details" size="lg">
         {selectedDid && (
-          <div className="space-y-4" style={{ color: '#e6e9ef' }}>
-            <div className="grid grid-cols-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
-              <div>
-                <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>DID</p>
-                <p className="font-mono text-sm break-all">{selectedDid.did}</p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
+              <div className="flex items-center gap-3">
+                <span className="text-lg font-semibold text-gray-900">DID Details</span>
+                {selectedDid.verified ? (
+                  <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium flex items-center gap-1">
+                    <BadgeCheck className="h-3 w-3" /> VERIFIED
+                  </span>
+                ) : (
+                  <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-medium flex items-center gap-1">
+                    <Shield className="h-3 w-3" /> PENDING
+                  </span>
+                )}
               </div>
-              <div>
-                <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Wallet Address</p>
-                <p className="font-mono text-sm">{formatAddress(selectedDid.wallet_address)}</p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
+                <p className="text-gray-500 text-xs font-medium mb-2">DID</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-mono text-sm text-gray-900 break-all flex-1">{selectedDid.did}</p>
+                  <Button variant="ghost" size="xs" onClick={() => handleCopy(selectedDid.did, 'DID')} className="p-1">
+                    <Copy className="h-4 w-4 text-gray-400" />
+                  </Button>
+                </div>
               </div>
-              <div>
-                <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Identity Hash</p>
-                <p className="font-mono text-xs break-all">{selectedDid.identity_hash}</p>
+              <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
+                <p className="text-gray-500 text-xs font-medium mb-2">Wallet Address</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-mono text-sm text-gray-900">{formatAddress(selectedDid.wallet_address)}</p>
+                  <Button variant="ghost" size="xs" onClick={() => handleCopy(selectedDid.wallet_address, 'Wallet')} className="p-1">
+                    <ExternalLink className="h-4 w-4 text-gray-400" />
+                  </Button>
+                </div>
               </div>
-              <div>
-                <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Status</p>
-                <Badge variant={selectedDid.verified ? 'success' : 'warning'} style={{ fontSize: 11, padding: '3px 9px', borderRadius: 4, fontWeight: 600, letterSpacing: '.02em', display: 'inlineFlex', alignItems: 'center', gap: 6 }}>
+              <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
+                <p className="text-gray-500 text-xs font-medium mb-2">Identity Hash</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-mono text-xs text-gray-900 break-all flex-1">{selectedDid.identity_hash}</p>
+                  <Button variant="ghost" size="xs" onClick={() => handleCopy(selectedDid.identity_hash, 'Hash')} className="p-1">
+                    <Hash className="h-4 w-4 text-gray-400" />
+                  </Button>
+                </div>
+              </div>
+              <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
+                <p className="text-gray-500 text-xs font-medium mb-2">Status</p>
+                <Badge variant={selectedDid.verified ? 'success' : 'warning'}>
                   {selectedDid.verified ? 'Verified' : 'Pending Verification'}
                 </Badge>
               </div>
-              <div>
-                <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Created</p>
-                <p className="text-sm">{formatDate(selectedDid.created_at)}</p>
+              <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
+                <p className="text-gray-500 text-xs font-medium mb-2">Created</p>
+                <p className="text-gray-900">{formatDate(selectedDid.created_at)}</p>
               </div>
-              <div>
-                <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Verified At</p>
-                <p className="text-sm">{selectedDid.verified_at ? formatDate(selectedDid.verified_at) : 'Not verified'}</p>
+              <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
+                <p className="text-gray-500 text-xs font-medium mb-2">Verified At</p>
+                <p className="text-gray-900">{selectedDid.verified_at ? formatDate(selectedDid.verified_at) : 'Not verified'}</p>
               </div>
               {selectedDid.blockchain_tx_hash && (
-                <div style={{ gridColumn: 'span 2' }}>
-                  <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Blockchain Transaction</p>
-                  <p className="font-mono text-sm" style={{ color: '#2fa872' }}>{selectedDid.blockchain_tx_hash}</p>
+                <div className="sm:col-span-2 p-4 rounded-lg bg-gray-50 border border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-gray-500 text-xs font-medium">Blockchain Transaction</p>
+                    <Button variant="ghost" size="xs" onClick={() => handleCopy(selectedDid.blockchain_tx_hash!, 'TX Hash')} className="p-1">
+                      <Copy className="h-3.5 w-3.5 text-gray-400" />
+                    </Button>
+                  </div>
+                  <p className="font-mono text-sm text-gray-900 truncate">{selectedDid.blockchain_tx_hash}</p>
                 </div>
               )}
               {selectedDid.blockchain_block_number && (
-                <div>
-                  <p className="text-sm" style={{ color: '#8991a3', marginBottom: 4 }}>Block Number</p>
-                  <p className="text-sm">{selectedDid.blockchain_block_number.toLocaleString()}</p>
+                <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
+                  <p className="text-gray-500 text-xs font-medium mb-2">Block Number</p>
+                  <p className="font-mono text-gray-900">{selectedDid.blockchain_block_number.toLocaleString()}</p>
                 </div>
               )}
             </div>
-            <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flexEnd', gap: 10, marginTop: 18, paddingTop: 18, borderTop: '1px solid #262b37' }}>
+
+            <div className="flex justify-end pt-4 border-t border-gray-200">
               <Button variant="outline" onClick={() => setSelectedDid(null)}>Close</Button>
             </div>
           </div>

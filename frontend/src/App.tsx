@@ -7,6 +7,7 @@ import { PageLoadingFallback, getLazyPage } from './lib/lazyLoad';
 
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RequestAccessPage = lazy(() => import('./pages/RequestAccessPage'));
 const DashboardPage = getLazyPage('DashboardPage', { preload: true });
 const UsersPage = getLazyPage('UsersPage');
 const AssetsPage = getLazyPage('AssetsPage');
@@ -62,6 +63,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingLayout><LandingPage /></LandingLayout>} />
         <Route path="/login" element={<AuthLayout><PublicRoute><LoginPage /></PublicRoute></AuthLayout>} />
+        <Route path="/request-access" element={<AuthLayout><PublicRoute><RequestAccessPage /></PublicRoute></AuthLayout>} />
 
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

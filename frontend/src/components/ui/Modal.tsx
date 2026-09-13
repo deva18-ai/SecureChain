@@ -91,7 +91,7 @@ export function Modal({
   const modalContent = (
     <Fragment>
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-in"
+        className="fixed inset-0 bg-gray-900/50 backdrop-blur z-50 animate-in"
         onClick={closeOnOverlayClick ? onClose : undefined}
         aria-hidden="true"
       />
@@ -100,7 +100,7 @@ export function Modal({
           ref={modalRef}
           tabIndex={-1}
           className={cn(
-            'w-full bg-cyber-panel rounded-2xl shadow-2xl border border-cyber-border overflow-hidden',
+            'w-full bg-white rounded-2xl shadow-2xl overflow-hidden',
             sizeClasses[size],
             className
           )}
@@ -111,15 +111,15 @@ export function Modal({
           aria-describedby={description ? 'modal-description' : undefined}
         >
           {(title || showCloseButton) && (
-            <div className="flex items-start justify-between px-6 py-4 border-b border-cyber-border">
+            <div className="flex items-start justify-between px-6 py-4 bg-white border-b border-gray-200">
               <div className="pr-4">
                 {title && (
-                  <h2 id="modal-title" className="text-lg font-heading font-semibold text-cyber-text">
+                  <h2 id="modal-title" className="text-lg font-heading font-semibold text-gray-900">
                     {title}
                   </h2>
                 )}
                 {description && (
-                  <p id="modal-description" className="mt-1 text-sm text-cyber-textMuted">
+                  <p id="modal-description" className="mt-1 text-sm text-gray-600">
                     {description}
                   </p>
                 )}
@@ -129,7 +129,7 @@ export function Modal({
                   variant="ghost"
                   size="sm"
                   onClick={onClose}
-                  className="h-8 w-8 p-0 rounded-lg hover:bg-cyber-elevated"
+                  className="h-8 w-8 p-0 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                   aria-label="Close modal"
                 >
                   <X className="h-4 w-4" />
@@ -139,7 +139,7 @@ export function Modal({
           )}
           <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">{children}</div>
           {footer && (
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-cyber-border bg-cyber-elevated/50">
+            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
               {footer}
             </div>
           )}
@@ -215,7 +215,7 @@ export function ConfirmDialog({
             <span className={cn('text-2xl', styles.iconColor)}>⚠</span>
           )}
         </div>
-        <p className="text-cyber-text mt-1">{message}</p>
+        <p className="text-gray-700 mt-1">{message}</p>
       </div>
     </Modal>
   );
@@ -353,7 +353,7 @@ export function Drawer({
   return (
     <Fragment>
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 animate-in"
+        className="fixed inset-0 bg-gray-900/50 backdrop-blur z-50 animate-in"
         onClick={closeOnOverlayClick ? onClose : undefined}
         aria-hidden="true"
       />
@@ -363,7 +363,7 @@ export function Drawer({
           ref={drawerRef}
           tabIndex={-1}
           className={cn(
-            'h-full bg-cyber-panel border-l border-cyber-border shadow-2xl flex flex-col',
+            'h-full bg-white border-l border-gray-200 shadow-2xl flex flex-col',
             sizeClasses[size],
             position === 'left' ? 'animate-slide-in-from-left' : 'animate-slide-in-from-right'
           )}
@@ -373,15 +373,15 @@ export function Drawer({
           aria-describedby={description ? 'drawer-description' : undefined}
         >
           {(title || showCloseButton) && (
-            <div className="flex items-start justify-between px-6 py-4 border-b border-cyber-border flex-shrink-0">
+            <div className="flex items-start justify-between px-6 py-4 bg-white border-b border-gray-200 flex-shrink-0">
               <div className="pr-4">
                 {title && (
-                  <h2 id="drawer-title" className="text-lg font-heading font-semibold text-cyber-text">
+                  <h2 id="drawer-title" className="text-lg font-heading font-semibold text-gray-900">
                     {title}
                   </h2>
                 )}
                 {description && (
-                  <p id="drawer-description" className="mt-1 text-sm text-cyber-textMuted">
+                  <p id="drawer-description" className="mt-1 text-sm text-gray-600">
                     {description}
                   </p>
                 )}
@@ -391,7 +391,7 @@ export function Drawer({
                   variant="ghost"
                   size="sm"
                   onClick={onClose}
-                  className="h-8 w-8 p-0 rounded-lg hover:bg-cyber-elevated"
+                  className="h-8 w-8 p-0 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                   aria-label="Close drawer"
                 >
                   <X className="h-4 w-4" />

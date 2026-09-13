@@ -35,17 +35,17 @@ export const Input = forwardRef<HTMLInputElement | HTMLSelectElement | HTMLTextA
 
     const wrapperClass = 'w-full';
     const labelEl = label && (
-      <label htmlFor={inputId} className="block text-sm font-medium text-cyber-textMuted mb-1.5">
+      <label htmlFor={inputId} className="block text-sm font-semibold text-gray-700 mb-2">
         {label}
       </label>
     );
     const errorEl = error && (
-      <p id={`${inputId}-error`} className="mt-1.5 text-sm text-cyber-critical" role="alert">
+      <p id={`${inputId}-error`} className="mt-2 text-sm text-red-600" role="alert">
         {error}
       </p>
     );
     const helperEl = helperText && !error && (
-      <p id={`${inputId}-helper`} className="mt-1.5 text-sm text-cyber-textDim">
+      <p id={`${inputId}-helper`} className="mt-2 text-sm text-gray-500">
         {helperText}
       </p>
     );
@@ -61,8 +61,8 @@ export const Input = forwardRef<HTMLInputElement | HTMLSelectElement | HTMLTextA
             ref={ref as React.Ref<HTMLSelectElement>}
             id={inputId}
             className={cn(
-              'w-full px-4 py-2.5 rounded-lg bg-cyber-elevated border text-cyber-text focus:outline-none focus:ring-2 focus:ring-cyber-primary focus:border-transparent transition-all duration-200 appearance-none',
-              error ? 'border-cyber-critical focus:ring-cyber-critical' : 'border-cyber-border',
+              'w-full px-4 py-3 rounded-lg bg-white border-2 text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 appearance-none disabled:bg-gray-50 disabled:cursor-not-allowed',
+              error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : 'border-gray-300',
               className
             )}
             aria-invalid={error ? 'true' : 'false'}
@@ -91,8 +91,8 @@ export const Input = forwardRef<HTMLInputElement | HTMLSelectElement | HTMLTextA
             id={inputId}
             rows={rows}
             className={cn(
-              'w-full px-4 py-2.5 rounded-lg bg-cyber-elevated border text-cyber-text placeholder-cyber-textDim focus:outline-none focus:ring-2 focus:ring-cyber-primary focus:border-transparent transition-all duration-200 resize-y min-h-[100px]',
-              error ? 'border-cyber-critical focus:ring-cyber-critical' : 'border-cyber-border',
+              'w-full px-4 py-3 rounded-lg bg-white border-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 resize-y min-h-[100px] disabled:bg-gray-50 disabled:cursor-not-allowed',
+              error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : 'border-gray-300',
               className
             )}
             aria-invalid={error ? 'true' : 'false'}
@@ -113,7 +113,7 @@ export const Input = forwardRef<HTMLInputElement | HTMLSelectElement | HTMLTextA
         {labelEl}
         <div className="relative">
           {leftIcon && (
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-cyber-textDim">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
               {leftIcon}
             </div>
           )}
@@ -121,9 +121,9 @@ export const Input = forwardRef<HTMLInputElement | HTMLSelectElement | HTMLTextA
             ref={ref as React.Ref<HTMLInputElement>}
             id={inputId}
             className={cn(
-              'w-full px-4 py-2.5 rounded-lg bg-cyber-elevated border text-cyber-text placeholder-cyber-textDim focus:outline-none focus:ring-2 focus:ring-cyber-primary focus:border-transparent transition-all duration-200',
-              leftIcon ? 'pl-10' : '',
-              error ? 'border-cyber-critical focus:ring-cyber-critical' : 'border-cyber-border',
+              'w-full px-4 py-3 rounded-lg bg-white border-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed',
+              leftIcon ? 'pl-12' : '',
+              error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : 'border-gray-300',
               className
             )}
             aria-invalid={error ? 'true' : 'false'}
@@ -154,7 +154,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-cyber-textMuted mb-1.5">
+          <label htmlFor={inputId} className="block text-sm font-semibold text-gray-700 mb-2">
             {label}
           </label>
         )}
@@ -162,8 +162,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={inputId}
           className={cn(
-            'w-full px-4 py-2.5 rounded-lg bg-cyber-elevated border text-cyber-text placeholder-cyber-textDim focus:outline-none focus:ring-2 focus:ring-cyber-primary focus:border-transparent transition-all duration-200 resize-y min-h-[100px]',
-            error ? 'border-cyber-critical focus:ring-cyber-critical' : 'border-cyber-border',
+            'w-full px-4 py-3 rounded-lg bg-white border-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 resize-y min-h-[100px] disabled:bg-gray-50 disabled:cursor-not-allowed',
+            error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : 'border-gray-300',
             className
           )}
           aria-invalid={error ? 'true' : 'false'}
@@ -171,12 +171,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           {...props}
         />
         {error && (
-          <p id={`${inputId}-error`} className="mt-1.5 text-sm text-cyber-critical" role="alert">
+          <p id={`${inputId}-error`} className="mt-2 text-sm text-red-600" role="alert">
             {error}
           </p>
         )}
         {helperText && !error && (
-          <p id={`${inputId}-helper`} className="mt-1.5 text-sm text-cyber-textDim">
+          <p id={`${inputId}-helper`} className="mt-2 text-sm text-gray-500">
             {helperText}
           </p>
         )}
@@ -202,7 +202,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={selectId} className="block text-sm font-medium text-cyber-textMuted mb-1.5">
+          <label htmlFor={selectId} className="block text-sm font-semibold text-gray-700 mb-2">
             {label}
           </label>
         )}
@@ -210,9 +210,9 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           id={selectId}
           className={cn(
-            'w-full px-4 py-2.5 rounded-lg bg-cyber-elevated border text-cyber-text focus:outline-none focus:ring-2 focus:ring-cyber-primary focus:border-transparent transition-all duration-200 appearance-none bg-no-repeat bg-right pr-10',
+            'w-full px-4 py-3 rounded-lg bg-white border-2 text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 appearance-none bg-no-repeat bg-right pr-10 disabled:bg-gray-50 disabled:cursor-not-allowed',
             'bg-[url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%271.5%27 d=%27M6 8l4 4 4-4%27/%3e%3c/svg%3e")]',
-            error ? 'border-cyber-critical focus:ring-cyber-critical' : 'border-cyber-border',
+            error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : 'border-gray-300',
             className
           )}
           aria-invalid={error ? 'true' : 'false'}
@@ -227,12 +227,12 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ))}
         </select>
         {error && (
-          <p id={`${selectId}-error`} className="mt-1.5 text-sm text-cyber-critical" role="alert">
+          <p id={`${selectId}-error`} className="mt-2 text-sm text-red-600" role="alert">
             {error}
           </p>
         )}
         {helperText && !error && (
-          <p id={`${selectId}-helper`} className="mt-1.5 text-sm text-cyber-textDim">
+          <p id={`${selectId}-helper`} className="mt-2 text-sm text-gray-500">
             {helperText}
           </p>
         )}

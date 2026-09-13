@@ -16,6 +16,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   rightIcon?: React.ReactNode;
   fullWidth?: boolean;
   isSelected?: boolean;
+  children: React.ReactNode;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -32,30 +33,30 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     isSelected,
     ...props
   }, ref) => {
-    const baseClasses = 'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-cyber-bg disabled:opacity-50 disabled:cursor-not-allowed select-none';
+    const baseClasses = 'inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed select-none whitespace-nowrap';
 
     const variantClasses = {
-      primary: 'bg-cyber-primary text-cyber-bg hover:bg-cyber-primaryDim focus:ring-cyber-primary shadow-lg shadow-cyber-primary/25 active:scale-[0.98]',
-      secondary: 'bg-cyber-elevated text-cyber-text hover:bg-cyber-panel focus:ring-cyber-border border border-cyber-border active:scale-[0.98]',
-      outline: 'border-2 border-cyber-primary text-cyber-primary hover:bg-cyber-primary/10 focus:ring-cyber-primary active:bg-cyber-primary/20',
-      ghost: 'text-cyber-textMuted hover:bg-cyber-panel hover:text-cyber-text focus:ring-cyber-border active:bg-cyber-elevated',
-      danger: 'bg-cyber-critical text-white hover:bg-red-600 focus:ring-cyber-critical shadow-lg shadow-cyber-critical/25 active:scale-[0.98]',
-      success: 'bg-cyber-success text-white hover:bg-green-600 focus:ring-cyber-success shadow-lg shadow-cyber-success/25 active:scale-[0.98]',
-      warning: 'bg-cyber-warning text-white hover:bg-amber-600 focus:ring-cyber-warning shadow-lg shadow-cyber-warning/25 active:scale-[0.98]',
-      subtle: 'bg-cyber-primary/10 text-cyber-primary hover:bg-cyber-primary/20 focus:ring-cyber-primary border border-cyber-primary/20',
-      link: 'text-cyber-primary hover:text-cyber-primaryDim focus:ring-cyber-primary p-0 hover:bg-transparent',
+      primary: 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-md hover:shadow-lg focus:ring-blue-500/20 active:scale-95',
+      secondary: 'bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-300 hover:border-blue-500 focus:ring-blue-500/10 active:scale-95',
+      outline: 'bg-transparent hover:bg-blue-50 text-blue-600 border-2 border-blue-600 hover:border-blue-700 focus:ring-blue-500/20 active:scale-95',
+      ghost: 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:ring-gray-200 active:bg-gray-200',
+      danger: 'bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg focus:ring-red-500/20 active:scale-95',
+      success: 'bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg focus:ring-green-500/20 active:scale-95',
+      warning: 'bg-amber-600 hover:bg-amber-700 text-white shadow-md hover:shadow-lg focus:ring-amber-500/20 active:scale-95',
+      subtle: 'bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-200 focus:ring-blue-500/20',
+      link: 'text-blue-600 hover:text-blue-700 focus:ring-blue-500/20 p-0 hover:bg-transparent underline-offset-4 hover:underline',
     };
 
     const sizeClasses = {
-      xs: 'px-2.5 py-1 text-xs gap-1',
-      sm: 'px-3 py-1.5 text-sm gap-1.5',
+      xs: 'px-2.5 py-1.5 text-xs gap-1',
+      sm: 'px-3 py-2 text-sm gap-1.5',
       md: 'px-4 py-2.5 text-sm gap-2',
       lg: 'px-6 py-3 text-base gap-2',
       xl: 'px-8 py-4 text-lg gap-2.5',
     };
 
     const widthClass = fullWidth ? 'w-full' : '';
-    const selectedClass = isSelected ? 'ring-2 ring-cyber-primary ring-offset-2 ring-offset-cyber-bg' : '';
+    const selectedClass = isSelected ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-white' : '';
 
     return (
       <button
@@ -89,7 +90,7 @@ export function ButtonGroup({ children, className, vertical = false }: ButtonGro
   return (
     <div
       className={cn(
-        'inline-flex rounded-lg border border-cyber-border overflow-hidden',
+        'inline-flex rounded-lg border border-gray-300 overflow-hidden bg-white',
         vertical ? 'flex-col' : 'flex-row',
         className
       )}
@@ -129,7 +130,7 @@ export const ToggleButton = forwardRef<HTMLButtonElement, ToggleButtonProps>(
       <Button
         ref={ref}
         className={cn(
-          pressed && 'bg-cyber-primary text-cyber-bg border-cyber-primary shadow-cyber-primary/25',
+          pressed && 'bg-blue-100 text-blue-700 border-blue-500 ring-2 ring-blue-500/20',
           className
         )}
         variant={variant}
@@ -254,7 +255,7 @@ function MenuContent({ children, align = 'start', className }: { children: React
   return (
     <div
       className={cn(
-        'absolute top-full mt-1.5 bg-cyber-panel border border-cyber-border rounded-lg shadow-lg py-1.5 animate-in',
+        'absolute top-full mt-1.5 bg-white border border-gray-200 rounded-lg shadow-lg py-1.5 animate-in z-50',
         align === 'end' ? 'right-0' : 'left-0',
         className
       )}
@@ -284,11 +285,11 @@ function MenuItem({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-colors',
+        'w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-colors text-gray-700',
         disabled
           ? 'opacity-50 cursor-not-allowed'
-          : 'hover:bg-cyber-elevated focus:outline-none focus:bg-cyber-elevated',
-        danger && 'text-cyber-critical hover:bg-cyber-critical/10',
+          : 'hover:bg-gray-100 focus:outline-none focus:bg-gray-100',
+        danger && 'text-red-600 hover:bg-red-50',
         customClassName
       )}
     >

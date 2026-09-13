@@ -1,0 +1,108 @@
+===========================================
+COPY THIS ENTIRE PROMPT TO KIRO
+===========================================
+
+Redesign the entire SecureChain frontend (C:\Projects\SIH\SecureChain\frontend) with a professional white background and blue color scheme.
+
+DESIGN SYSTEM:
+- Background: White (#FFFFFF) and Gray-50 (#F9FAFB)
+- Primary: Blue-600 (#2563EB)
+- Text: Gray-900 (#111827)
+- Borders: Gray-200 (#E5E7EB)
+- Shadows: Subtle, professional
+- Rounded corners: 8-16px
+- Spacing: Consistent 4px increments
+
+IMPLEMENTATION ORDER:
+
+PHASE 1 - Components (Update styling only):
+1. Button.tsx - Blue primary, white secondary, proper shadows
+2. Input.tsx - White bg, gray border, blue focus ring
+3. Card.tsx - White bg, gray border, subtle shadow
+4. Badge.tsx - Colored backgrounds (blue-100, green-100, red-100, etc.)
+5. Table.tsx - White table, gray-50 header, blue hover rows
+6. Modal.tsx - White content, gray-50 footer
+
+PHASE 2 - Layouts:
+7. Sidebar.tsx - White background, blue active state for links
+8. Header.tsx - White background, gray-200 bottom border
+9. MainLayout.tsx - Gray-50 main area, white sidebar
+
+PHASE 3 - Pages (Keep all logic, change only UI):
+10. LoginPage.tsx - White card, blue buttons, gradient bg (blue-50 to white)
+11. LandingPage.tsx - White sections, blue CTAs and accents
+12. DashboardPage.tsx - White cards on gray-50 bg, blue stats icons
+13. UsersPage.tsx - White background, blue action buttons
+14. AssetsPage.tsx - White cards, blue filters and badges
+15. RequestsPage.tsx - White cards, colored status badges
+16. IdentitiesPage.tsx - White cards, blue verification button
+17. BlockchainPage.tsx - White cards, blue transaction highlights
+18. AuditPage.tsx - White table, blue filters
+19. SecurityCenterPage.tsx - White cards, colored alert badges
+20. RequestAccessPage.tsx - White form, blue submit button
+
+DESIGN PATTERNS TO USE:
+
+Button Primary:
+className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md font-semibold transition-all active:scale-95"
+
+Button Secondary:
+className="px-6 py-3 bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-300 rounded-lg font-semibold transition-all active:scale-95"
+
+Card:
+className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md p-6 transition-all"
+
+Input:
+className="w-full px-4 py-3 bg-white border-2 border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-lg text-gray-900 placeholder:text-gray-400 transition-all"
+
+Sidebar Link (Active):
+className="flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-600 rounded-lg font-semibold"
+
+Sidebar Link (Inactive):
+className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+
+Page Header:
+className="mb-6"
+<h1 className="text-3xl font-bold text-gray-900 mb-2">Title</h1>
+<p className="text-gray-600">Description</p>
+
+Stat Card:
+<div className="bg-white rounded-xl border border-gray-200 p-6">
+  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+    <Icon className="w-6 h-6 text-blue-600" />
+  </div>
+  <p className="text-sm text-gray-600">Label</p>
+  <p className="text-3xl font-bold text-gray-900">Value</p>
+</div>
+
+Badge:
+className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold"
+
+CRITICAL RULES:
+✅ Keep ALL existing props, state, functions, API calls
+✅ ONLY change className and inline style attributes
+✅ Use Tailwind CSS classes only (no custom CSS)
+✅ Test build after each 3-4 files: npm run build
+✅ Fix TypeScript errors immediately
+✅ Maintain responsive design (use sm:, md:, lg: prefixes)
+✅ Keep all accessibility attributes (aria-*, role, etc.)
+
+❌ Do NOT change TypeScript types or interfaces
+❌ Do NOT modify business logic or state management
+❌ Do NOT change API endpoints or data structures
+❌ Do NOT remove functionality
+
+EXECUTION:
+1. Start with Phase 1 (components)
+2. Build and test after completing each phase
+3. Move to Phase 2 (layouts)
+4. Build and test
+5. Move to Phase 3 (pages), do 2-3 pages at a time
+6. Build and test after each batch
+7. Report completion with build status
+
+BEGIN NOW with Phase 1. Update all 6 component files with the new white & blue styling.
+
+===========================================
+END OF PROMPT
+===========================================

@@ -5,10 +5,10 @@ interface TableProps extends HTMLAttributes<HTMLTableElement> {}
 
 export const Table = forwardRef<HTMLTableElement, TableProps>(
   ({ className, children, ...props }, ref) => (
-    <div className="overflow-x-auto rounded-lg border border-dark-200 dark:border-dark-700">
+    <div className="overflow-x-auto rounded-lg border border-gray-200">
       <table
         ref={ref}
-        className={cn('w-full text-sm text-left', className)}
+        className={cn('w-full text-sm text-left bg-white', className)}
         {...props}
       >
         {children}
@@ -23,7 +23,7 @@ export const TableHeader = forwardRef<HTMLTableSectionElement, HTMLAttributes<HT
   ({ className, children, ...props }, ref) => (
     <thead
       ref={ref}
-      className={cn('[&_tr]:border-b border-dark-200 dark:border-dark-700', className)}
+      className={cn('[&_tr]:border-b border-gray-200', className)}
       {...props}
     >
       {children}
@@ -51,7 +51,7 @@ export const TableRow = forwardRef<HTMLTableRowElement, HTMLAttributes<HTMLTable
   ({ className, children, ...props }, ref) => (
     <tr
       ref={ref}
-      className={cn('border-b border-dark-100 dark:border-dark-800 hover:bg-dark-50 dark:hover:bg-dark-800/50 transition-colors', className)}
+      className={cn('border-b border-gray-200 hover:bg-blue-50 transition-colors', className)}
       {...props}
     >
       {children}
@@ -65,7 +65,7 @@ export const TableHead = forwardRef<HTMLTableCellElement, HTMLAttributes<HTMLTab
   ({ className, children, ...props }, ref) => (
     <th
       ref={ref}
-      className={cn('px-4 py-3 bg-dark-50 dark:bg-dark-800/50 text-dark-500 dark:text-dark-400 font-semibold uppercase tracking-wider', className)}
+      className={cn('px-6 py-4 bg-gray-50 text-gray-700 font-semibold uppercase tracking-wider text-xs', className)}
       {...props}
     >
       {children}
@@ -79,7 +79,7 @@ export const TableCell = forwardRef<HTMLTableCellElement, HTMLAttributes<HTMLTab
   ({ className, children, ...props }, ref) => (
     <td
       ref={ref}
-      className={cn('px-4 py-3 text-dark-900 dark:text-dark-100', className)}
+      className={cn('px-6 py-4 text-gray-900', className)}
       {...props}
     >
       {children}
@@ -93,7 +93,7 @@ export const TableCaption = forwardRef<HTMLTableCaptionElement, HTMLAttributes<H
   ({ className, children, ...props }, ref) => (
     <caption
       ref={ref}
-      className={cn('px-4 py-3 text-sm text-dark-500 dark:text-dark-400', className)}
+      className={cn('px-6 py-4 text-sm text-gray-600', className)}
       {...props}
     >
       {children}

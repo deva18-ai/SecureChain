@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, NavLink } from 'react-router-dom';
 import { cn, displayRole } from '../../utils/helpers';
 import {
@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   LogOut,
   X,
+  Menu,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import type { UserRole } from '../../types';
@@ -65,55 +66,37 @@ export function Sidebar({ isOpen = false, onClose }: NavProps) {
   return (
     <>
       <button
-        className="lg:hidden"
+        className="lg:hidden fixed top-6 left-6 z-50 flex items-center gap-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 cursor-pointer transition-colors bg-white border border-gray-200 rounded-lg px-2 py-1.5"
         onClick={() => onClose?.()}
         aria-label={isOpen ? 'Close menu' : 'Open menu'}
         aria-expanded={isOpen}
         aria-controls="sidebar"
-        style={{
-          position: 'fixed',
-          top: '24px',
-          left: '26px',
-          zIndex: 50,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          fontSize: '12.5px',
-          fontWeight: 500,
-          color: '#8991a3',
-          cursor: 'pointer',
-          transition: 'color .15s',
-          background: 'none',
-          border: 'none',
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.color = '#e6e9ef'}
-        onMouseLeave={(e) => e.currentTarget.style.color = '#8991a3'}
       >
-        <X className="icon" style={{ width: 14, height: 14 }} />
+        <X className="icon" style={{ width: 18, height: 18 }} />
       </button>
 
       <aside
         id="sidebar"
         className={cn(
-          'sidebar',
-          isCollapsed ? 'w-[64px]' : 'w-[250px]',
+          'fixed lg:static inset-y-0 left-0 z-40 lg:z-10 flex flex-col transition-all duration-300 ease-out bg-white border-r border-gray-200 shadow-sm',
+          isCollapsed ? 'w-16' : 'w-64',
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
         aria-label="Main navigation"
       >
-        <div className="side-brand">
-          <div className="brand-mark">
-            <ShieldCheck className="icon" style={{ width: 16, height: 16, stroke: '#eef2ff' }} />
+        <div className="flex items-center gap-3 px-4 py-5 border-b border-gray-200" style={{ minHeight: '72px' }}>
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center flex-shrink-0">
+            <ShieldCheck className="icon" style={{ width: 18, height: 18, stroke: '#FFFFFF' }} />
           </div>
           {!isCollapsed && (
-            <div className="side-brand-text">
-              <b>SECURECHAIN</b>
-              <span>CONTROL CENTER</span>
+            <div className="side-brand-text min-w-0">
+              <div className="font-heading font-bold text-gray-900 truncate">SECURECHAIN</div>
+              <div className="text-xs font-medium text-gray-600 uppercase tracking-wider">CONTROL CENTER</div>
             </div>
           )}
         </div>
 
-        <nav className="flex-1 overflow-y-auto" aria-label="Main">
+        <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Main">
           {filteredNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === `/${item.key}` || location.pathname.startsWith(`/${item.key}/`);
@@ -123,47 +106,51 @@ export function Sidebar({ isOpen = false, onClose }: NavProps) {
                 key={item.key}
                 to={`/${item.key}`}
                 onClick={() => onClose?.()}
-                className={({ isActive: navActive }) => cn(
-                  'nav-item',
-                  navActive ? 'active' : '',
+                className={({ isActive: active }) => cn(
+                  'sidebar-link rounded-lg',
+                  active ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700',
                   isCollapsed && 'justify-center px-2'
                 )}
                 aria-current={isActive ? 'page' : undefined}
                 title={isCollapsed ? item.label : undefined}
               >
-                <Icon className="icon flex-shrink-0" style={{ width: 16, height: 16 }} />
+                <Icon className="icon flex-shrink-0" style={{ width: 18, height: 18 }} />
                 {!isCollapsed && <span className="truncate">{item.label}</span>}
               </NavLink>
             );
           })}
         </nav>
 
-        <div className="side-footer">
-          <div className="who">
-            <div className="who-avatar">
-              {user ? initials(user.full_name) : '?'}
+        <div className="px-3 pb-4 border-t border-gray-200 mt-auto">
+          <div className="flex items-center gap-3 px-1 py-2 mb-3">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-medium text-sm">
+                {user ? initials(user.full_name) : '?'}
+              </span>
             </div>
             {!isCollapsed && (
-              <div>
-                <div className="who-name">{user?.full_name || '-'}</div>
-                <div className="who-role">{displayRole(user?.role)}</div>
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-gray-900 truncate">{user?.full_name || '-'}</div>
+                <div className="text-xs text-gray-600 uppercase tracking-wider">{displayRole(user?.role)}</div>
               </div>
             )}
           </div>
           <Button
-            variant="outline"
-            className="w-full"
+            variant="ghost"
+            size="sm"
+            className={cn('w-full', isCollapsed && 'justify-center px-2')}
             onClick={() => logout()}
           >
             {!isCollapsed && <LogOut className="icon" style={{ width: 16, height: 16, marginRight: 8 }} />}
             {!isCollapsed && 'Logout'}
+            {isCollapsed && <LogOut className="icon" style={{ width: 18, height: 18 }} />}
           </Button>
         </div>
       </aside>
 
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/60 z-30 lg:hidden"
           onClick={() => onClose?.()}
           aria-hidden="true"
         />
