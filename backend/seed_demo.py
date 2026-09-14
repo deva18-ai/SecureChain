@@ -18,10 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
 from app.database import async_session_maker
-from app.models.user import User
-from app.models.did import DID
-from app.models.asset import Asset
-from app.models.transfer import Transfer
+from app.models import User, DID, Asset, Transfer
 from datetime import datetime, timedelta
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -206,7 +203,14 @@ async def seed_demo_data():
                 existing_user = result.scalar_one_or_none()
                 
                 if existing_user:
-                    print(f"   ⚠️  User already exists: {user_data['email']}")
+                    print(f"   🔄 Updating existing user: {user_data['email']}")
+
+                    existing_user.full_name = user_data["full_name"]
+                    existing_user.hashed_password = pwd_context.hash(user_data["password"])
+                    existing_user.role = user_data["role"]
+                    existing_user.wallet_address = user_data["wallet_address"]
+                    existing_user.is_active = True
+
                     user_map[user_data["email"]] = existing_user
                     continue
                 

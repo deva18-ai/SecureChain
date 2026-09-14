@@ -6,6 +6,7 @@ import { useWallet } from '../../context/WalletContext';
 import { displayRole } from '../../utils/helpers';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
+import toast from 'react-hot-toast';
 
 function getBreadcrumbs(pathname: string) {
   const parts = pathname.split('/').filter(Boolean);
@@ -58,6 +59,29 @@ export function Header() {
   const handleLogout = async () => {
     await logout();
     setProfileOpen(false);
+  };
+
+  const handleConnectWallet = async () => {
+    try {
+      await connect();
+      setWalletOpen(false);
+      toast.success('Wallet connected successfully');
+    } catch (error: any) {
+      console.error('Wallet connection error:', error);
+      if (error.message?.includes('not installed')) {
+        toast.error('MetaMask is not installed. Please install MetaMask extension.');
+      } else if (error.code === 4001) {
+        toast.error('Connection request rejected');
+      } else {
+        toast.error('Failed to connect wallet');
+      }
+    }
+  };
+
+  const handleDisconnectWallet = () => {
+    disconnect();
+    setWalletOpen(false);
+    toast.success('Wallet disconnected');
   };
 
   const breadcrumbs = getBreadcrumbs(location.pathname);
@@ -164,14 +188,14 @@ export function Header() {
             {walletOpen && (
               <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-lg py-2 animate-in z-50">
                 {!isConnected ? (
-                  <Button variant="outline" size="sm" onClick={connect} className="w-full px-4 py-2 mx-2 justify-start">
+                  <Button variant="outline" size="sm" onClick={handleConnectWallet} className="w-full px-4 py-2 mx-2 justify-start">
                     Connect Wallet
                   </Button>
                 ) : (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={disconnect}
+                    onClick={handleDisconnectWallet}
                     className="w-full px-4 py-2 mx-2 justify-start"
                     leftIcon={<LogOut className="h-4 w-4" />}
                   >

@@ -16,8 +16,17 @@
         --font-heading: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
         --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
       }
-      * { @apply border-cyber-border; }
-      body { @apply bg-cyber-bg text-cyber-text font-sans antialiased; font-feature-settings: "cv02", "cv03", "cv04", "cv11"; }
+      * {
+        border-color: #272b35;
+      }
+
+      body {
+        background-color: #0b0d12;
+        color: #e5e7eb;
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+        font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      }
       html { scroll-behavior: smooth; }
     </style>
   </head>

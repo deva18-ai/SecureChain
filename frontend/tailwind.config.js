@@ -111,12 +111,6 @@ export default {
           '75%': { transform: 'translateY(-30px) translateX(5px)' },
         },
       },
-        },
-        scaleIn: {
-          '0%': { opacity: '0', transform: 'scale(0.95)' },
-          '100%': { opacity: '1', transform: 'scale(1)' },
-        },
-      },
       boxShadow: {
         'panel': '0 4px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(26, 35, 53, 1)',
         'elevated': '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(34, 48, 74, 1)',

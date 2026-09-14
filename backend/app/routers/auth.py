@@ -151,7 +151,7 @@ async def register(
             db=db,
             actor_id=user.id,
             actor_address=user.wallet_address,
-            action="DID_CREATED",
+            action="IDENTITY_CREATED",
             resource_type="DID",
             resource_id=did_identifier,
             role=user.role.value,
