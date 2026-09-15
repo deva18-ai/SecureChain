@@ -46,9 +46,9 @@ const DEMO_TRANSFERS: Transfer[] = [
 ];
 
 const DEMO_DIDS: DID[] = [
-  { id: 1, did: 'did:securechain:admin:0001-a3210c0625ab', user_id: 1, wallet_address: DEMO_USERS[0].wallet_address, identity_hash: '0xd7ebb8e7b1ccc1bd1ae5309044d13e588e5d9b96f7a2d05343ff90aa45a4db5c', verified: true, verification_tx_hash: '0x8f2bb3c2b0d8555c14d0bbe4b79cbdee81014a282e8ef414a8e00c9507ad1046', created_at: '2026-06-15T10:00:00Z', verified_at: '2026-06-15T10:10:00Z', blockchain_tx_hash: '0x8f2bb3c2b0d8555c14d0bbe4b79cbdee81014a282e8ef414a8e00c9507ad1046', blockchain_block_number: 14500, blockchain_tx_status: 'CONFIRMED' as any, user: DEMO_USERS[0] },
-  { id: 2, did: 'did:securechain:manager:0002-3a98ff04f670', user_id: 3, wallet_address: DEMO_USERS[2].wallet_address, identity_hash: '0xc0460206428fe192bc4ac358a834fed9dd2d6c5fc8b60823b9281663f903ec27', verified: true, verification_tx_hash: '0x74eaa967bf8f6536f1340dffb795f18f7d895409ae20beadfe3d8843ca903a2c', created_at: '2026-06-18T10:00:00Z', verified_at: '2026-06-18T10:10:00Z', blockchain_tx_hash: '0x74eaa967bf8f6536f1340dffb795f18f7d895409ae20beadfe3d8843ca903a2c', blockchain_block_number: 14520, blockchain_tx_status: 'CONFIRMED' as any, user: DEMO_USERS[2] },
-  { id: 3, did: 'did:securechain:user:0003-92bccd2f0262', user_id: 6, wallet_address: DEMO_USERS[5].wallet_address, identity_hash: '0x2f2ff57620d795c1d3d438a0d42cf33e6fce4561081b9eb86363447ebc1fdda7', verified: true, verification_tx_hash: '0x21d88f43b27403b5f4426a45691a9ae6ed48130727abdaff0c847882def81e30', created_at: '2026-06-25T10:00:00Z', verified_at: '2026-06-25T10:10:00Z', blockchain_tx_hash: '0x21d88f43b27403b5f4426a45691a9ae6ed48130727abdaff0c847882def81e30', blockchain_block_number: 14550, blockchain_tx_status: 'CONFIRMED' as any, user: DEMO_USERS[5] },
+  { id: 1, did: 'did:securechain:admin:0001-a3210c0625ab', user_id: 1, wallet_address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', identity_hash: '0xd7ebb8e7b1ccc1bd1ae5309044d13e588e5d9b96f7a2d05343ff90aa45a4db5c', verified: true, verification_tx_hash: '0x8f2bb3c2b0d8555c14d0bbe4b79cbdee81014a282e8ef414a8e00c9507ad1046', created_at: '2026-06-15T10:00:00Z', verified_at: '2026-06-15T10:10:00Z', blockchain_tx_hash: '0x8f2bb3c2b0d8555c14d0bbe4b79cbdee81014a282e8ef414a8e00c9507ad1046', blockchain_block_number: 14500, blockchain_tx_status: 'CONFIRMED' as any, user: DEMO_USERS[0] },
+  { id: 2, did: 'did:securechain:manager:0002-3a98ff04f670', user_id: 3, wallet_address: '0x90F79bf6EB2c4f870365E785982E1f101E93b906', identity_hash: '0xc0460206428fe192bc4ac358a834fed9dd2d6c5fc8b60823b9281663f903ec27', verified: true, verification_tx_hash: '0x74eaa967bf8f6536f1340dffb795f18f7d895409ae20beadfe3d8843ca903a2c', created_at: '2026-06-18T10:00:00Z', verified_at: '2026-06-18T10:10:00Z', blockchain_tx_hash: '0x74eaa967bf8f6536f1340dffb795f18f7d895409ae20beadfe3d8843ca903a2c', blockchain_block_number: 14520, blockchain_tx_status: 'CONFIRMED' as any, user: DEMO_USERS[2] },
+  { id: 3, did: 'did:securechain:user:0003-92bccd2f0262', user_id: 6, wallet_address: '0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f', identity_hash: '0x2f2ff57620d795c1d3d438a0d42cf33e6fce4561081b9eb86363447ebc1fdda7', verified: true, verification_tx_hash: '0x21d88f43b27403b5f4426a45691a9ae6ed48130727abdaff0c847882def81e30', created_at: '2026-06-25T10:00:00Z', verified_at: '2026-06-25T10:10:00Z', blockchain_tx_hash: '0x21d88f43b27403b5f4426a45691a9ae6ed48130727abdaff0c847882def81e30', blockchain_block_number: 14550, blockchain_tx_status: 'CONFIRMED' as any, user: DEMO_USERS[5] },
 ];
 
 const DEMO_AUDIT_LOGS: AuditLog[] = [
@@ -81,13 +81,11 @@ const DEMO_BLOCKCHAIN_TXS: BlockchainTransaction[] = [
 const DEMO_DASHBOARD_STATS: DashboardStats = {
   total_users: 18,
   total_assets: 34,
-  pending_requests: 3,
-  approved_requests: 12,
-  security_events: 14,
-  blockchain_transactions: 25,
   verified_identities: 18,
-  audit_events: 174,
   active_transfers: 3,
+  blockchain_transactions: 25,
+  audit_events: 174,
+  role_distribution: { ADMIN: 2, MANAGER: 2, AUDITOR: 1, USER: 13 },
   recent_activity: [
     { action: 'IDENTITY_VERIFIED', actor: 'Devavardhan MI (Owner)', resource_type: 'DID', resource_id: 'did:securechain:admin:0001', created_at: '2026-09-14T09:30:00Z' },
     { action: 'ASSET_MINTED', actor: 'System Administrator', resource_type: 'ASSET', resource_id: 'SC-LND-1003', created_at: '2026-09-14T09:00:00Z' },
@@ -504,5 +502,25 @@ export function useVerifyOnBlockchain() {
   return useMutation({
     mutationFn: (data: VerificationRequest) =>
       api.post<import('../types').VerificationResponse>('/audit/verify', data).then(r => r.data),
+  });
+}
+
+export function useCreateDID() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.post<import('../types').DID>('/dids').then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dids'] });
+    },
+  });
+}
+
+export function useVerifyDID() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.post<import('../types').DID>(`/dids/${id}/verify`).then(r => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dids'] });
+    },
   });
 }

@@ -191,7 +191,7 @@ interface RippleProps {
   className?: string;
 }
 
-export function Ripple({ children, color = 'rgba(34, 211, 238, 0.3)', className }: RippleProps) {
+export function Ripple({ children, color = 'rgba(37, 99, 235, 0.18)', className }: RippleProps) {
   const [ripples, setRipples] = useState<Array<{ x: number; y: number; id: number }>>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -412,7 +412,7 @@ export function ModalTransition({ children, className }: { children: ReactNode; 
       className={cn('fixed inset-0 z-50 flex items-center justify-center p-4', className)}
     >
       <motion.div
-        className="bg-cyber-panel rounded-2xl shadow-2xl border border-cyber-border w-full max-w-md"
+        className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >

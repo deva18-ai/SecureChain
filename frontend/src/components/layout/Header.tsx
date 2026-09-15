@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Shield, ChevronDown, LogOut, Settings, User, Bell, Search } from 'lucide-react';
+import { Shield, ChevronDown, LogOut, Settings, User, Bell, Search, Wallet, Globe, Link as LinkIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWallet } from '../../context/WalletContext';
-import { displayRole } from '../../utils/helpers';
+import { displayRole, formatAddress } from '../../utils/helpers';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import toast from 'react-hot-toast';
+import { cn } from '../../utils/helpers';
 
 function getBreadcrumbs(pathname: string) {
   const parts = pathname.split('/').filter(Boolean);
@@ -19,7 +20,7 @@ function getBreadcrumbs(pathname: string) {
     '/requests': 'Requests',
     '/identity': 'Digital Identity',
     '/blockchain': 'Blockchain',
-    '/audit': 'Audit Logs',
+    '/audit': 'Audit Trail',
     '/security': 'Security Center',
     '/settings': 'Settings',
   };
@@ -35,7 +36,7 @@ function getBreadcrumbs(pathname: string) {
 
 export function Header() {
   const { user, logout } = useAuth();
-  const { isConnected, connect, disconnect } = useWallet();
+  const { isConnected, account, chainId, connect, disconnect } = useWallet();
   const location = useLocation();
 
   const [profileOpen, setProfileOpen] = useState(false);
@@ -86,30 +87,51 @@ export function Header() {
 
   const breadcrumbs = getBreadcrumbs(location.pathname);
 
+  const getNetworkName = (chainId: number | null) => {
+    switch (chainId) {
+      case 1: return 'Ethereum Mainnet';
+      case 5: return 'Goerli Testnet';
+      case 11155111: return 'Sepolia Testnet';
+      case 31337: return 'Hardhat Localhost';
+      default: return chainId ? `Chain ${chainId}` : 'Unknown Network';
+    }
+  };
+
+  const getNetworkBadgeVariant = (chainId: number | null) => {
+    switch (chainId) {
+      case 1: return 'network-mainnet';
+      case 11155111: return 'network-sepolia';
+      case 31337: return 'network-hardhat';
+      default: return 'network-badge';
+    }
+  };
+
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-gray-200">
       <div className="flex items-center justify-between h-16 px-4 lg:px-6 max-w-[1400px] mx-auto w-full">
+        {/* Mobile Brand */}
         <div className="lg:hidden flex items-center gap-3 flex-1">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-primary-blue flex items-center justify-center">
               <Shield className="h-5 w-5 text-white" />
             </div>
             <span className="font-heading font-bold text-lg text-gray-900">SecureChain</span>
           </div>
         </div>
 
+        {/* Desktop Breadcrumbs & Search */}
         <div className="hidden lg:flex lg:flex-1 lg:items-center lg:gap-4 lg:px-8 min-w-0">
           <nav className="flex items-center gap-4 flex-1 min-w-0" aria-label="Breadcrumb">
             <ol className="flex items-center gap-2 overflow-x-auto pb-1 pr-4">
               {breadcrumbs.map((crumb, index) => (
                 <li key={crumb.href} className="flex items-center gap-2 whitespace-nowrap flex-shrink-0">
-                  {index > 0 && <ChevronDown className="w-3 h-3 text-gray-600 flex-shrink-0" />}
+                  {index > 0 && <ChevronDown className="w-3 h-3 text-gray-500 flex-shrink-0" />}
                   {index === breadcrumbs.length - 1 ? (
                     <span className="font-medium truncate max-w-[200px] text-gray-900">{crumb.label}</span>
                   ) : (
                     <a
                       href={crumb.href}
-                      className="text-sm truncate max-w-[150px] text-gray-600 hover:text-blue-600 transition-colors"
+                      className="text-sm truncate max-w-[150px] text-gray-600 hover:text-primary-blue transition-colors"
                     >
                       {crumb.label}
                     </a>
@@ -121,17 +143,27 @@ export function Header() {
 
           <div className="relative w-[280px]">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-600" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="search"
                 placeholder="Search..."
-                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent transition-all duration-200 text-sm"
               />
             </div>
           </div>
         </div>
 
+        {/* Right Side Actions */}
         <div className="hidden lg:flex lg:items-center lg:gap-3">
+          {/* Network Indicator */}
+          {chainId && (
+            <div className={cn(getNetworkBadgeVariant(chainId), 'hidden sm:inline-flex')}>
+              <Globe className="h-3.5 w-3.5" />
+              {getNetworkName(chainId)}
+            </div>
+          )}
+
+          {/* Notifications */}
           <div className="relative" ref={notificationsRef}>
             <Button
               variant="ghost"
@@ -141,7 +173,7 @@ export function Header() {
               aria-label="Notifications"
             >
               <Bell className="h-5 w-5 text-gray-600" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">3</span>
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-danger text-white text-[10px] font-bold flex items-center justify-center">3</span>
             </Button>
             {notificationsOpen && (
               <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg py-2 animate-in z-50">
@@ -167,45 +199,58 @@ export function Header() {
                   </div>
                 </div>
                 <div className="px-4 py-2 border-t border-gray-200">
-                  <a href="/audit" className="text-sm text-blue-600 hover:text-blue-700 font-medium">View all</a>
+                  <a href="/audit" className="text-sm text-primary-blue hover:text-primary-blue-hover font-medium">View all</a>
                 </div>
               </div>
             )}
           </div>
 
+          {/* Wallet Connection */}
           <div className="relative" ref={walletRef}>
             <Button
               variant="secondary"
               size="sm"
               onClick={() => setWalletOpen(!walletOpen)}
-              className="gap-2 px-3 border border-gray-300 bg-white"
+              className="gap-2 px-3 border border-gray-200 bg-white"
+              leftIcon={<Wallet className="h-4 w-4" />}
             >
               <div className="flex items-center gap-2">
-                <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-500' : 'bg-yellow-500'}`} />
-                <span className="text-gray-900">{isConnected ? 'Connected' : 'Disconnected'}</span>
+                <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-success' : 'bg-gray-400'}`} />
+                <span className="text-gray-900 hidden sm:inline">{isConnected ? 'Connected' : 'Disconnected'}</span>
               </div>
             </Button>
             {walletOpen && (
               <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-lg py-2 animate-in z-50">
                 {!isConnected ? (
-                  <Button variant="outline" size="sm" onClick={handleConnectWallet} className="w-full px-4 py-2 mx-2 justify-start">
+                  <Button variant="outline" size="sm" onClick={handleConnectWallet} className="w-full px-4 py-2 mx-2 justify-start" leftIcon={<LinkIcon className="h-4 w-4" />}>
                     Connect Wallet
                   </Button>
                 ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleDisconnectWallet}
-                    className="w-full px-4 py-2 mx-2 justify-start"
-                    leftIcon={<LogOut className="h-4 w-4" />}
-                  >
-                    Disconnect
-                  </Button>
+                  <>
+                    <div className="px-4 py-3 border-b border-gray-200">
+                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Connected Account</p>
+                      <p className="font-mono text-sm text-gray-900">{formatAddress(account || '')}</p>
+                    </div>
+                    <div className="px-4 py-3 border-b border-gray-200">
+                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Network</p>
+                      <p className="text-sm text-gray-900">{getNetworkName(chainId)}</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleDisconnectWallet}
+                      className="w-full px-4 py-2 mx-2 justify-start"
+                      leftIcon={<LogOut className="h-4 w-4" />}
+                    >
+                      Disconnect
+                    </Button>
+                  </>
                 )}
               </div>
             )}
           </div>
 
+          {/* User Profile */}
           <div className="relative" ref={profileRef}>
             <Button
               variant="ghost"
@@ -213,16 +258,16 @@ export function Header() {
               onClick={() => setProfileOpen(!profileOpen)}
               className="hidden lg:flex items-center gap-3 px-2.5 py-1.5"
             >
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-full bg-primary-blue flex items-center justify-center">
                 <span className="text-white text-sm font-medium">
                   {user?.full_name?.charAt(0).toUpperCase() || 'U'}
                 </span>
               </div>
               <div className="text-left">
                 <p className="text-sm font-medium text-gray-900">{user?.full_name}</p>
-                <p className="text-xs text-gray-600">{displayRole(user?.role)}</p>
+                <p className="text-xs text-gray-500">{displayRole(user?.role)}</p>
               </div>
-              <ChevronDown className="w-3.5 h-3.5 text-gray-600" />
+              <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
             </Button>
 
             <Button
@@ -259,7 +304,7 @@ export function Header() {
                 <hr className="my-2 border-gray-200" />
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 text-left"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-danger hover:bg-danger/5 text-left"
                 >
                   <LogOut className="h-4 w-4" />
                   Logout

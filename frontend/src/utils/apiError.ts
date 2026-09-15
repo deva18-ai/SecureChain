@@ -16,13 +16,19 @@
     if (response?.status === 401) return 'Invalid credentials or session expired.';
     if (response?.status === 403) return 'You are not authorized to perform this action.';
     if (response?.status === 404) return 'Resource not found.';
-    if (response?.status === 409) return response?.data?.detail || 'Resource already exists.';
+    if (response?.status === 409) {
+      const detail = response?.data?.detail;
+      if (typeof detail === 'string') return detail;
+      return 'Resource already exists.';
+    }
     if (response?.status === 422) {
       const detail = response?.data?.detail;
       if (Array.isArray(detail) && detail.length > 0) {
         return detail.map((d: any) => `${d.loc?.join('.') || 'Field'}: ${d.msg}`).join(', ');
       }
-      return response?.data?.detail || 'Validation error. Please check your input.';
+      const detailStr = response?.data?.detail;
+      if (typeof detailStr === 'string') return detailStr;
+      return 'Validation error. Please check your input.';
     }
     if (response?.status === 500) return 'Server error. Please try again later.';
     

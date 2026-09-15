@@ -36,15 +36,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const baseClasses = 'inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed select-none whitespace-nowrap';
 
     const variantClasses = {
-      primary: 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-md hover:shadow-lg focus:ring-blue-500/20 active:scale-95',
-      secondary: 'bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-300 hover:border-blue-500 focus:ring-blue-500/10 active:scale-95',
-      outline: 'bg-transparent hover:bg-blue-50 text-blue-600 border-2 border-blue-600 hover:border-blue-700 focus:ring-blue-500/20 active:scale-95',
+      primary: 'bg-primary-blue hover:bg-primary-blue-hover active:bg-primary-blue-active text-white shadow-sm focus:ring-primary-blue/20 active:scale-[0.98]',
+      secondary: 'bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-300 hover:border-primary-blue focus:ring-primary-blue/10 active:scale-[0.98]',
+      outline: 'bg-transparent hover:bg-primary-blue/5 text-primary-blue border-2 border-primary-blue hover:border-primary-blue-hover focus:ring-primary-blue/20 active:scale-[0.98]',
       ghost: 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:ring-gray-200 active:bg-gray-200',
-      danger: 'bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg focus:ring-red-500/20 active:scale-95',
-      success: 'bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg focus:ring-green-500/20 active:scale-95',
-      warning: 'bg-amber-600 hover:bg-amber-700 text-white shadow-md hover:shadow-lg focus:ring-amber-500/20 active:scale-95',
-      subtle: 'bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-200 focus:ring-blue-500/20',
-      link: 'text-blue-600 hover:text-blue-700 focus:ring-blue-500/20 p-0 hover:bg-transparent underline-offset-4 hover:underline',
+      danger: 'bg-danger hover:bg-red-700 text-white shadow-sm focus:ring-danger/20 active:scale-[0.98]',
+      success: 'bg-success hover:bg-green-700 text-white shadow-sm focus:ring-success/20 active:scale-[0.98]',
+      warning: 'bg-warning hover:bg-amber-700 text-white shadow-sm focus:ring-warning/20 active:scale-[0.98]',
+      subtle: 'bg-primary-blue/10 text-primary-blue hover:bg-primary-blue/20 border border-primary-blue/20 focus:ring-primary-blue/20',
+      link: 'text-primary-blue hover:text-primary-blue-hover focus:ring-primary-blue/20 p-0 hover:bg-transparent underline-offset-4 hover:underline',
     };
 
     const sizeClasses = {
@@ -56,7 +56,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const widthClass = fullWidth ? 'w-full' : '';
-    const selectedClass = isSelected ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-white' : '';
+    const selectedClass = isSelected ? 'ring-2 ring-primary-blue ring-offset-2 ring-offset-white' : '';
 
     return (
       <button
@@ -130,7 +130,7 @@ export const ToggleButton = forwardRef<HTMLButtonElement, ToggleButtonProps>(
       <Button
         ref={ref}
         className={cn(
-          pressed && 'bg-blue-100 text-blue-700 border-blue-500 ring-2 ring-blue-500/20',
+          pressed && 'bg-primary-blue/10 text-primary-blue border-primary-blue ring-2 ring-primary-blue/20',
           className
         )}
         variant={variant}
@@ -289,7 +289,7 @@ function MenuItem({
         disabled
           ? 'opacity-50 cursor-not-allowed'
           : 'hover:bg-gray-100 focus:outline-none focus:bg-gray-100',
-        danger && 'text-red-600 hover:bg-red-50',
+        danger && 'text-danger hover:bg-danger/5',
         customClassName
       )}
     >

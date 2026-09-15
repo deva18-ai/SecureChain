@@ -71,22 +71,22 @@ export function formatRelativeTime(dateString: string): string {
 
 export function getRoleColor(role: string): string {
   switch (role) {
-    case 'OWNER': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
-    case 'MANAGER': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-    case 'EMPLOYEE': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-    case 'ADMIN': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
-    case 'AUDITOR': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-    case 'USER': return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
-    default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+    case 'OWNER': return 'bg-blue-50 text-blue-800';
+    case 'MANAGER': return 'bg-blue-100 text-blue-800';
+    case 'EMPLOYEE': return 'bg-green-100 text-green-800';
+    case 'ADMIN': return 'bg-blue-50 text-blue-800';
+    case 'AUDITOR': return 'bg-slate-100 text-slate-700';
+    case 'USER': return 'bg-slate-100 text-slate-700';
+    default: return 'bg-slate-100 text-slate-700';
   }
 }
 
 export function getWalletTypeColor(type: string): string {
   switch (type) {
-    case 'OWNER': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
-    case 'MANAGER': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-    case 'EMPLOYEE': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-    default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+    case 'OWNER': return 'bg-blue-50 text-blue-800';
+    case 'MANAGER': return 'bg-blue-100 text-blue-800';
+    case 'EMPLOYEE': return 'bg-green-100 text-green-800';
+    default: return 'bg-slate-100 text-slate-700';
   }
 }
 
@@ -103,18 +103,18 @@ export function getProposalStatusColor(status: string): string {
 
 export function getStatusColor(status: string): string {
   switch (status) {
-    case 'ACTIVE': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-    case 'TRANSFERRED': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-    case 'BURNED': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
-    case 'FROZEN': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-    case 'PENDING': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-    case 'APPROVED': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-    case 'REJECTED': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
-    case 'COMPLETED': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-    case 'FAILED': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
-    case 'CANCELLED': return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
-    case 'VERIFIED': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-    default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+    case 'ACTIVE': return 'bg-green-100 text-green-800';
+    case 'TRANSFERRED': return 'bg-blue-100 text-blue-800';
+    case 'BURNED': return 'bg-red-100 text-red-800';
+    case 'FROZEN': return 'bg-amber-100 text-amber-800';
+    case 'PENDING': return 'bg-amber-100 text-amber-800';
+    case 'APPROVED': return 'bg-green-100 text-green-800';
+    case 'REJECTED': return 'bg-red-100 text-red-800';
+    case 'COMPLETED': return 'bg-green-100 text-green-800';
+    case 'FAILED': return 'bg-red-100 text-red-800';
+    case 'CANCELLED': return 'bg-slate-100 text-slate-700';
+    case 'VERIFIED': return 'bg-green-100 text-green-800';
+    default: return 'bg-slate-100 text-slate-700';
   }
 }
 

@@ -243,7 +243,7 @@ export function DataTable<T extends Record<string, unknown>>({
   return (
     <div className={cn('bg-cyber-panel border border-cyber-border rounded-xl overflow-hidden', className)}>
       {loading && (
-        <div className="absolute inset-0 bg-cyber-panel/80 backdrop-blur-sm flex items-center justify-center z-10">
+        <div className="absolute inset-0 bg-white/85 flex items-center justify-center z-10">
           <Loader2 className="h-8 w-8 animate-spin text-cyber-primary" />
         </div>
       )}

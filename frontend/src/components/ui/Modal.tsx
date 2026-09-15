@@ -1,4 +1,5 @@
 import { Fragment, ReactNode, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '../../utils/helpers';
 import { Button } from './Button';
@@ -91,16 +92,16 @@ export function Modal({
   const modalContent = (
     <Fragment>
       <div
-        className="fixed inset-0 bg-gray-900/50 backdrop-blur z-50 animate-in"
+        className="fixed inset-0 bg-slate-900/40 z-50 animate-in"
         onClick={closeOnOverlayClick ? onClose : undefined}
         aria-hidden="true"
       />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in">
-        <div
+        <motion.div
           ref={modalRef}
           tabIndex={-1}
           className={cn(
-            'w-full bg-white rounded-2xl shadow-2xl overflow-hidden',
+            'w-full bg-white rounded-2xl shadow-modal overflow-hidden',
             sizeClasses[size],
             className
           )}
@@ -109,6 +110,9 @@ export function Modal({
           aria-modal="true"
           aria-labelledby={title ? 'modal-title' : undefined}
           aria-describedby={description ? 'modal-description' : undefined}
+          initial={{ opacity: 0, y: 16, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
         >
           {(title || showCloseButton) && (
             <div className="flex items-start justify-between px-6 py-4 bg-white border-b border-gray-200">
@@ -143,7 +147,7 @@ export function Modal({
               {footer}
             </div>
           )}
-        </div>
+        </motion.div>
       </div>
     </Fragment>
   );
@@ -185,9 +189,9 @@ export function ConfirmDialog({
   };
 
   const variantStyles = {
-    danger: { iconColor: 'text-cyber-critical', bgColor: 'bg-cyber-critical/10', btnVariant: 'danger' as const },
-    primary: { iconColor: 'text-cyber-primary', bgColor: 'bg-cyber-primary/10', btnVariant: 'primary' as const },
-    warning: { iconColor: 'text-cyber-warning', bgColor: 'bg-cyber-warning/10', btnVariant: 'warning' as const },
+    danger: { iconColor: 'text-danger', bgColor: 'bg-danger-bg', btnVariant: 'danger' as const },
+    primary: { iconColor: 'text-primary-blue', bgColor: 'bg-primary-blue/10', btnVariant: 'primary' as const },
+    warning: { iconColor: 'text-warning', bgColor: 'bg-warning-bg', btnVariant: 'warning' as const },
   };
 
   const styles = variantStyles[variant];
@@ -353,7 +357,7 @@ export function Drawer({
   return (
     <Fragment>
       <div
-        className="fixed inset-0 bg-gray-900/50 backdrop-blur z-50 animate-in"
+        className="fixed inset-0 bg-slate-900/40 z-50 animate-in"
         onClick={closeOnOverlayClick ? onClose : undefined}
         aria-hidden="true"
       />
@@ -363,7 +367,7 @@ export function Drawer({
           ref={drawerRef}
           tabIndex={-1}
           className={cn(
-            'h-full bg-white border-l border-gray-200 shadow-2xl flex flex-col',
+            'h-full bg-white border-l border-gray-200 shadow-modal flex flex-col',
             sizeClasses[size],
             position === 'left' ? 'animate-slide-in-from-left' : 'animate-slide-in-from-right'
           )}
@@ -405,4 +409,4 @@ export function Drawer({
       </div>
     </Fragment>
   );
-}
+}

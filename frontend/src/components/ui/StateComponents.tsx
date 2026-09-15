@@ -42,16 +42,16 @@ interface EmptyStateProps {
 }
 
 const illustrations = {
-  default: <Box className="h-16 w-16 text-cyber-border mx-auto" />,
-  search: <Search className="h-16 w-16 text-cyber-border mx-auto" />,
-  folder: <FileText className="h-16 w-16 text-cyber-border mx-auto" />,
-  shield: <Shield className="h-16 w-16 text-cyber-border mx-auto" />,
-  wallet: <Wallet className="h-16 w-16 text-cyber-border mx-auto" />,
-  chain: <Blocks className="h-16 w-16 text-cyber-border mx-auto" />,
-  activity: <Activity className="h-16 w-16 text-cyber-border mx-auto" />,
-  users: <UserCog className="h-16 w-16 text-cyber-border mx-auto" />,
-  settings: <Settings className="h-16 w-16 text-cyber-border mx-auto" />,
-  book: <BookOpen className="h-16 w-16 text-cyber-border mx-auto" />,
+  default: <Box className="h-16 w-16 text-gray-300 mx-auto" />,
+  search: <Search className="h-16 w-16 text-gray-300 mx-auto" />,
+  folder: <FileText className="h-16 w-16 text-gray-300 mx-auto" />,
+  shield: <Shield className="h-16 w-16 text-gray-300 mx-auto" />,
+  wallet: <Wallet className="h-16 w-16 text-gray-300 mx-auto" />,
+  chain: <Blocks className="h-16 w-16 text-gray-300 mx-auto" />,
+  activity: <Activity className="h-16 w-16 text-gray-300 mx-auto" />,
+  users: <UserCog className="h-16 w-16 text-gray-300 mx-auto" />,
+  settings: <Settings className="h-16 w-16 text-gray-300 mx-auto" />,
+  book: <BookOpen className="h-16 w-16 text-gray-300 mx-auto" />,
 };
 
 export function EmptyState({
@@ -68,9 +68,9 @@ export function EmptyState({
       <div className="mb-6">
         {icon || illustrations[illustration]}
       </div>
-      <h3 className="text-lg font-heading font-semibold text-cyber-text mb-2">{title}</h3>
+      <h3 className="text-lg font-heading font-semibold text-gray-900 mb-2">{title}</h3>
       {description && (
-        <p className="text-cyber-textMuted max-w-sm mx-auto mb-6">{description}</p>
+        <p className="text-gray-600 max-w-sm mx-auto mb-6">{description}</p>
       )}
       {(action || secondaryAction) && (
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-sm">
@@ -148,8 +148,8 @@ export const pageEmptyStates = {
     <EmptyState
       illustration="wallet"
       title="No digital assets yet"
-      description="Mint your first NFT asset to begin building your digital portfolio."
-      action={{ label: 'Mint Asset', onClick: () => {}, variant: 'primary' }}
+      description="Register your first asset to begin building your digital portfolio."
+      action={{ label: 'Register Asset', onClick: () => {}, variant: 'primary' }}
     />
   ),
   transfers: () => (
@@ -235,13 +235,13 @@ export function ErrorState({
 
   return (
     <div className={cn(variants[variant], className)}>
-      <div className="w-16 h-16 rounded-full bg-cyber-critical/10 flex items-center justify-center mb-6">
-        <XCircle className="h-8 w-8 text-cyber-critical" />
+      <div className="w-16 h-16 rounded-full bg-danger-bg flex items-center justify-center mb-6">
+        <XCircle className="h-8 w-8 text-danger" />
       </div>
-      <h3 className="text-lg font-heading font-semibold text-cyber-text mb-2">{title}</h3>
-      <p className="text-cyber-textMuted max-w-sm mx-auto mb-6">{message}</p>
+      <h3 className="text-lg font-heading font-semibold text-gray-900 mb-2">{title}</h3>
+      <p className="text-gray-600 max-w-sm mx-auto mb-6">{message}</p>
       {code && (
-        <p className="text-xs text-cyber-textDim font-mono mb-6 px-3 py-1 bg-cyber-elevated rounded">
+        <p className="text-xs text-gray-400 font-mono mb-6 px-3 py-1 bg-gray-100 rounded">
           Error code: {code}
         </p>
       )}
@@ -291,19 +291,19 @@ export function LoadingState({
   };
 
   const spinner = (
-    <Loader2 className={cn('animate-spin text-cyber-primary', sizeClasses[size].spinner)} aria-hidden="true" />
+    <Loader2 className={cn('animate-spin text-primary-blue', sizeClasses[size].spinner)} aria-hidden="true" />
   );
 
   const dots = (
     <div className="flex items-center gap-1" aria-hidden="true">
-      <span className={cn('rounded-full bg-cyber-primary animate-bounce', sizeClasses[size].dots)} style={{ animationDelay: '0ms' }} />
-      <span className={cn('rounded-full bg-cyber-primary animate-bounce', sizeClasses[size].dots)} style={{ animationDelay: '150ms' }} />
-      <span className={cn('rounded-full bg-cyber-primary animate-bounce', sizeClasses[size].dots)} style={{ animationDelay: '300ms' }} />
+      <span className={cn('rounded-full bg-primary-blue animate-bounce', sizeClasses[size].dots)} style={{ animationDelay: '0ms' }} />
+      <span className={cn('rounded-full bg-primary-blue animate-bounce', sizeClasses[size].dots)} style={{ animationDelay: '150ms' }} />
+      <span className={cn('rounded-full bg-primary-blue animate-bounce', sizeClasses[size].dots)} style={{ animationDelay: '300ms' }} />
     </div>
   );
 
   const pulse = (
-    <div className={cn('animate-pulse bg-cyber-elevated rounded', sizeClasses[size].spinner)} aria-hidden="true" />
+    <div className={cn('animate-pulse bg-gray-200 rounded', sizeClasses[size].spinner)} aria-hidden="true" />
   );
 
   const content = (
@@ -312,15 +312,15 @@ export function LoadingState({
       {variant === 'dots' && dots}
       {variant === 'pulse' && pulse}
       {variant === 'skeleton' && (
-        <div className="w-48 h-4 bg-cyber-elevated animate-pulse rounded" />
+        <div className="w-48 h-4 bg-gray-200 animate-pulse rounded" />
       )}
-      <span className={cn('text-cyber-textMuted', sizeClasses[size].text)}>{message}</span>
+      <span className={cn('text-gray-600', sizeClasses[size].text)}>{message}</span>
     </div>
   );
 
   if (overlay) {
     return (
-      <div className={cn('fixed inset-0 bg-cyber-panel/80 backdrop-blur-sm flex items-center justify-center z-50', className)}>
+      <div className={cn('fixed inset-0 bg-white/90 flex items-center justify-center z-50', className)}>
         {content}
       </div>
     );
@@ -365,11 +365,11 @@ export function SuccessState({
 }) {
   return (
     <div className={cn('flex flex-col items-center justify-center text-center py-12 px-4', className)}>
-      <div className="w-16 h-16 rounded-full bg-cyber-success/10 flex items-center justify-center mb-6">
-        <CheckCircle className="h-8 w-8 text-cyber-success" />
+      <div className="w-16 h-16 rounded-full bg-success-bg flex items-center justify-center mb-6">
+        <CheckCircle className="h-8 w-8 text-success" />
       </div>
-      <h3 className="text-lg font-heading font-semibold text-cyber-text mb-2">{title}</h3>
-      {message && <p className="text-cyber-textMuted max-w-sm mx-auto mb-6">{message}</p>}
+      <h3 className="text-lg font-heading font-semibold text-gray-900 mb-2">{title}</h3>
+      {message && <p className="text-gray-600 max-w-sm mx-auto mb-6">{message}</p>}
       {onContinue && (
         <Button onClick={onContinue} variant="primary">
           {continueLabel}
@@ -392,11 +392,11 @@ export function InfoState({
 }) {
   return (
     <div className={cn('flex flex-col items-center justify-center text-center py-8 px-4', className)}>
-      <div className="w-12 h-12 rounded-full bg-cyber-primary/10 flex items-center justify-center mb-4">
-        <Info className="h-6 w-6 text-cyber-primary" />
+      <div className="w-12 h-12 rounded-full bg-primary-blue/10 flex items-center justify-center mb-4">
+        <Info className="h-6 w-6 text-primary-blue" />
       </div>
-      <h3 className="text-base font-heading font-semibold text-cyber-text mb-1">{title}</h3>
-      {message && <p className="text-cyber-textMuted text-sm max-w-sm mx-auto mb-4">{message}</p>}
+      <h3 className="text-base font-heading font-semibold text-gray-900 mb-1">{title}</h3>
+      {message && <p className="text-gray-600 text-sm max-w-sm mx-auto mb-4">{message}</p>}
       {action && (
         <Button variant="primary" size="sm" onClick={action.onClick}>
           {action.label}
@@ -420,11 +420,11 @@ export function WarningState({
   className?: string;
 }) {
   return (
-    <div className={cn('flex items-start gap-3 p-4 bg-cyber-warning/10 border border-cyber-warning/30 rounded-lg', className)}>
-      <AlertTriangle className="h-5 w-5 text-cyber-warning flex-shrink-0 mt-0.5" />
+    <div className={cn('flex items-start gap-3 p-4 bg-warning-bg border border-warning/30 rounded-lg', className)}>
+      <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0">
-        <h3 className="font-medium text-cyber-text">{title}</h3>
-        {message && <p className="text-sm text-cyber-textMuted mt-1">{message}</p>}
+        <h3 className="font-medium text-gray-900">{title}</h3>
+        {message && <p className="text-sm text-gray-600 mt-1">{message}</p>}
         {action && (
           <Button variant="warning" size="sm" className="mt-2" onClick={action.onClick}>
             {action.label}
@@ -432,7 +432,7 @@ export function WarningState({
         )}
       </div>
       {dismissAction && (
-        <button onClick={dismissAction} className="text-cyber-warning hover:text-cyber-warning/70 flex-shrink-0">
+        <button onClick={dismissAction} className="text-warning hover:text-warning/70 flex-shrink-0">
           <XCircle className="h-5 w-5" />
         </button>
       )}
@@ -444,11 +444,11 @@ export function OfflineState({ onRetry }: { onRetry?: () => void }) {
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="text-center">
-        <div className="w-20 h-20 rounded-full bg-cyber-warning/10 flex items-center justify-center mx-auto mb-6">
-          <WifiOff className="h-10 w-10 text-cyber-warning" />
+        <div className="w-20 h-20 rounded-full bg-warning-bg flex items-center justify-center mx-auto mb-6">
+          <WifiOff className="h-10 w-10 text-warning" />
         </div>
-        <h2 className="text-xl font-heading font-bold text-cyber-text mb-2">You're Offline</h2>
-        <p className="text-cyber-textMuted mb-6 max-w-sm mx-auto">
+        <h2 className="text-xl font-heading font-bold text-gray-900 mb-2">You're Offline</h2>
+        <p className="text-gray-600 mb-6 max-w-sm mx-auto">
           No internet connection detected. Please check your network and try again.
         </p>
         {onRetry && (
@@ -465,12 +465,12 @@ export function MaintenanceState({ message = 'We\'ll be back soon!' }: { message
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="text-center">
-        <div className="w-20 h-20 rounded-full bg-cyber-primary/10 flex items-center justify-center mx-auto mb-6">
-          <Settings className="h-10 w-10 text-cyber-primary animate-spin" />
+        <div className="w-20 h-20 rounded-full bg-primary-blue/10 flex items-center justify-center mx-auto mb-6">
+          <Settings className="h-10 w-10 text-primary-blue animate-spin" />
         </div>
-        <h2 className="text-xl font-heading font-bold text-cyber-text mb-2">Under Maintenance</h2>
-        <p className="text-cyber-textMuted mb-6 max-w-sm mx-auto">{message}</p>
-        <p className="text-xs text-cyber-textDim">Please check back in a few minutes.</p>
+        <h2 className="text-xl font-heading font-bold text-gray-900 mb-2">Under Maintenance</h2>
+        <p className="text-gray-600 mb-6 max-w-sm mx-auto">{message}</p>
+        <p className="text-xs text-gray-400">Please check back in a few minutes.</p>
       </div>
     </div>
   );
@@ -480,9 +480,9 @@ export function NotFoundState({ onGoHome }: { onGoHome?: () => void }) {
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="text-center">
-        <div className="text-6xl font-heading font-bold text-cyber-primary/20 mb-4">404</div>
-        <h2 className="text-xl font-heading font-bold text-cyber-text mb-2">Page Not Found</h2>
-        <p className="text-cyber-textMuted mb-6 max-w-sm mx-auto">
+        <div className="text-6xl font-heading font-bold text-primary-blue/20 mb-4">404</div>
+        <h2 className="text-xl font-heading font-bold text-gray-900 mb-2">Page Not Found</h2>
+        <p className="text-gray-600 mb-6 max-w-sm mx-auto">
           The page you're looking for doesn't exist or has been moved.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -502,11 +502,11 @@ export function UnauthorizedState({ onLogin, onGoHome }: { onLogin?: () => void;
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="text-center">
-        <div className="w-16 h-16 rounded-full bg-cyber-critical/10 flex items-center justify-center mx-auto mb-6">
-          <Shield className="h-8 w-8 text-cyber-critical" />
+        <div className="w-16 h-16 rounded-full bg-danger-bg flex items-center justify-center mx-auto mb-6">
+          <Shield className="h-8 w-8 text-danger" />
         </div>
-        <h2 className="text-xl font-heading font-bold text-cyber-text mb-2">Access Denied</h2>
-        <p className="text-cyber-textMuted mb-6 max-w-sm mx-auto">
+        <h2 className="text-xl font-heading font-bold text-gray-900 mb-2">Access Denied</h2>
+        <p className="text-gray-600 mb-6 max-w-sm mx-auto">
           You don't have permission to access this page. Please log in with appropriate credentials.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">

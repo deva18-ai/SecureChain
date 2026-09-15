@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import React from 'react';
-import { AlertCircle, CheckCircle, XCircle, RefreshCw, Download, Search, Eye, Shield, Copy } from 'lucide-react';
+import { AlertCircle, CheckCircle, XCircle, RefreshCw, Download, Search, Eye, Shield, Copy, Loader2 as LoaderIcon, Globe, Link as LinkIcon } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Badge } from '../components/ui/Badge';
+import { Badge, StatusBadge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
+import { Card, StatCard } from '../components/ui/Card';
 import { useAuditLogs, useVerifyOnBlockchain } from '../hooks/useApi';
 import { formatAddress, formatDate, formatTxHash, formatRelativeTime } from '../utils/helpers';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import type { AuditLog, VerificationResponse } from '../types';
+import { cn } from '../utils/helpers';
 
 export default function AuditPage() {
   const { hasRole } = useAuth();
@@ -83,18 +85,24 @@ export default function AuditPage() {
 
   if (isLoading && !logsData) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Audit & Security Log</h1>
-          <p className="text-gray-600 mt-1">Full chronological event history with blockchain verification</p>
+      <div className="min-h-screen bg-gray-50 p-6 space-y-6 animate-in">
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">Audit & Security Log</h1>
+            <p className="page-sub mt-1">Full chronological event history with blockchain verification</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" onClick={() => refetch()} leftIcon={<LoaderIcon className="h-4 w-4" />}>Refresh</Button>
+            <Button variant="outline" size="sm" onClick={exportLogs} leftIcon={<Download className="h-4 w-4" />}>Export</Button>
+          </div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <Card variant="hover" padding="lg">
           <div className="space-y-4">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="h-20 bg-gray-100 rounded-lg animate-pulse" />
             ))}
           </div>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -111,72 +119,55 @@ export default function AuditPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="mb-6 flex justify-between items-start">
+    <div className="min-h-screen bg-gray-50 p-6 space-y-6">
+      {/* Page Header */}
+      <div className="page-header">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Audit & Security Log</h1>
-          <p className="text-gray-600 mt-1">Full chronological event history with blockchain verification</p>
+          <h1 className="page-title">Audit & Security Log</h1>
+          <p className="page-sub mt-1">Full chronological event history with blockchain verification</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={() => refetch()} leftIcon={<RefreshCw className="h-4 w-4" />}>Refresh</Button>
+          <Button variant="outline" size="sm" onClick={() => refetch()} leftIcon={<LoaderIcon className="h-4 w-4" />}>Refresh</Button>
           <Button variant="outline" size="sm" onClick={exportLogs} leftIcon={<Download className="h-4 w-4" />}>Export</Button>
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Events</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.total}</p>
-            </div>
-            <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
-              <AlertCircle className="h-6 w-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Verified</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.verified}</p>
-            </div>
-            <div className="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
-              <Shield className="h-6 w-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Pending</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.pending}</p>
-            </div>
-            <div className="h-12 w-12 rounded-lg bg-amber-100 flex items-center justify-center">
-              <Shield className="h-6 w-6 text-amber-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Security Events</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{stats.security}</p>
-            </div>
-            <div className="h-12 w-12 rounded-lg bg-red-100 flex items-center justify-center">
-              <Shield className="h-6 w-6 text-red-600" />
-            </div>
-          </div>
-        </div>
+      {/* Statistics Cards */}
+      <div className="data-grid">
+        <StatCard
+          title="Total Events"
+          value={stats.total}
+          icon={<AlertCircle className="h-6 w-6" />}
+          color="primary"
+        />
+        <StatCard
+          title="Verified"
+          value={stats.verified}
+          icon={<Shield className="h-6 w-6" />}
+          color="success"
+        />
+        <StatCard
+          title="Pending"
+          value={stats.pending}
+          icon={<Shield className="h-6 w-6" />}
+          color="warning"
+        />
+        <StatCard
+          title="Security Events"
+          value={stats.security}
+          icon={<Shield className="h-6 w-6" />}
+          color="danger"
+        />
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+      {/* Blockchain Verification Panel */}
+      <Card variant="hover" padding="lg">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-blue-600" />
+            <Shield className="h-5 w-5 text-primary-blue" />
             <h2 className="text-xl font-semibold text-gray-900">Blockchain Verification</h2>
           </div>
-          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-lg text-sm font-medium">Direct RPC</span>
+          <span className="px-3 py-1 bg-primary-blue/10 text-primary-blue rounded-lg text-sm font-medium">Direct RPC</span>
         </div>
         <p className="text-gray-600 text-sm mb-6">Verify any transaction, asset ownership, or identity proof directly on the blockchain.</p>
         <div className="grid gap-4 sm:grid-cols-3 mb-6">
@@ -211,18 +202,17 @@ export default function AuditPage() {
         </div>
 
         {verificationResult && (
-          <div className={`mt-6 p-5 rounded-lg border ${
-            verificationResult.verified
-              ? 'bg-green-50 border-green-200'
-              : 'bg-red-50 border-red-200'
-          }`}>
+          <div className={cn('mt-6 p-5 rounded-lg border', verificationResult.verified
+            ? 'bg-success-bg border-success/30'
+            : 'bg-danger-bg border-danger/30'
+          )}>
             <div className="flex items-center gap-3 mb-4">
               {verificationResult.verified ? (
-                <CheckCircle className="h-6 w-6 text-green-600" />
+                <CheckCircle className="h-6 w-6 text-success" />
               ) : (
-                <XCircle className="h-6 w-6 text-red-600" />
+                <XCircle className="h-6 w-6 text-danger" />
               )}
-              <span className={`font-semibold text-lg ${verificationResult.verified ? 'text-green-900' : 'text-red-900'}`}>
+              <span className={cn('font-semibold text-lg', verificationResult.verified ? 'text-success' : 'text-danger')}>
                 {verificationResult.verified ? 'VERIFIED ON BLOCKCHAIN' : 'VERIFICATION FAILED'}
               </span>
             </div>
@@ -247,13 +237,14 @@ export default function AuditPage() {
               </div>
             )}
             {verificationResult.error_message && (
-              <p className="text-sm text-red-700 mt-4">{verificationResult.error_message}</p>
+              <p className="text-sm text-danger mt-4">{verificationResult.error_message}</p>
             )}
           </div>
         )}
-      </div>
+      </Card>
 
-      <div className="bg-white rounded-xl shadow-sm">
+      {/* Filters */}
+      <Card variant="hover" padding="none">
         <div className="p-4 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1 max-w-xs">
@@ -263,14 +254,14 @@ export default function AuditPage() {
                 placeholder="Search audit logs..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent"
               />
             </div>
             <div className="flex flex-wrap gap-3">
               <select
                 value={actionFilter || 'all'}
                 onChange={(e) => { const val = e.target.value; setActionFilter(val === 'all' ? undefined : val); setPage(1); }}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent"
               >
                 <option value="all">All Actions</option>
                 {actions.map((a) => <option key={a} value={a}>{a.replace(/_/g, ' ')}</option>)}
@@ -278,7 +269,7 @@ export default function AuditPage() {
               <select
                 value={resourceTypeFilter || 'all'}
                 onChange={(e) => { const val = e.target.value; setResourceTypeFilter(val === 'all' ? undefined : val); setPage(1); }}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent"
               >
                 <option value="all">All Resources</option>
                 {resourceTypes.map((r) => <option key={r} value={r}>{r}</option>)}
@@ -286,7 +277,7 @@ export default function AuditPage() {
               <select
                 value={verifiedFilter === true ? 'verified' : verifiedFilter === false ? 'unverified' : 'all'}
                 onChange={(e) => { const val = e.target.value; setVerifiedFilter(val === 'verified' ? true : val === 'unverified' ? false : undefined); setPage(1); }}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent"
               >
                 <option value="all">All</option>
                 <option value="verified">Verified</option>
@@ -296,6 +287,7 @@ export default function AuditPage() {
           </div>
         </div>
 
+        {/* Audit Logs Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
@@ -310,7 +302,7 @@ export default function AuditPage() {
                 <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200">
               {logs.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-16 text-center">
@@ -334,7 +326,7 @@ export default function AuditPage() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                    <span className="px-2 py-1 bg-primary-blue/10 text-primary-blue rounded text-xs font-medium">
                       {log.action.replace(/_/g, ' ')}
                     </span>
                   </td>
@@ -351,28 +343,26 @@ export default function AuditPage() {
                   </td>
                   <td className="px-4 py-3">
                     {log.blockchain_tx_hash ? (
-                      <span className="font-mono text-xs text-green-700">{formatTxHash(log.blockchain_tx_hash)}</span>
+                      <span className="font-mono text-xs text-primary-blue truncate max-w-[140px] inline-block">
+                        {formatTxHash(log.blockchain_tx_hash)}
+                      </span>
                     ) : (
                       <span className="text-gray-400 text-xs">No tx hash</span>
                     )}
                   </td>
                   <td className="px-4 py-3">
                     {log.blockchain_verified ? (
-                      <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium flex items-center gap-1 w-fit">
-                        <CheckCircle className="h-3 w-3" /> Verified
-                      </span>
+                      <StatusBadge status="VERIFIED" dot />
                     ) : (
-                      <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-medium flex items-center gap-1 w-fit">
-                        <Shield className="h-3 w-3" /> Pending
-                      </span>
+                      <StatusBadge status="PENDING" dot />
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="xs" onClick={() => handleViewLog(log)} className="p-1.5">
+                      <Button variant="ghost" size="xs" onClick={() => handleViewLog(log)} className="p-1.5" aria-label="View details">
                         <Eye className="h-3.5 w-3.5 text-gray-400" />
                       </Button>
-                      <Button variant="ghost" size="xs" onClick={() => handleCopy(log.id.toString(), 'Log ID')} className="p-1.5">
+                      <Button variant="ghost" size="xs" onClick={() => handleCopy(log.id.toString(), 'Log ID')} className="p-1.5" aria-label="Copy log ID">
                         <Copy className="h-3.5 w-3.5 text-gray-400" />
                       </Button>
                     </div>
@@ -392,15 +382,16 @@ export default function AuditPage() {
             </div>
           </div>
         )}
-      </div>
+      </Card>
 
+      {/* Audit Log Details Modal */}
       <Modal isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} title="Audit Log Details" size="lg">
         {selectedLog && (
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
               <div className="flex items-center gap-3">
                 <span className="text-lg font-semibold text-gray-900">Log #{selectedLog.id}</span>
-                <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                <span className="px-2 py-1 bg-primary-blue/10 text-primary-blue rounded text-xs font-medium">
                   {selectedLog.action.replace(/_/g, ' ')}
                 </span>
               </div>
@@ -432,11 +423,11 @@ export default function AuditPage() {
                 <div className="sm:col-span-2 p-4 rounded-lg bg-gray-50 border border-gray-200">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-gray-500 text-xs font-medium">Blockchain Transaction</p>
-                    <Button variant="ghost" size="xs" onClick={() => handleCopy(selectedLog.blockchain_tx_hash!, 'TX Hash')} className="p-1">
+                    <Button variant="ghost" size="xs" onClick={() => handleCopy(selectedLog.blockchain_tx_hash!, 'TX Hash')} className="p-1" aria-label="Copy transaction hash">
                       <Copy className="h-3.5 w-3.5 text-gray-400" />
                     </Button>
                   </div>
-                  <p className="font-mono text-sm text-green-700 truncate">{selectedLog.blockchain_tx_hash}</p>
+                  <p className="font-mono text-sm text-primary-blue truncate">{selectedLog.blockchain_tx_hash}</p>
                 </div>
               )}
               {selectedLog.blockchain_block_number && (
@@ -448,13 +439,9 @@ export default function AuditPage() {
               <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
                 <p className="text-gray-500 text-xs font-medium mb-2">Blockchain Verified</p>
                 {selectedLog.blockchain_verified ? (
-                  <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium flex items-center gap-1 w-fit">
-                    <CheckCircle className="h-3 w-3" /> Yes
-                  </span>
+                  <StatusBadge status="VERIFIED" dot />
                 ) : (
-                  <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-medium flex items-center gap-1 w-fit">
-                    <Shield className="h-3 w-3" /> No
-                  </span>
+                  <StatusBadge status="PENDING" dot />
                 )}
               </div>
             </div>

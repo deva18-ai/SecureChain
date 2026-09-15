@@ -2,21 +2,25 @@ import { ReactNode, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import { cn } from '../../utils/helpers';
 
 export function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white" style={{ display: 'grid', gridTemplateColumns: '16rem 1fr' }}>
+    <div className="min-h-screen bg-gray-50 flex">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="flex flex-col lg:pl-0 bg-gray-50">
+      <div className="flex flex-col flex-1 lg:pl-0">
         <Header />
-        <main className="flex-1 overflow-auto" style={{ padding: '32px', maxWidth: 1400, margin: '0 auto', width: '100%' }}>
-          <Outlet />
+        <main className="flex-1 overflow-auto">
+          <div className="max-w-[1400px] mx-auto w-full p-6 lg:p-8">
+            <Outlet />
+          </div>
         </main>
       </div>
+      {/* Mobile sidebar toggle button */}
       <button
-        className="lg:hidden fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg"
+        className="lg:hidden fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-primary-blue hover:bg-primary-blue-hover flex items-center justify-center shadow-lg"
         onClick={() => setSidebarOpen(true)}
         aria-label="Open menu"
       >
@@ -30,10 +34,8 @@ export function MainLayout() {
 
 export function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
-      <div className="w-full max-w-4xl">
-        {children}
-      </div>
+    <div className="min-h-screen w-full">
+      {children}
     </div>
   );
 }

@@ -1,10 +1,10 @@
 ﻿import { useState } from 'react';
-import { AlertCircle, UserPlus, Search, Filter, MoreVertical } from 'lucide-react';
+import { AlertCircle, UserPlus, Search, Filter, MoreVertical, Loader2 as LoaderIcon } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Badge } from '../components/ui/Badge';
-import { Table } from '../components/ui/Table';
+import { Badge, RoleBadge, StatusBadge } from '../components/ui/Badge';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table';
 import { Modal } from '../components/ui/Modal';
 import { useUsers, useCreateUser } from '../hooks/useApi';
 import { displayRole, formatAddress, formatDate } from '../utils/helpers';
@@ -12,13 +12,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import type { RegisterRequest, User, UserRole } from '../types';
 import { getApiErrorMessage } from '../utils/apiError';
-
-const ROLE_BADGE_VARIANTS: Record<string, 'violet' | 'info' | 'success' | 'primary' | 'outline'> = {
-  ADMIN: 'violet',
-  MANAGER: 'info',
-  USER: 'success',
-  AUDITOR: 'primary',
-};
+import { cn } from '../utils/helpers';
 
 const STATUS_BADGE_VARIANTS: Record<string, 'success' | 'danger' | 'outline'> = {
   true: 'success',
@@ -59,13 +53,14 @@ export default function UsersPage() {
   });
 
   return (
-    <div className="space-y-6 animate-in">
-      <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
+    <div className="min-h-screen bg-gray-50 p-6 space-y-6">
+      {/* Page Header */}
+      <div className="page-header">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Users</h1>
-          <p className="text-gray-600">Manage SecureChain identities, roles, and wallet associations</p>
+          <h1 className="page-title">Users</h1>
+          <p className="page-sub">Manage SecureChain identities, roles, and wallet associations</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="page-header-actions flex items-center gap-3">
           <div className="relative hidden sm:block w-[280px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
@@ -73,13 +68,13 @@ export default function UsersPage() {
               placeholder="Search users..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm"
+              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent transition-all duration-200 text-sm"
             />
           </div>
           <select
             value={roleFilter || ''}
             onChange={(e) => { setRoleFilter(e.target.value || undefined); setPage(1); }}
-            className="hidden sm:block px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm appearance-none bg-no-repeat bg-right pr-10"
+            className="hidden sm:block px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent transition-all duration-200 text-sm appearance-none bg-no-repeat bg-right pr-10"
             style={{ backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%271.5%27 d=%27M6 8l4 4 4-4%27/%3e%3c/svg%3e")' }}
           >
             <option value="">All Roles</option>
@@ -96,40 +91,49 @@ export default function UsersPage() {
         </div>
       </div>
 
-      <Card className="bg-white border border-gray-200 shadow-sm">
+      {/* Users Table */}
+      <Card variant="hover" padding="none">
         {isLoading && !usersData ? (
           <div className="p-6 space-y-3">
             {[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-gray-100 rounded-xl animate-pulse" />)}
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto rounded-lg">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">User</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Email</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Role</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">DID</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Wallet</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Created</th>
-                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12"><input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-primary-blue focus:ring-2 focus:ring-primary-blue/20" aria-label="Select all" /></TableHead>
+                    <TableHead>User</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>DID</TableHead>
+                    <TableHead>Wallet</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {filteredUsers.length === 0 ? (
-                    <tr>
-                      <td colSpan={8} className="text-center py-16">
+                    <TableRow>
+                      <TableCell colSpan={9} className="text-center py-16">
                         <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50 text-gray-400" />
                         <p className="text-gray-600">No users found.</p>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ) : filteredUsers.map((user) => (
-                    <tr key={user.id} className="hover:bg-blue-50 transition-colors">
-                      <td className="px-6 py-4">
+                    <TableRow key={user.id}>
+                      <TableCell className="w-12">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded border-gray-300 text-primary-blue focus:ring-2 focus:ring-primary-blue/20"
+                          aria-label={`Select ${user.full_name}`}
+                        />
+                      </TableCell>
+                      <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center text-white font-medium text-sm">
+                          <div className="w-9 h-9 rounded-full bg-primary-blue flex items-center justify-center text-white font-medium text-sm">
                             {user.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                           </div>
                           <div>
@@ -137,34 +141,30 @@ export default function UsersPage() {
                             <div className="text-xs text-gray-500 font-mono">ID: {user.id}</div>
                           </div>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 font-mono text-gray-900">{user.email}</td>
-                      <td className="px-6 py-4">
-                        <Badge variant={ROLE_BADGE_VARIANTS[user.role] || 'outline'}>
-                          {displayRole(user.role)}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Badge variant={STATUS_BADGE_VARIANTS[user.is_active.toString()] || 'outline'}>
-                          {user.is_active ? 'ACTIVE' : 'INACTIVE'}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4 font-mono text-gray-600 text-xs max-w-[180px] truncate">{user.did || '-'}</td>
-                      <td className="px-6 py-4 font-mono text-gray-600 text-xs">{user.wallet_address ? formatAddress(user.wallet_address) : '-'}</td>
-                      <td className="px-6 py-4 text-gray-600">{formatDate(user.created_at)}</td>
-                      <td className="px-6 py-4 text-right">
-                        <Button variant="ghost" size="xs" onClick={() => setSelectedUser(user)}>
+                      </TableCell>
+                      <TableCell className="font-mono text-gray-900">{user.email}</TableCell>
+                      <TableCell>
+                        <RoleBadge role={user.role} />
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={user.is_active ? 'ACTIVE' : 'INACTIVE'} />
+                      </TableCell>
+                      <TableCell className="font-mono text-gray-600 text-xs max-w-[180px] truncate">{user.did || '-'}</TableCell>
+                      <TableCell className="font-mono text-gray-600 text-xs">{user.wallet_address ? formatAddress(user.wallet_address) : '-'}</TableCell>
+                      <TableCell className="text-gray-600">{formatDate(user.created_at)}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="xs" onClick={() => setSelectedUser(user)} aria-label={`View ${user.full_name} details`}>
                           <MoreVertical className="h-4 w-4" />
                         </Button>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
 
             {totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+              <div className="p-4 border-t border-gray-200 flex items-center justify-between">
                 <p className="text-sm text-gray-600">Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, total)} of {total} users</p>
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
@@ -180,10 +180,12 @@ export default function UsersPage() {
         )}
       </Card>
 
+      {/* Create User Modal */}
       <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Register User" size="lg">
         <UserCreateForm onSubmit={handleCreateUser} onCancel={() => setShowCreateModal(false)} isLoading={createUserMutation.isPending} />
       </Modal>
 
+      {/* User Detail Modal */}
       <Modal isOpen={!!selectedUser} onClose={() => setSelectedUser(null)} title="User Details" size="lg">
         {selectedUser && <UserDetailView user={selectedUser} onClose={() => setSelectedUser(null)} />}
       </Modal>
@@ -201,12 +203,12 @@ function UserCreateForm({ onSubmit, onCancel, isLoading }: { onSubmit: (data: Re
       <Input type="email" label="Email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="name@securechain.local" required />
       <Input type="password" label="Temporary Password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} placeholder="Set a temporary password" required />
       <div className="space-y-2">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
+        <label className="label">Role</label>
         <select
           value={formData.role}
           onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
           required
-          className="w-full px-4 py-3 rounded-lg bg-white border-2 border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 appearance-none bg-no-repeat bg-right pr-10"
+          className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent transition-all duration-200 appearance-none bg-no-repeat bg-right pr-10"
           style={{ backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%271.5%27 d=%27M6 8l4 4 4-4%27/%3e%3c/svg%3e")' }}
         >
           <option value="USER">Employee</option>
@@ -226,12 +228,12 @@ function UserDetailView({ user, onClose }: { user: User; onClose: () => void }) 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 border border-gray-200">
-        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/30">
+        <div className="w-14 h-14 rounded-full bg-primary-blue flex items-center justify-center text-white font-bold text-lg shadow-sm">
           {user.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
         </div>
         <div>
           <div className="font-heading font-semibold text-lg text-gray-900">{user.full_name}</div>
-          <Badge variant={ROLE_BADGE_VARIANTS[user.role] || 'outline'}>{displayRole(user.role)}</Badge>
+          <RoleBadge role={user.role} />
         </div>
       </div>
       <div className="space-y-3">
@@ -241,7 +243,7 @@ function UserDetailView({ user, onClose }: { user: User; onClose: () => void }) 
         </div>
         <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200">
           <span className="text-gray-600">Status</span>
-          <Badge variant={STATUS_BADGE_VARIANTS[user.is_active.toString()] || 'outline'}>{user.is_active ? 'ACTIVE' : 'INACTIVE'}</Badge>
+          <StatusBadge status={user.is_active ? 'ACTIVE' : 'INACTIVE'} />
         </div>
         <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200">
           <span className="text-gray-600">DID</span>
@@ -254,6 +256,10 @@ function UserDetailView({ user, onClose }: { user: User; onClose: () => void }) 
         <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200">
           <span className="text-gray-600">Created</span>
           <span className="text-gray-900">{formatDate(user.created_at)}</span>
+        </div>
+        <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200">
+          <span className="text-gray-600">Last Login</span>
+          <span className="text-gray-900">{user.last_login ? formatDate(user.last_login) : 'Never'}</span>
         </div>
       </div>
       <div className="flex justify-end pt-4 border-t border-gray-200">

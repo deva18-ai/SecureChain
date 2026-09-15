@@ -13,6 +13,7 @@ const MOCK_DEMO_USERS: Record<string, User> = {
     is_verified: true,
     created_at: '2026-06-15T10:00:00Z',
     updated_at: '2026-09-14T10:00:00Z',
+    last_login: '2026-09-14T10:00:00Z',
   },
   'admin@securechain.local': {
     id: 2,
@@ -24,6 +25,7 @@ const MOCK_DEMO_USERS: Record<string, User> = {
     is_verified: true,
     created_at: '2026-06-16T10:00:00Z',
     updated_at: '2026-09-14T10:00:00Z',
+    last_login: '2026-09-14T09:00:00Z',
   },
   'recipient@test.com': {
     id: 3,
@@ -35,6 +37,7 @@ const MOCK_DEMO_USERS: Record<string, User> = {
     is_verified: true,
     created_at: '2026-06-18T10:00:00Z',
     updated_at: '2026-09-14T10:00:00Z',
+    last_login: '2026-09-14T08:15:00Z',
   },
   'manager@securechain.local': {
     id: 4,
@@ -46,6 +49,7 @@ const MOCK_DEMO_USERS: Record<string, User> = {
     is_verified: true,
     created_at: '2026-06-20T10:00:00Z',
     updated_at: '2026-09-14T10:00:00Z',
+    last_login: null,
   },
   'auditor@securechain.local': {
     id: 5,
@@ -57,6 +61,7 @@ const MOCK_DEMO_USERS: Record<string, User> = {
     is_verified: true,
     created_at: '2026-06-22T10:00:00Z',
     updated_at: '2026-09-14T10:00:00Z',
+    last_login: null,
   },
   'user1@securechain.com': {
     id: 6,
@@ -68,6 +73,7 @@ const MOCK_DEMO_USERS: Record<string, User> = {
     is_verified: true,
     created_at: '2026-06-25T10:00:00Z',
     updated_at: '2026-09-14T10:00:00Z',
+    last_login: null,
   },
 };
 
@@ -148,6 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         is_verified: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        last_login: new Date().toISOString(),
       };
       
       const demoToken = `demo_token_${Date.now()}`;
@@ -173,6 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         is_verified: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        last_login: new Date().toISOString(),
       };
       const demoToken = `demo_token_${Date.now()}`;
       localStorage.setItem('access_token', demoToken);

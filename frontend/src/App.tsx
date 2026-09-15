@@ -22,8 +22,8 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0b0d12' }}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#3d6fe0' }} />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8FAFC' }}>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#2563EB' }} />
       </div>
     );
   }
@@ -44,8 +44,8 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0b0d12' }}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#3d6fe0' }} />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8FAFC' }}>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#2563EB' }} />
       </div>
     );
   }

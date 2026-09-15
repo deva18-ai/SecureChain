@@ -2,20 +2,18 @@ import { HTMLAttributes, forwardRef } from 'react';
 import { cn } from '../../utils/helpers';
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'hover' | 'glass' | 'bordered' | 'elevated' | 'gradient';
-  padding?: 'none' | 'sm' | 'md' | 'lg';
-  hoverable?: boolean;
+  variant?: 'default' | 'hover' | 'bordered' | 'elevated' | 'interactive';
+  padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
 }
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant = 'default', padding = 'md', hoverable = false, children, ...props }, ref) => {
+  ({ className, variant = 'default', padding = 'md', children, ...props }, ref) => {
     const variantClasses = {
       default: 'bg-white border border-gray-200 rounded-xl shadow-sm',
-      hover: 'bg-white border border-gray-200 rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-blue-300 hover:-translate-y-0.5',
-      glass: 'bg-white/90 backdrop-blur-xl border border-blue-100 rounded-xl shadow-sm',
+      hover: 'bg-white border border-gray-200 rounded-xl shadow-sm transition-all duration-200 hover:shadow-card-hover hover:border-primary-blue/40 hover:-translate-y-0.5',
       bordered: 'bg-white border-2 border-gray-300 rounded-xl',
-      elevated: 'bg-white border border-gray-200 rounded-xl shadow-lg',
-      gradient: 'bg-gradient-to-br from-white to-gray-50 border border-blue-200 rounded-xl shadow-md',
+      elevated: 'bg-white border border-gray-200 rounded-xl shadow-elevated',
+      interactive: 'bg-white border-2 border-gray-200 rounded-xl hover:border-primary-blue hover:shadow-elevated cursor-pointer transition-all',
     };
 
     const paddingClasses = {
@@ -23,6 +21,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       sm: 'p-4',
       md: 'p-6',
       lg: 'p-8',
+      xl: 'p-10',
     };
 
     return (
@@ -31,7 +30,6 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         className={cn(
           variantClasses[variant],
           paddingClasses[padding],
-          hoverable && variant !== 'hover' && 'transition-all duration-200 hover:shadow-md hover:border-blue-300',
           className
         )}
         {...props}
@@ -141,10 +139,10 @@ export function StatCard({
   className,
 }: StatCardProps) {
   const iconBgClasses = {
-    primary: 'bg-blue-100 text-blue-600',
-    success: 'bg-green-100 text-green-600',
-    warning: 'bg-amber-100 text-amber-600',
-    danger: 'bg-red-100 text-red-600',
+    primary: 'bg-primary-blue/10 text-primary-blue',
+    success: 'bg-success-bg text-success',
+    warning: 'bg-warning-bg text-warning',
+    danger: 'bg-danger-bg text-danger',
     secondary: 'bg-gray-100 text-gray-600',
   };
 
@@ -171,7 +169,7 @@ export function StatCard({
 
   return (
     <Card
-      className={cn('cursor-pointer', onClick && 'hover:shadow-md hover:border-blue-300 transition-all duration-200', className)}
+      className={cn('cursor-pointer', onClick && 'hover:shadow-card-hover hover:border-primary-blue/40 transition-all duration-200', className)}
       variant="hover"
       onClick={onClick}
     >
@@ -194,8 +192,8 @@ export function StatCard({
             className={cn(
               'flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium',
               trend.up
-                ? 'bg-green-100 text-green-700'
-                : 'bg-red-100 text-red-700'
+                ? 'bg-success-bg text-success'
+                : 'bg-danger-bg text-danger'
             )}
           >
             <span className="flex items-center gap-0.5">
@@ -233,21 +231,21 @@ export function FeatureCard({
   number,
 }: FeatureCardProps) {
   const badgeClasses = {
-    primary: 'bg-blue-100 text-blue-700 border-blue-200',
-    success: 'bg-green-100 text-green-700 border-green-200',
-    warning: 'bg-amber-100 text-amber-700 border-amber-200',
-    danger: 'bg-red-100 text-red-700 border-red-200',
+    primary: 'bg-primary-blue/10 text-primary-blue border-primary-blue/20',
+    success: 'bg-success-bg text-success border-success/20',
+    warning: 'bg-warning-bg text-warning border-warning/20',
+    danger: 'bg-danger-bg text-danger border-danger/20',
   };
 
   return (
     <Card
-      className={cn(hoverable && 'hover:shadow-md hover:border-blue-300 hover:-translate-y-0.5', className)}
+      className={cn(hoverable && 'hover:shadow-card-hover hover:border-primary-blue/40 hover:-translate-y-0.5', className)}
       variant={hoverable ? 'hover' : 'default'}
       padding="lg"
     >
       <div className="flex items-start justify-between gap-4 mb-4">
         {number && (
-          <span className="text-3xl font-heading font-bold text-blue-200 leading-none">{number}</span>
+          <span className="text-3xl font-heading font-bold text-primary-blue/20 leading-none">{number}</span>
         )}
         {badge && (
           <span className={cn('px-2 py-0.5 rounded text-xs font-medium border', badgeClasses[badgeVariant])}>
@@ -256,7 +254,7 @@ export function FeatureCard({
         )}
       </div>
       {icon && (
-        <div className="p-3 bg-blue-100 text-blue-600 rounded-lg flex-shrink-0 mb-4">
+        <div className="p-3 bg-primary-blue/10 text-primary-blue rounded-lg flex-shrink-0 mb-4">
           <span className="text-xl">{icon}</span>
         </div>
       )}
@@ -291,10 +289,10 @@ export function ProfileCard({
   className,
 }: ProfileCardProps) {
   const statusColors = {
-    online: 'bg-green-500',
+    online: 'bg-success',
     offline: 'bg-gray-400',
-    busy: 'bg-red-500',
-    away: 'bg-amber-500',
+    busy: 'bg-danger',
+    away: 'bg-warning',
   };
 
   const initials = avatarFallback || name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -303,7 +301,7 @@ export function ProfileCard({
     <Card className={className} variant="default" padding="lg">
       <div className="flex items-center gap-4">
         <div className="relative flex-shrink-0">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center text-white font-medium text-xl overflow-hidden">
+          <div className="w-16 h-16 rounded-full bg-primary-blue flex items-center justify-center text-white font-medium text-xl overflow-hidden">
             {avatar ? (
               <img src={avatar} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -320,7 +318,7 @@ export function ProfileCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <CardTitle className="text-lg truncate">{name}</CardTitle>
-            <span className={cn('px-2 py-0.5 rounded text-xs font-medium border', 'bg-blue-100 text-blue-700 border-blue-200')}>
+            <span className="px-2 py-0.5 rounded text-xs font-medium border bg-primary-blue/10 text-primary-blue border-primary-blue/20">
               {role}
             </span>
           </div>
