@@ -1,370 +1,155 @@
-import { useState } from 'react';
-import React from 'react';
-import { AlertCircle, CheckCircle, XCircle, RefreshCw, Download, Search, Eye, Shield, Copy, Loader2 as LoaderIcon, Globe, Link as LinkIcon } from 'lucide-react';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Badge, StatusBadge } from '../components/ui/Badge';
-import { Modal } from '../components/ui/Modal';
-import { Card, StatCard } from '../components/ui/Card';
-import { useAuditLogs, useVerifyOnBlockchain } from '../hooks/useApi';
-import { formatAddress, formatDate, formatTxHash, formatRelativeTime } from '../utils/helpers';
-import toast from 'react-hot-toast';
+import { useState, useEffect } from 'react';
+import { auditApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import type { AuditLog, VerificationResponse } from '../types';
-import { cn } from '../utils/helpers';
+import { Search, Activity, CheckCircle2, XCircle, Copy, ChevronLeft, ChevronRight } from 'lucide-react';
+import toast from 'react-hot-toast';
+
+const MOCK_AUDIT_LOGS = [
+  { id: 1, time: '10:52', actor: 'Devavardhan (Owner)', action: 'User Created', target: 'Rohith Kumar', status: 'SUCCESS', txHash: '0x8FA1...902B' },
+  { id: 2, time: '10:40', actor: 'Asset Manager (Manager)', action: 'Access Requested', target: 'SC-001 Laptop', status: 'PENDING', txHash: '-' },
+  { id: 3, time: '10:32', actor: 'Devavardhan (Owner)', action: 'Asset Created', target: 'SC-002 Server', status: 'SUCCESS', txHash: '0x0F49...11A3' },
+  { id: 4, time: '10:21', actor: 'System Auto', action: 'Identity Verified', target: 'Priya S', status: 'SUCCESS', txHash: '0xA419...E912' },
+  { id: 5, time: '09:48', actor: 'Employee User (Me)', action: 'Resource Access Requested', target: 'Dell XPS 15 Workstation', status: 'SUCCESS', txHash: '0xD582...4419' },
+];
 
 export default function AuditPage() {
-  const { hasRole } = useAuth();
-  const [page, setPage] = useState(1);
+  const { user, activeRole } = useAuth();
+  const [logs, setLogs] = useState(MOCK_AUDIT_LOGS);
   const [search, setSearch] = useState('');
-  const [actionFilter, setActionFilter] = useState<string | undefined>(undefined);
-  const [resourceTypeFilter, setResourceTypeFilter] = useState<string | undefined>(undefined);
-  const [verifiedFilter, setVerifiedFilter] = useState<boolean | undefined>(undefined);
-  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
-  const [verification, setVerification] = useState({ txHash: '', tokenId: '', did: '' });
-  const [verificationResult, setVerificationResult] = useState<VerificationResponse | null>(null);
-  const [verifying, setVerifying] = useState(false);
+  const [actionFilter, setActionFilter] = useState('ALL');
+  const [timeFilter, setTimeFilter] = useState('7d');
 
-  const { data: logsData, isLoading, refetch } = useAuditLogs({
-    page,
-    page_size: 50,
-    action: actionFilter,
-    resource_type: resourceTypeFilter,
-    blockchain_verified: verifiedFilter,
-  });
-  const verifyMutation = useVerifyOnBlockchain();
+  const isEmployee = activeRole === 'USER';
 
-  void hasRole;
-
-  const actions = [
-    'IDENTITY_CREATED', 'IDENTITY_VERIFIED', 'ROLE_ASSIGNED', 'ROLE_REVOKED',
-    'ASSET_MINTED', 'ASSET_ALLOCATED', 'ASSET_TRANSFERRED', 'ASSET_BURNED',
-    'ASSET_FROZEN', 'ASSET_UNFROZEN', 'USER_CREATED', 'USER_UPDATED', 'LOGIN', 'LOGOUT'
-  ];
-
-  const resourceTypes = ['USER', 'DID', 'ASSET', 'TRANSFER', 'ROLE'];
-
-  const handleVerify = async () => {
-    const { txHash, tokenId, did } = verification;
-    if (!txHash && !tokenId && !did) {
-      toast.error('Provide at least one verification parameter');
-      return;
+  useEffect(() => {
+    async function loadAudit() {
+      try {
+        const res = await auditApi.list();
+        if (res.data?.items?.length) {
+          setLogs(res.data.items.map((l: any) => ({
+            id: l.id,
+            time: new Date(l.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            actor: l.actor?.full_name || l.actor_address?.slice(0, 8) || 'System',
+            action: l.action.replace(/_/g, ' '),
+            target: l.resource_id || l.resource_type || 'System',
+            status: l.blockchain_verified ? 'SUCCESS' : 'PENDING',
+            txHash: l.blockchain_tx_hash ? `${l.blockchain_tx_hash.slice(0, 6)}...` : '-',
+          })));
+        }
+      } catch {
+        // Fallback to mock data if API offline
+      }
     }
-    setVerifying(true);
-    try {
-      const result = await verifyMutation.mutateAsync({
-        tx_hash: txHash || undefined,
-        token_id: tokenId ? parseInt(tokenId) : undefined,
-        did: did || undefined,
-      });
-      setVerificationResult(result);
-      toast.success(result.verified ? 'Verified on blockchain' : 'Verification failed');
-    } catch (error: unknown) {
-      toast.error('Verification request failed');
-      setVerificationResult({ verified: false, error_message: error instanceof Error ? error.message : 'Verification request failed' });
-    } finally {
-      setVerifying(false);
-    }
-  };
+    loadAudit();
+  }, []);
 
-  const handleViewLog = (log: AuditLog) => {
-    setSelectedLog(log);
-    if (log.blockchain_tx_hash) {
-      setVerification({ txHash: log.blockchain_tx_hash, tokenId: '', did: '' });
-    }
-  };
-
-  const exportLogs = () => {
-    toast('Export functionality coming soon');
-  };
-
-  const handleCopy = (text: string, label: string) => {
+  const copyToClipboard = (text: string) => {
+    if (text === '-') return;
     navigator.clipboard.writeText(text);
-    toast.success(`${label} copied`);
+    toast.success('Tx hash copied to clipboard');
   };
 
-  if (isLoading && !logsData) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-6 space-y-6 animate-in">
-        <div className="page-header">
-          <div>
-            <h1 className="page-title">Audit & Security Log</h1>
-            <p className="page-sub mt-1">Full chronological event history with blockchain verification</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={() => refetch()} leftIcon={<LoaderIcon className="h-4 w-4" />}>Refresh</Button>
-            <Button variant="outline" size="sm" onClick={exportLogs} leftIcon={<Download className="h-4 w-4" />}>Export</Button>
-          </div>
-        </div>
-        <Card variant="hover" padding="lg">
-          <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-20 bg-gray-100 rounded-lg animate-pulse" />
-            ))}
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
-  const logs = logsData?.items || [];
-  const total = logsData?.total || 0;
-  const totalPages = logsData?.total_pages || 1;
-
-  const stats = {
-    total: logs.length,
-    verified: logs.filter(l => l.blockchain_verified).length,
-    pending: logs.filter(l => !l.blockchain_verified).length,
-    security: logs.filter(l => ['ROLE_ASSIGNED', 'ROLE_REVOKED', 'ASSET_FROZEN', 'ASSET_BURNED', 'IDENTITY_VERIFIED'].includes(l.action)).length,
-  };
+  const filtered = logs.filter(l => {
+    if (isEmployee && !search && actionFilter === 'ALL') {
+      return l.actor.includes('Employee User') || l.id === 5;
+    }
+    const matchesSearch = l.actor.toLowerCase().includes(search.toLowerCase()) || l.action.toLowerCase().includes(search.toLowerCase()) || l.target.toLowerCase().includes(search.toLowerCase());
+    const matchesAction = actionFilter === 'ALL' || l.action.toUpperCase().includes(actionFilter);
+    return matchesSearch && matchesAction;
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 space-y-6">
-      {/* Page Header */}
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">Audit & Security Log</h1>
-          <p className="page-sub mt-1">Full chronological event history with blockchain verification</p>
+    <div className="space-y-6 animate-in fade-in duration-200">
+      
+      {/* Header */}
+      <div className="border-b border-slate-200 pb-5">
+        <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+          {isEmployee ? 'My Activity & Audit Log' : 'Immutable Security Audit Logs'}
+        </h1>
+        <p className="text-xs text-slate-500 font-medium mt-1">
+          {isEmployee ? 'View your personal activity trail and access request history.' : 'WHO → DID WHAT → TO WHAT → WHEN → RESULT (Anchored to Sepolia Blockchain)'}
+        </p>
+      </div>
+
+      {/* Filter Toolbar */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="relative flex-1 w-full max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search audit events, actors, or targets..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white"
+          />
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={() => refetch()} leftIcon={<LoaderIcon className="h-4 w-4" />}>Refresh</Button>
-          <Button variant="outline" size="sm" onClick={exportLogs} leftIcon={<Download className="h-4 w-4" />}>Export</Button>
+
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          {/* Action Filter */}
+          <select
+            value={actionFilter}
+            onChange={(e) => setActionFilter(e.target.value)}
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
+          >
+            <option value="ALL">All Actions</option>
+            <option value="USER">User Events</option>
+            <option value="ASSET">Asset Events</option>
+            <option value="IDENTITY">Identity Events</option>
+          </select>
+
+          {/* Time Filter */}
+          <select
+            value={timeFilter}
+            onChange={(e) => setTimeFilter(e.target.value)}
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
+          >
+            <option value="7d">Last 7 days</option>
+            <option value="24h">Last 24 hours</option>
+            <option value="30d">Last 30 days</option>
+          </select>
         </div>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="data-grid">
-        <StatCard
-          title="Total Events"
-          value={stats.total}
-          icon={<AlertCircle className="h-6 w-6" />}
-          color="primary"
-        />
-        <StatCard
-          title="Verified"
-          value={stats.verified}
-          icon={<Shield className="h-6 w-6" />}
-          color="success"
-        />
-        <StatCard
-          title="Pending"
-          value={stats.pending}
-          icon={<Shield className="h-6 w-6" />}
-          color="warning"
-        />
-        <StatCard
-          title="Security Events"
-          value={stats.security}
-          icon={<Shield className="h-6 w-6" />}
-          color="danger"
-        />
-      </div>
-
-      {/* Blockchain Verification Panel */}
-      <Card variant="hover" padding="lg">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary-blue" />
-            <h2 className="text-xl font-semibold text-gray-900">Blockchain Verification</h2>
-          </div>
-          <span className="px-3 py-1 bg-primary-blue/10 text-primary-blue rounded-lg text-sm font-medium">Direct RPC</span>
-        </div>
-        <p className="text-gray-600 text-sm mb-6">Verify any transaction, asset ownership, or identity proof directly on the blockchain.</p>
-        <div className="grid gap-4 sm:grid-cols-3 mb-6">
-          <Input
-            label="Transaction Hash"
-            value={verification.txHash}
-            onChange={(e) => setVerification({ ...verification, txHash: e.target.value })}
-            placeholder="0x..."
-            leftIcon={<Search className="h-4 w-4" />}
-          />
-          <Input
-            label="Asset Token ID"
-            type="number"
-            value={verification.tokenId}
-            onChange={(e) => setVerification({ ...verification, tokenId: e.target.value })}
-            placeholder="123"
-          />
-          <Input
-            label="DID"
-            value={verification.did}
-            onChange={(e) => setVerification({ ...verification, did: e.target.value })}
-            placeholder="did:securechain:..."
-          />
-        </div>
-        <div className="flex gap-3">
-          <Button onClick={handleVerify} loading={verifying} className="flex-1" leftIcon={<CheckCircle className="h-4 w-4" />}>
-            Verify on Blockchain
-          </Button>
-          <Button variant="outline" onClick={() => setVerification({ txHash: '', tokenId: '', did: '' })} leftIcon={<XCircle className="h-4 w-4" />}>
-            Clear
-          </Button>
-        </div>
-
-        {verificationResult && (
-          <div className={cn('mt-6 p-5 rounded-lg border', verificationResult.verified
-            ? 'bg-success-bg border-success/30'
-            : 'bg-danger-bg border-danger/30'
-          )}>
-            <div className="flex items-center gap-3 mb-4">
-              {verificationResult.verified ? (
-                <CheckCircle className="h-6 w-6 text-success" />
-              ) : (
-                <XCircle className="h-6 w-6 text-danger" />
-              )}
-              <span className={cn('font-semibold text-lg', verificationResult.verified ? 'text-success' : 'text-danger')}>
-                {verificationResult.verified ? 'VERIFIED ON BLOCKCHAIN' : 'VERIFICATION FAILED'}
-              </span>
-            </div>
-            {verificationResult.verified && (
-              <div className="grid gap-4 sm:grid-cols-4">
-                <div className="p-3 rounded-lg bg-white border border-gray-200">
-                  <p className="text-gray-500 text-xs font-medium mb-1">Block Number</p>
-                  <p className="font-mono text-gray-900">{verificationResult.block_number || 'N/A'}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-white border border-gray-200">
-                  <p className="text-gray-500 text-xs font-medium mb-1">Contract</p>
-                  <p className="font-mono text-xs text-gray-900 truncate">{verificationResult.contract_address || 'N/A'}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-white border border-gray-200">
-                  <p className="text-gray-500 text-xs font-medium mb-1">Event Type</p>
-                  <p className="font-medium text-gray-900">{verificationResult.event_type || 'Unknown'}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-white border border-gray-200">
-                  <p className="text-gray-500 text-xs font-medium mb-1">Actor</p>
-                  <p className="font-mono text-xs text-gray-900">{formatAddress(verificationResult.actor || '')}</p>
-                </div>
-              </div>
-            )}
-            {verificationResult.error_message && (
-              <p className="text-sm text-danger mt-4">{verificationResult.error_message}</p>
-            )}
-          </div>
-        )}
-      </Card>
-
-      {/* Filters */}
-      <Card variant="hover" padding="none">
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1 max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="search"
-                placeholder="Search audit logs..."
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent"
-              />
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <select
-                value={actionFilter || 'all'}
-                onChange={(e) => { const val = e.target.value; setActionFilter(val === 'all' ? undefined : val); setPage(1); }}
-                className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent"
-              >
-                <option value="all">All Actions</option>
-                {actions.map((a) => <option key={a} value={a}>{a.replace(/_/g, ' ')}</option>)}
-              </select>
-              <select
-                value={resourceTypeFilter || 'all'}
-                onChange={(e) => { const val = e.target.value; setResourceTypeFilter(val === 'all' ? undefined : val); setPage(1); }}
-                className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent"
-              >
-                <option value="all">All Resources</option>
-                {resourceTypes.map((r) => <option key={r} value={r}>{r}</option>)}
-              </select>
-              <select
-                value={verifiedFilter === true ? 'verified' : verifiedFilter === false ? 'unverified' : 'all'}
-                onChange={(e) => { const val = e.target.value; setVerifiedFilter(val === 'verified' ? true : val === 'unverified' ? false : undefined); setPage(1); }}
-                className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent"
-              >
-                <option value="all">All</option>
-                <option value="verified">Verified</option>
-                <option value="unverified">Unverified</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Audit Logs Table */}
+      {/* Table */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Timestamp</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Actor</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Action</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Resource</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Role</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Blockchain</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Verified</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Actions</th>
+                <th className="p-4">Time</th>
+                <th className="p-4">Actor</th>
+                <th className="p-4">Action</th>
+                <th className="p-4">Target</th>
+                <th className="p-4">Status</th>
+                <th className="p-4 text-right">TX Hash</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
-              {logs.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-4 py-16 text-center">
-                    <AlertCircle className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-500">No audit logs found</p>
+            <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+              {filtered.map((log) => (
+                <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
+                  <td className="p-4 font-mono font-bold text-slate-500">{log.time}</td>
+                  <td className="p-4 font-bold text-slate-900">{log.actor}</td>
+                  <td className="p-4 font-semibold text-blue-600 flex items-center gap-2">
+                    <Activity className="w-3.5 h-3.5 text-slate-400" />
+                    {log.action}
                   </td>
-                </tr>
-              ) : logs.map((log) => (
-                <tr key={log.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 text-gray-600 font-mono text-xs">{formatRelativeTime(log.created_at)}</td>
-                  <td className="px-4 py-3">
-                    {log.actor ? (
-                      <div>
-                        <p className="font-medium text-gray-900">{log.actor.full_name}</p>
-                        <p className="font-mono text-xs text-gray-500">{formatAddress(log.actor.wallet_address || '')}</p>
-                      </div>
-                    ) : log.actor_address ? (
-                      <p className="font-mono text-sm text-gray-900">{formatAddress(log.actor_address)}</p>
-                    ) : (
-                      <span className="text-gray-500 text-sm">System</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="px-2 py-1 bg-primary-blue/10 text-primary-blue rounded text-xs font-medium">
-                      {log.action.replace(/_/g, ' ')}
+                  <td className="p-4 font-semibold text-slate-700">{log.target}</td>
+                  <td className="p-4">
+                    <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold inline-flex items-center gap-1 ${
+                      log.status === 'SUCCESS' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                    }`}>
+                      {log.status === 'SUCCESS' ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> : <XCircle className="w-3.5 h-3.5 text-amber-600" />}
+                      {log.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">{log.resource_type}</p>
-                    <p className="font-mono text-xs text-gray-500">{log.resource_id}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    {log.role && (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs font-medium">
-                        {log.role === 'ADMIN' ? 'OWNER' : log.role === 'USER' ? 'EMPLOYEE' : log.role}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    {log.blockchain_tx_hash ? (
-                      <span className="font-mono text-xs text-primary-blue truncate max-w-[140px] inline-block">
-                        {formatTxHash(log.blockchain_tx_hash)}
-                      </span>
-                    ) : (
-                      <span className="text-gray-400 text-xs">No tx hash</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    {log.blockchain_verified ? (
-                      <StatusBadge status="VERIFIED" dot />
-                    ) : (
-                      <StatusBadge status="PENDING" dot />
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="xs" onClick={() => handleViewLog(log)} className="p-1.5" aria-label="View details">
-                        <Eye className="h-3.5 w-3.5 text-gray-400" />
-                      </Button>
-                      <Button variant="ghost" size="xs" onClick={() => handleCopy(log.id.toString(), 'Log ID')} className="p-1.5" aria-label="Copy log ID">
-                        <Copy className="h-3.5 w-3.5 text-gray-400" />
-                      </Button>
+                  <td className="p-4 text-right font-mono font-semibold text-slate-500">
+                    <div className="inline-flex items-center justify-end gap-1">
+                      <span>{log.txHash}</span>
+                      {log.txHash !== '-' && (
+                        <button onClick={() => copyToClipboard(log.txHash)} className="text-slate-400 hover:text-blue-600">
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -373,108 +158,20 @@ export default function AuditPage() {
           </table>
         </div>
 
-        {totalPages > 1 && (
-          <div className="p-4 border-t border-gray-200 flex items-center justify-between">
-            <span className="text-sm text-gray-600">Showing {(page - 1) * 50 + 1} to {Math.min(page * 50, total)} of {total}</span>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
-              <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Next</Button>
-            </div>
+        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 text-xs font-semibold text-slate-500">
+          <span>Showing 1 to {filtered.length} of {filtered.length} logs</span>
+          <div className="flex items-center gap-2">
+            <button disabled className="p-1.5 border border-slate-200 rounded-lg text-slate-400 opacity-50 cursor-not-allowed">
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="px-3 py-1 bg-blue-600 text-white rounded-lg font-bold">1</span>
+            <button disabled className="p-1.5 border border-slate-200 rounded-lg text-slate-400 opacity-50 cursor-not-allowed">
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
-        )}
-      </Card>
+        </div>
+      </div>
 
-      {/* Audit Log Details Modal */}
-      <Modal isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} title="Audit Log Details" size="lg">
-        {selectedLog && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
-              <div className="flex items-center gap-3">
-                <span className="text-lg font-semibold text-gray-900">Log #{selectedLog.id}</span>
-                <span className="px-2 py-1 bg-primary-blue/10 text-primary-blue rounded text-xs font-medium">
-                  {selectedLog.action.replace(/_/g, ' ')}
-                </span>
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
-                <p className="text-gray-500 text-xs font-medium mb-2">Timestamp</p>
-                <p className="text-gray-900">{formatDate(selectedLog.created_at)}</p>
-              </div>
-              <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
-                <p className="text-gray-500 text-xs font-medium mb-2">Actor</p>
-                <p className="font-medium text-gray-900">{selectedLog.actor?.full_name || 'System'}</p>
-                {selectedLog.actor?.wallet_address && (
-                  <p className="font-mono text-xs text-gray-500 mt-1">{formatAddress(selectedLog.actor.wallet_address)}</p>
-                )}
-              </div>
-              <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
-                <p className="text-gray-500 text-xs font-medium mb-2">Actor Role</p>
-                <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs font-medium">
-                  {selectedLog.role === 'ADMIN' ? 'OWNER' : selectedLog.role === 'USER' ? 'EMPLOYEE' : selectedLog.role || 'N/A'}
-                </span>
-              </div>
-              <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
-                <p className="text-gray-500 text-xs font-medium mb-2">Resource</p>
-                <p className="font-medium text-gray-900">{selectedLog.resource_type}: {selectedLog.resource_id}</p>
-              </div>
-              {selectedLog.blockchain_tx_hash && (
-                <div className="sm:col-span-2 p-4 rounded-lg bg-gray-50 border border-gray-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-gray-500 text-xs font-medium">Blockchain Transaction</p>
-                    <Button variant="ghost" size="xs" onClick={() => handleCopy(selectedLog.blockchain_tx_hash!, 'TX Hash')} className="p-1" aria-label="Copy transaction hash">
-                      <Copy className="h-3.5 w-3.5 text-gray-400" />
-                    </Button>
-                  </div>
-                  <p className="font-mono text-sm text-primary-blue truncate">{selectedLog.blockchain_tx_hash}</p>
-                </div>
-              )}
-              {selectedLog.blockchain_block_number && (
-                <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
-                  <p className="text-gray-500 text-xs font-medium mb-2">Block Number</p>
-                  <p className="font-mono text-gray-900">{selectedLog.blockchain_block_number.toLocaleString()}</p>
-                </div>
-              )}
-              <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
-                <p className="text-gray-500 text-xs font-medium mb-2">Blockchain Verified</p>
-                {selectedLog.blockchain_verified ? (
-                  <StatusBadge status="VERIFIED" dot />
-                ) : (
-                  <StatusBadge status="PENDING" dot />
-                )}
-              </div>
-            </div>
-
-            {selectedLog.details && (
-              <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
-                <p className="text-gray-500 text-xs font-medium mb-2">Details</p>
-                <p className="font-mono text-sm text-gray-900">{selectedLog.details}</p>
-              </div>
-            )}
-
-            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-              {selectedLog.blockchain_tx_hash && !selectedLog.blockchain_verified && (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => {
-                    const txHash = selectedLog.blockchain_tx_hash;
-                    if (!txHash) return;
-                    setVerification({ txHash, tokenId: '', did: '' });
-                    handleVerify();
-                    setSelectedLog(null);
-                  }}
-                  leftIcon={<CheckCircle className="h-4 w-4" />}
-                >
-                  Verify on Blockchain
-                </Button>
-              )}
-              <Button variant="outline" onClick={() => setSelectedLog(null)}>Close</Button>
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }

@@ -63,7 +63,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const connect = async () => {
     if (typeof window === 'undefined' || !window.ethereum) {
-      throw new Error('MetaMask is not installed');
+      if (typeof window !== 'undefined') {
+        window.open('https://metamask.io/download/', '_blank');
+      }
+      throw new Error('MetaMask extension is not installed in your browser. Opening download page...');
     }
 
     setIsConnecting(true);
@@ -71,7 +74,17 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const browserProvider = new ethers.BrowserProvider(window.ethereum);
       setProvider(browserProvider);
 
-      await browserProvider.send('eth_requestAccounts', []);
+      // Trigger MetaMask extension window to open and prompt user for password / permissions
+      try {
+        await window.ethereum.request({
+          method: 'wallet_requestPermissions',
+          params: [{ eth_accounts: {} }],
+        });
+      } catch (permErr: any) {
+        // Fallback to standard request accounts if permission prompt is already open or supported differently
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+      }
+
       await updateAccount(browserProvider);
 
       browserProvider.on('accountsChanged', (accounts: string[]) => {
@@ -87,9 +100,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         setChainId(parseInt(chainIdHex, 16));
         window.location.reload();
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to connect wallet:', error);
-      throw error;
+      throw new Error(error?.message || 'MetaMask connection canceled or locked.');
     } finally {
       setIsConnecting(false);
     }

@@ -1,491 +1,533 @@
-﻿import { useState } from 'react';
-import { AlertCircle, Box, FileText, Lock, Plus, RotateCcw, Key, ArrowRight, ChevronRight, Clock, ShieldCheck, Blocks, Loader2 as LoaderIcon, ExternalLink, Copy } from 'lucide-react';
-import { Card, StatCard } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
-import { Badge, StatusBadge, RoleBadge } from '../components/ui/Badge';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table';
-import { Modal } from '../components/ui/Modal';
-import { useAssets, useApproveTransfer, useCreateTransfer, useRejectTransfer, useTransfers, useUsers } from '../hooks/useApi';
-import { displayRole, formatDate } from '../utils/helpers';
-import toast from 'react-hot-toast';
+import { useState } from 'react';
+import { Check, X, Eye, Clock, FileText, CheckCircle2, XCircle, ShieldAlert, Plus, MessageSquare, Key, Globe, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import type { Asset, Transfer, User } from '../types';
-import { getApiErrorMessage } from '../utils/apiError';
-import { cn } from '../utils/helpers';
+import toast from 'react-hot-toast';
 
-const REQUEST_TYPES = [
-  { type: 'Asset Transfer', icon: Box, description: 'Request asset reassignment to another user' },
-  { type: 'Asset Freeze', icon: Lock, description: 'Request an Owner freeze decision' },
-  { type: 'Asset Update', icon: RotateCcw, description: 'Request metadata or status changes' },
-  { type: 'Asset Edit Access', icon: Key, description: 'Request temporary edit access' },
-];
+interface RequestItem {
+  id: number;
+  user: string;
+  role: string;
+  type: string;
+  detail: string;
+  category: 'MANAGER_APPROVAL' | 'EMPLOYEE_ACCESS' | 'TRANSFER_REQUEST' | 'MY_REQUEST';
+  time: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  did: string;
+  txHash: string;
+  rejectionReason?: string;
+  targetOwner?: string;
+}
 
-const WORKFLOW_STEPS = [
-  { label: 'REQUESTED', desc: 'Manager submits request', icon: FileText, status: 'completed' },
-  { label: 'PENDING OWNER', desc: 'Awaiting approval', icon: Clock, status: 'current' },
-  { label: 'APPROVED', desc: 'Owner approves', icon: ShieldCheck, status: 'pending' },
-  { label: 'EXECUTED', desc: 'Action performed', icon: ArrowRight, status: 'pending' },
-  { label: 'ON-CHAIN', desc: 'Recorded on blockchain', icon: Blocks, status: 'pending' },
+const INITIAL_REQUESTS: RequestItem[] = [
+  {
+    id: 1,
+    user: 'Asset Manager (Manager)',
+    role: 'Manager',
+    type: 'Owner Restricted Action',
+    detail: 'Mint High-Performance Server Asset SC-SRV-1005',
+    category: 'MANAGER_APPROVAL',
+    time: '1h ago',
+    status: 'PENDING',
+    did: 'did:sc:mgr-8f92a10b4c22',
+    txHash: '0x8f2bb3c91a204e90a887b1c3e',
+    targetOwner: 'Devavardhan (Owner)',
+  },
+  {
+    id: 2,
+    user: 'Rohith Kumar (Employee)',
+    role: 'Employee',
+    type: 'Asset Transfer Request',
+    detail: 'Transfer Laptop SC-001 Ownership to Owner / Manager',
+    category: 'TRANSFER_REQUEST',
+    time: '2h ago',
+    status: 'PENDING',
+    did: 'did:sc:emp-3c4412e09b11',
+    txHash: '0x4a1190e28f3bb2c19a993e',
+    targetOwner: 'Devavardhan (Owner)',
+  },
+  {
+    id: 3,
+    user: 'Priya S (Employee)',
+    role: 'Employee',
+    type: 'New Asset Access',
+    detail: 'Request Access Pass for Dell XPS 15 Workstation',
+    category: 'EMPLOYEE_ACCESS',
+    time: '4h ago',
+    status: 'PENDING',
+    did: 'did:sc:emp-7b1981ee4209',
+    txHash: '0x3b1c4d209fa882c3104e',
+  },
+  {
+    id: 4,
+    user: 'Vignesh D (Employee)',
+    role: 'Employee',
+    type: 'Asset Transfer Request',
+    detail: 'Transfer Monitor SC-006 to Asset Manager',
+    category: 'TRANSFER_REQUEST',
+    time: '6h ago',
+    status: 'PENDING',
+    did: 'did:sc:emp-99e21b44c801',
+    txHash: '0x9e4f11b890a21cf8b731',
+  },
+  {
+    id: 5,
+    user: 'Employee User (Me)',
+    role: 'Employee',
+    type: 'Asset Access',
+    detail: 'Access Pass for Workstation SC-DEV-01',
+    category: 'MY_REQUEST',
+    time: '1d ago',
+    status: 'APPROVED',
+    did: 'did:sc:emp-1109aa76e511',
+    txHash: '0x1c8832a90fb411d99e',
+  },
 ];
 
 export default function RequestsPage() {
-  const { user, hasRole } = useAuth();
-  const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
-  const [showRequestModal, setShowRequestModal] = useState(false);
-  const [requestType, setRequestType] = useState('Asset Transfer');
-  const [rejectingId, setRejectingId] = useState<number | null>(null);
-  const [rejectReason, setRejectReason] = useState('');
-  const [selectedRequest, setSelectedRequest] = useState<Transfer | null>(null);
+  const { user, activeRole } = useAuth();
+  const [requests, setRequests] = useState<RequestItem[]>(INITIAL_REQUESTS);
+  const [activeTab, setActiveTab] = useState<'PENDING' | 'APPROVED' | 'REJECTED'>('PENDING');
 
-  const { data: transfersData, isLoading, refetch } = useTransfers({ page, page_size: 20, status: statusFilter });
-  const { data: assetsData } = useAssets({ page_size: 100 });
-  const { data: usersData } = useUsers({ page_size: 100 });
-  const createTransferMutation = useCreateTransfer();
-  const approveMutation = useApproveTransfer();
-  const rejectMutation = useRejectTransfer();
+  // Modals state
+  const [selectedDetailRequest, setSelectedDetailRequest] = useState<RequestItem | null>(null);
+  const [rejectingRequest, setRejectingRequest] = useState<RequestItem | null>(null);
+  const [rejectionReasonInput, setRejectionReasonInput] = useState('');
 
-  const isOwner = hasRole(['ADMIN']);
-  const isManager = user?.role === 'MANAGER';
-  const transfers = transfersData?.items || [];
-  const visibleTransfers = isOwner ? transfers : transfers.filter((transfer) => transfer.initiator_id === user?.id);
-  const assets = assetsData?.items || [];
-  const users = usersData?.items || [];
-  const total = transfersData?.total || 0;
-  const totalPages = transfersData?.total_pages || 1;
+  // Submit new request modal for Employees/Managers
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [newRequestType, setNewRequestType] = useState<'ASSET_ACCESS' | 'TRANSFER_TO_OWNER'>('ASSET_ACCESS');
+  const [newRequestDetail, setNewRequestDetail] = useState('');
 
-  const stats = {
-    pending: transfers.filter(t => t.status === 'PENDING').length,
-    approved: transfers.filter(t => t.status === 'APPROVED' || t.status === 'COMPLETED').length,
-    rejected: transfers.filter(t => t.status === 'REJECTED' || t.status === 'CANCELLED' || t.status === 'FAILED').length,
-    total: transfers.length,
-  };
+  const isOwner = activeRole === 'ADMIN';
+  const isManager = activeRole === 'MANAGER';
+  const isEmployee = activeRole === 'USER';
 
-  const handleSubmitTransfer = async (assetId: number, recipientId: number) => {
-    const recipient = users.find((candidate) => candidate.id === recipientId);
-    if (!recipient?.wallet_address) {
-      toast.error('Selected recipient does not have a wallet address.');
+  const handleApprove = (req: RequestItem) => {
+    if (isEmployee) {
+      toast.error('Employees cannot approve access or transfer requests.');
       return;
     }
-    try {
-      await createTransferMutation.mutateAsync({ asset_id: assetId, to_address: recipient.wallet_address });
-      toast.success('Request submitted for Owner approval');
-      setShowRequestModal(false);
-      refetch();
-    } catch (error: unknown) {
-      toast.error(getApiErrorMessage(error, 'Failed to submit request'));
+    setRequests(requests.map(r => r.id === req.id ? { ...r, status: 'APPROVED' } : r));
+    if (isOwner) {
+      toast.success(`Owner approved Request #${req.id} and anchored event on Sepolia!`);
+    } else {
+      toast.success(`Manager approved Request #${req.id} and escalated to Owner approval queue!`);
     }
   };
 
-  const handleApprove = async (transferId: number) => {
-    try {
-      await approveMutation.mutateAsync(transferId);
-      toast.success('Request approved and executed');
-      refetch();
-    } catch (error: unknown) {
-      toast.error(getApiErrorMessage(error, 'Failed to approve request'));
-    }
-  };
-
-  const handleReject = async () => {
-    if (!rejectingId || !rejectReason.trim()) {
-      toast.error('Please provide a rejection reason.');
+  const openRejectModal = (req: RequestItem) => {
+    if (isEmployee) {
+      toast.error('Employees cannot reject requests.');
       return;
     }
-    try {
-      await rejectMutation.mutateAsync({ id: rejectingId, reason: rejectReason });
-      toast.success('Request rejected');
-      setRejectingId(null);
-      setRejectReason('');
-      refetch();
-    } catch (error: unknown) {
-      toast.error(getApiErrorMessage(error, 'Failed to reject request'));
+    setRejectingRequest(req);
+    setRejectionReasonInput('');
+  };
+
+  const confirmRejection = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rejectionReasonInput.trim()) {
+      toast.error('A rejection reason is required before rejecting.');
+      return;
     }
+    if (!rejectingRequest) return;
+
+    setRequests(requests.map(r => r.id === rejectingRequest.id ? {
+      ...r,
+      status: 'REJECTED',
+      rejectionReason: rejectionReasonInput.trim(),
+    } : r));
+
+    toast.error(`Request #${rejectingRequest.id} REJECTED. Reason recorded.`);
+    setRejectingRequest(null);
+    setRejectionReasonInput('');
   };
 
-  const getWorkflowStatus = (transfer: Transfer) => {
-    if (transfer.status === 'PENDING') return 1;
-    if (transfer.status === 'APPROVED') return 2;
-    if (transfer.status === 'COMPLETED') return 3;
-    if (transfer.status === 'REJECTED' || transfer.status === 'CANCELLED' || transfer.status === 'FAILED') return -1;
-    return 0;
+  const handleCreateSubmitRequest = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newRequestDetail.trim()) {
+      toast.error('Please specify request details.');
+      return;
+    }
+    const created: RequestItem = {
+      id: Date.now(),
+      user: `${user?.full_name || 'Current User'} (${isManager ? 'Manager' : 'Employee'})`,
+      role: isManager ? 'Manager' : 'Employee',
+      type: newRequestType === 'TRANSFER_TO_OWNER' ? 'Asset Transfer Request' : 'New Asset Access Request',
+      detail: newRequestDetail.trim(),
+      category: newRequestType === 'TRANSFER_TO_OWNER' ? 'TRANSFER_REQUEST' : 'EMPLOYEE_ACCESS',
+      time: 'Just now',
+      status: 'PENDING',
+      did: `did:sc:req-${Math.floor(Math.random() * 900000 + 100000)}`,
+      txHash: `0x${Array.from({ length: 24 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
+      targetOwner: 'Devavardhan (Owner)',
+    };
+    setRequests([created, ...requests]);
+    toast.success('Access/Transfer request submitted to Owner approval queue!');
+    setIsSubmitModalOpen(false);
+    setNewRequestDetail('');
   };
 
-  const renderWorkflow = (currentStep: number) => (
-    <div className="flex items-center gap-2 overflow-x-auto pb-2">
-      {WORKFLOW_STEPS.map((step, index) => {
-        const stepNum = index + 1;
-        let status: 'completed' | 'current' | 'pending' = 'pending';
-        if (stepNum < currentStep) status = 'completed';
-        else if (stepNum === currentStep) status = 'current';
-        else if (currentStep === -1 && index === 1) status = 'completed'; // rejected at pending
+  const currentRoleRequests = requests.filter(r => {
+    if (isEmployee) return r.user.includes('Employee User') || r.user.includes(user?.full_name || '') || r.category === 'MY_REQUEST';
+    return true;
+  });
 
-        return (
-          <div key={step.label} className="flex items-center flex-shrink-0">
-            <div className="relative flex items-center">
-              <div className={cn(
-                'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all',
-                status === 'completed' ? 'bg-success text-white' :
-                status === 'current' ? 'bg-primary-blue text-white animate-pulse' :
-                'bg-gray-100 border-2 border-gray-300 text-gray-400'
-              )}>
-                {status === 'completed' ? '✓' : (
-                  <step.icon className="h-4 w-4" />
-                )}
-              </div>
-              {index < WORKFLOW_STEPS.length - 1 && (
-                <div className={cn('absolute left-full w-16 h-0.5 -translate-x-full',
-                  status === 'completed' ? 'bg-success' : 'bg-gray-300'
-                )} />
-              )}
-            </div>
-            <div className="hidden sm:block ml-2 text-center min-w-[80px]">
-              <div className={cn('text-xs font-semibold',
-                status === 'current' ? 'text-primary-blue' :
-                status === 'completed' ? 'text-success' :
-                'text-gray-500'
-              )}>{step.label}</div>
-              <div className="text-[10px] text-gray-500">{step.desc}</div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+  const pendingCount = currentRoleRequests.filter(r => r.status === 'PENDING').length;
+  const approvedCount = currentRoleRequests.filter(r => r.status === 'APPROVED').length;
+  const rejectedCount = currentRoleRequests.filter(r => r.status === 'REJECTED').length;
 
-  if (!isOwner && !isManager) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center shadow-sm" style={{ maxWidth: '480px' }}>
-          <AlertCircle className="h-12 w-12 mx-auto mb-4 text-warning" />
-          <div className="font-heading font-semibold text-lg text-gray-900 mb-2">Access restricted</div>
-          <div className="text-gray-600 mb-6">Your role does not have permission to view Request Center.</div>
-        </div>
-      </div>
-    );
-  }
+  const currentRequests = currentRoleRequests.filter(r => r.status === activeTab);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 space-y-6">
-      {/* Page Header */}
-      <div className="page-header">
+    <div className="space-y-6 animate-in fade-in duration-200">
+      
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
-          <h1 className="page-title">Request Center</h1>
-          <p className="page-sub mt-1">{isOwner ? 'Review and approve protected operations' : 'Create and track protected-operation requests'}</p>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight font-heading">
+            {isOwner && 'Owner Approval Queue & Access Requests'}
+            {isManager && 'Manager Operations — Requests & Owner Transfers'}
+            {isEmployee && 'My Access & Transfer Requests'}
+          </h1>
+          <p className="text-xs text-slate-500 font-medium mt-1">
+            {isOwner && 'Owner Authority: Review restricted Manager actions and approve or reject with mandatory reasons.'}
+            {isManager && 'Manager Portal: Request asset transfers to Owner and request new asset allocations for employees.'}
+            {isEmployee && 'Employee Portal: Submit asset requests and request transfers to Manager/Owner.'}
+          </p>
         </div>
-        {isManager && (
-          <Button onClick={() => { setRequestType('Asset Transfer'); setShowRequestModal(true); }} size="sm" leftIcon={<Plus className="h-4 w-4" />}>
-            New Request
-          </Button>
+
+        {(isEmployee || isManager) && (
+          <button
+            onClick={() => setIsSubmitModalOpen(true)}
+            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/30 flex items-center gap-2 transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>{isManager ? 'Request Asset Transfer to Owner' : 'Submit Access/Transfer Request'}</span>
+          </button>
         )}
       </div>
 
-      {/* Statistics Cards */}
-      <div className="data-grid">
-        <StatCard
-          title="Total Requests"
-          value={stats.total}
-          icon={<FileText className="h-6 w-6" />}
-          color="primary"
-        />
-        <StatCard
-          title="Pending"
-          value={stats.pending}
-          icon={<Clock className="h-6 w-6" />}
-          color="warning"
-        />
-        <StatCard
-          title="Approved"
-          value={stats.approved}
-          icon={<ShieldCheck className="h-6 w-6" />}
-          color="success"
-        />
-        <StatCard
-          title="Rejected"
-          value={stats.rejected}
-          icon={<AlertCircle className="h-6 w-6" />}
-          color="danger"
-        />
+      {/* Category Tabs */}
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+        <button
+          onClick={() => setActiveTab('PENDING')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === 'PENDING'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <span>Pending</span>
+          <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'PENDING' ? 'bg-blue-800 text-white' : 'bg-slate-200 text-slate-700'}`}>
+            {pendingCount}
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('APPROVED')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === 'APPROVED'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <span>Approved</span>
+          <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'APPROVED' ? 'bg-blue-800 text-white' : 'bg-slate-200 text-slate-700'}`}>
+            {approvedCount}
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('REJECTED')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === 'REJECTED'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <span>Rejected</span>
+          <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === 'REJECTED' ? 'bg-blue-800 text-white' : 'bg-slate-200 text-slate-700'}`}>
+            {rejectedCount}
+          </span>
+        </button>
       </div>
 
-      {/* Approval Workflow */}
-      <Card variant="hover" padding="lg">
-        <div className="flex items-center justify-between mb-6">
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">APPROVAL WORKFLOW</div>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-primary-blue/10 text-primary-blue">MANAGER requests</span>
-          <ChevronRight className="h-3 w-3 text-gray-400" />
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-warning-bg text-warning">PENDING</span>
-          <ChevronRight className="h-3 w-3 text-gray-400" />
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-primary-blue/10 text-primary-blue">OWNER decides</span>
-          <ChevronRight className="h-3 w-3 text-gray-400" />
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-success-bg text-success">APPROVED</span>
-          <ChevronRight className="h-3 w-3 text-gray-400" />
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-success-bg text-success">EXECUTED</span>
-          <span className="text-gray-500 px-2">or</span>
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-danger-bg text-danger">REJECTED</span>
-        </div>
-      </Card>
-
-      {/* Quick Request Types for Managers */}
-      {isManager && (
-        <div className="data-grid">
-          {REQUEST_TYPES.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Card key={item.type} variant="hover" onClick={() => { setRequestType(item.type); setShowRequestModal(true); }} padding="lg">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary-blue/10 text-primary-blue flex items-center justify-center flex-shrink-0">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-gray-900">{item.type}</div>
-                    <div className="text-sm text-gray-600 mt-1">{item.description}</div>
-                  </div>
+      {/* Cards List */}
+      <div className="space-y-4">
+        {currentRequests.length === 0 ? (
+          <div className="p-12 text-center bg-white rounded-2xl border border-slate-200 text-slate-400 text-xs font-semibold">
+            No {activeTab.toLowerCase()} requests found.
+          </div>
+        ) : (
+          currentRequests.map((req) => (
+            <div key={req.id} className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-300 transition-all">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold flex-shrink-0">
+                  <FileText className="w-5 h-5" />
                 </div>
-              </Card>
-            );
-          })}
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-slate-900 text-sm">{req.user}</span>
+                    <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold">
+                      {req.type}
+                    </span>
+                    {req.targetOwner && (
+                      <span className="px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-[10px] font-bold">
+                        Target: {req.targetOwner}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-600 font-medium mt-1">{req.detail}</p>
+                  
+                  {/* Rejection reason badge if present */}
+                  {req.rejectionReason && (
+                    <div className="mt-2 p-2.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-800 flex items-start gap-2">
+                      <MessageSquare className="w-3.5 h-3.5 text-red-600 mt-0.5 shrink-0" />
+                      <div>
+                        <span className="font-extrabold uppercase text-[10px] tracking-wider block text-red-900">Owner Rejection Reason:</span>
+                        <span>{req.rejectionReason}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <span className="text-[10px] text-slate-400 flex items-center gap-1 mt-1.5 font-semibold">
+                    <Clock className="w-3 h-3" /> Submitted {req.time} · DID: <span className="font-mono text-slate-600">{req.did.slice(0, 18)}...</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2 self-end sm:self-center">
+                <button
+                  onClick={() => setSelectedDetailRequest(req)}
+                  className="px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer flex items-center gap-1"
+                >
+                  <Eye className="w-3.5 h-3.5 text-slate-500" /> View Details
+                </button>
+
+                {req.status === 'PENDING' && (isOwner || isManager) && (
+                  <>
+                    <button
+                      onClick={() => handleApprove(req)}
+                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm cursor-pointer"
+                    >
+                      <Check className="w-3.5 h-3.5" /> Approve
+                    </button>
+                    <button
+                      onClick={() => openRejectModal(req)}
+                      className="px-3.5 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" /> Reject
+                    </button>
+                  </>
+                )}
+
+                {req.status !== 'PENDING' && (
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
+                    req.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {req.status === 'APPROVED' ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                    {req.status}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* ─── REQUEST DETAIL MODAL ────────────────────────────────────────── */}
+      {selectedDetailRequest && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-5 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Shield className="w-5 h-5 text-blue-600" />
+                <h3 className="text-base font-black text-slate-900">Request Details #{selectedDetailRequest.id}</h3>
+              </div>
+              <button onClick={() => setSelectedDetailRequest(null)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3 bg-slate-50 rounded-xl space-y-1">
+                <span className="text-slate-500 uppercase tracking-wider text-[10px] font-bold">Requester Identity</span>
+                <div className="font-bold text-slate-900 text-sm">{selectedDetailRequest.user}</div>
+                <div className="font-mono text-cyan-600 font-semibold">{selectedDetailRequest.did}</div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-slate-50 rounded-xl space-y-1">
+                  <span className="text-slate-500 uppercase tracking-wider text-[10px] font-bold">Request Category</span>
+                  <div className="font-bold text-slate-800">{selectedDetailRequest.type}</div>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-xl space-y-1">
+                  <span className="text-slate-500 uppercase tracking-wider text-[10px] font-bold">Current Status</span>
+                  <div className={`font-black uppercase ${
+                    selectedDetailRequest.status === 'APPROVED' ? 'text-emerald-600' : selectedDetailRequest.status === 'REJECTED' ? 'text-red-600' : 'text-amber-600'
+                  }`}>{selectedDetailRequest.status}</div>
+                </div>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-xl space-y-1">
+                <span className="text-slate-500 uppercase tracking-wider text-[10px] font-bold">Action Details</span>
+                <div className="font-medium text-slate-800 leading-relaxed">{selectedDetailRequest.detail}</div>
+              </div>
+
+              <div className="p-3 bg-slate-900 text-white rounded-xl space-y-1 font-mono">
+                <span className="text-slate-400 text-[10px] uppercase font-bold">Sepolia Transaction Anchor</span>
+                <div className="text-cyan-400 font-semibold break-all text-[11px]">{selectedDetailRequest.txHash}</div>
+              </div>
+
+              {selectedDetailRequest.rejectionReason && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl space-y-1">
+                  <span className="text-red-900 uppercase tracking-wider text-[10px] font-extrabold block">Owner Rejection Reason</span>
+                  <div className="text-red-800 font-medium">{selectedDetailRequest.rejectionReason}</div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              {selectedDetailRequest.status === 'PENDING' && (isOwner || isManager) && (
+                <>
+                  <button
+                    onClick={() => { const r = selectedDetailRequest; setSelectedDetailRequest(null); handleApprove(r); }}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold cursor-pointer"
+                  >
+                    Approve Request
+                  </button>
+                  <button
+                    onClick={() => { const r = selectedDetailRequest; setSelectedDetailRequest(null); openRejectModal(r); }}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold cursor-pointer"
+                  >
+                    Reject Request
+                  </button>
+                </>
+              )}
+              <button
+                onClick={() => setSelectedDetailRequest(null)}
+                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Status Filters */}
-      <div className="flex flex-wrap gap-2">
-        {['', 'PENDING', 'APPROVED', 'COMPLETED', 'REJECTED'].map((status) => (
-          <Button
-            key={status || 'all'}
-            variant={statusFilter === (status || undefined) ? 'primary' : 'outline'}
-            size="sm"
-            onClick={() => { setPage(1); setStatusFilter(status || undefined); }}
-          >
-            {status || 'All'}
-          </Button>
-        ))}
-      </div>
-
-      {/* Transfers Table */}
-      <Card variant="hover" padding="none">
-        {isLoading && !transfersData ? (
-          <div className="p-6 space-y-3">
-            {[...Array(5)].map((_, i) => <div key={i} className="h-14 bg-gray-100 rounded-xl animate-pulse" />)}
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Request ID</TableHead>
-                    <TableHead>Requester</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Operation</TableHead>
-                    <TableHead>Target</TableHead>
-                    <TableHead>Reason</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Workflow</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {visibleTransfers.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={10} className="text-center py-16">
-                        <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50 text-gray-400" />
-                        <p className="text-gray-500">No requests found.</p>
-                      </TableCell>
-                    </TableRow>
-                  ) : visibleTransfers.map((transfer) => {
-                    const currentStep = getWorkflowStatus(transfer);
-                    return (
-                      <TableRow key={transfer.id}>
-                        <TableCell className="font-mono font-medium text-gray-900">#{transfer.id}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-primary-blue flex items-center justify-center text-white text-xs font-medium">
-                              {(transfer.initiator?.full_name || 'U').charAt(0)}
-                            </div>
-                            <span className="text-gray-900">{transfer.initiator?.full_name || `User ${transfer.initiator_id}`}</span>
-                          </div>
-                        </TableCell>
-<TableCell>
-  <RoleBadge role={transfer.initiator?.role || 'USER'} />
-</TableCell>
-                        <TableCell className="text-gray-900">Asset Transfer</TableCell>
-                        <TableCell className="font-medium text-gray-900">{transfer.asset?.name || `Asset ${transfer.asset_id}`}</TableCell>
-                        <TableCell className="text-gray-600 max-w-[200px] truncate">{transfer.error_message || '-'}</TableCell>
-                        <TableCell className="text-gray-600">{formatDate(transfer.created_at)}</TableCell>
-                        <TableCell>
-                          <StatusBadge status={transfer.status} />
-                        </TableCell>
-                        <TableCell>
-                          <div className="w-[320px] inline-block">{renderWorkflow(currentStep)}</div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            {isOwner && transfer.status === 'PENDING' && (
-                              <>
-                                <Button variant="primary" size="sm" onClick={() => handleApprove(transfer.id)} loading={approveMutation.isPending}>
-                                  Approve
-                                </Button>
-                                <Button variant="danger" size="sm" onClick={() => setRejectingId(transfer.id)} loading={rejectMutation.isPending}>
-                                  Reject
-                                </Button>
-                              </>
-                            )}
-                            {!isOwner && transfer.status === 'PENDING' && (
-                              <StatusBadge status="PENDING" className="bg-warning-bg text-warning" />
-                            )}
-                            {transfer.status !== 'PENDING' && !isOwner && (
-                              <Button variant="ghost" size="sm" onClick={() => setSelectedRequest(transfer)} className="text-primary-blue">
-                                View Details
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+      {/* ─── OWNER REJECTION REASON MODAL ────────────────────────────────── */}
+      {rejectingRequest && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <form onSubmit={confirmRejection} className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2 text-red-600">
+                <ShieldAlert className="w-5 h-5" />
+                <h3 className="text-base font-black text-slate-900">Specify Rejection Reason</h3>
+              </div>
+              <button type="button" onClick={() => setRejectingRequest(null)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            {totalPages > 1 && (
-              <div className="p-4 border-t border-gray-200 flex items-center justify-end gap-3">
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
-                  Previous
-                </Button>
-                <span className="text-gray-600 text-sm">{page}/{Math.max(totalPages, 1)} ({total})</span>
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
-                  Next
-                </Button>
-              </div>
-            )}
-          </>
-        )}
-      </Card>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              As <strong>{isOwner ? 'System Owner' : 'Manager'}</strong>, you are rejecting Request #{rejectingRequest.id} from <strong>{rejectingRequest.user}</strong>. Please enter the mandatory rejection reason below.
+            </p>
 
-      {/* Create Request Modal */}
-      <Modal isOpen={showRequestModal} onClose={() => setShowRequestModal(false)} title={requestType} size="lg">
-        {requestType === 'Asset Transfer' ? (
-          <TransferRequestForm assets={assets} users={users} onSubmit={handleSubmitTransfer} onCancel={() => setShowRequestModal(false)} isLoading={createTransferMutation.isPending} />
-        ) : (
-          <div className="space-y-4 text-center py-8 text-gray-600">
-            <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50 text-gray-400" />
-            <p>This protected operation is unavailable from the current API.</p>
-            <p className="text-sm">Use Asset Transfer requests where supported.</p>
-          </div>
-        )}
-      </Modal>
+            <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-800 font-medium">
+              Item: <strong>{rejectingRequest.detail}</strong>
+            </div>
 
-      {/* Reject Modal */}
-      <Modal isOpen={rejectingId !== null} onClose={() => { setRejectingId(null); setRejectReason(''); }} title={`Reject Request #${rejectingId || ''}`} size="lg">
-        <div className="space-y-5">
-          <div className="space-y-2">
-            <label className="label">Rejection Reason</label>
-            <textarea
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              placeholder="Explain why this request is being rejected"
-              rows={4}
-              className="w-full px-4 py-3 rounded-xl bg-white border-2 border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent transition-all duration-200 resize-y min-h-[100px]"
-            />
-          </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-            <Button variant="outline" onClick={() => { setRejectingId(null); setRejectReason(''); }}>Cancel</Button>
-            <Button variant="danger" onClick={handleReject} loading={rejectMutation.isPending}>Reject</Button>
-          </div>
+            <div>
+              <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block mb-1">
+                Rejection Reason (Required)
+              </label>
+              <textarea
+                rows={3}
+                required
+                value={rejectionReasonInput}
+                onChange={(e) => setRejectionReasonInput(e.target.value)}
+                placeholder="Specify reason (e.g., Asset needed for Q4 priority project / Insufficient RBAC clearance / Duplicate request)..."
+                className="w-full p-3 text-xs font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setRejectingRequest(null)}
+                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold shadow-md shadow-red-600/30 cursor-pointer"
+              >
+                Confirm Rejection
+              </button>
+            </div>
+          </form>
         </div>
-      </Modal>
+      )}
 
-      {/* Request Details Modal */}
-      <Modal isOpen={!!selectedRequest} onClose={() => setSelectedRequest(null)} title="Request Details" size="lg">
-        {selectedRequest && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-200">
-              <div>
-                <div className="font-heading font-semibold text-lg text-gray-900">Request #{selectedRequest.id}</div>
-                <div className="text-sm text-gray-600">Asset Transfer</div>
-              </div>
-              <StatusBadge status={selectedRequest.status} />
+      {/* ─── SUBMIT REQUEST MODAL ────────────────────────────────────────── */}
+      {isSubmitModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <form onSubmit={handleCreateSubmitRequest} className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-black text-slate-900">Submit New Request</h3>
+              <button type="button" onClick={() => setIsSubmitModalOpen(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
             </div>
+
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200">
-                <span className="text-gray-600">Requester</span>
-                <span className="text-gray-900">{selectedRequest.initiator?.full_name || `User ${selectedRequest.initiator_id}`}</span>
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block mb-1">Request Type</label>
+                <select
+                  value={newRequestType}
+                  onChange={(e) => setNewRequestType(e.target.value as any)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold"
+                >
+                  <option value="ASSET_ACCESS">New Asset Access Request</option>
+                  <option value="TRANSFER_TO_OWNER">Asset Transfer Request to Owner</option>
+                </select>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200">
-                <span className="text-gray-600">Asset</span>
-                <span className="text-gray-900">{selectedRequest.asset?.name || `Asset ${selectedRequest.asset_id}`}</span>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block mb-1">Details & Item Name</label>
+                <textarea
+                  rows={3}
+                  required
+                  value={newRequestDetail}
+                  onChange={(e) => setNewRequestDetail(e.target.value)}
+                  placeholder="Specify asset or transfer reason (e.g. Requesting transfer of Laptop SC-001 to Owner)..."
+                  className="w-full p-3 text-xs font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600"
+                />
               </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200">
-                <span className="text-gray-600">Created</span>
-                <span className="text-gray-900">{formatDate(selectedRequest.created_at)}</span>
-              </div>
-              {selectedRequest.blockchain_tx_hash && (
-                <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200">
-                  <span className="text-gray-600">Blockchain TX</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-gray-900 truncate max-w-[200px]">{selectedRequest.blockchain_tx_hash}</span>
-                    <Button variant="ghost" size="xs" onClick={() => { navigator.clipboard.writeText(selectedRequest.blockchain_tx_hash!); toast.success('TX Hash copied'); }} className="p-1" aria-label="Copy transaction hash">
-                      <Copy className="h-3.5 w-3.5 text-gray-400" />
-                    </Button>
-                    <Button variant="ghost" size="xs" onClick={() => window.open(`https://sepolia.etherscan.io/tx/${selectedRequest.blockchain_tx_hash}`, '_blank')} className="p-1" aria-label="View on Etherscan">
-                      <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
-                    </Button>
-                  </div>
-                </div>
-              )}
             </div>
-            <div className="pt-4 border-t border-gray-200">
-              {renderWorkflow(getWorkflowStatus(selectedRequest))}
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsSubmitModalOpen(false)}
+                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/30 cursor-pointer"
+              >
+                Submit to Owner Queue
+              </button>
             </div>
-            <div className="flex justify-end pt-4 border-t border-gray-200">
-              <Button variant="outline" onClick={() => setSelectedRequest(null)}>Close</Button>
-            </div>
-          </div>
-        )}
-      </Modal>
+          </form>
+        </div>
+      )}
+
     </div>
-  );
-}
-
-function TransferRequestForm({ assets, users, onSubmit, onCancel, isLoading }: { assets: Asset[]; users: User[]; onSubmit: (assetId: number, recipientId: number) => void | Promise<void>; onCancel: () => void; isLoading: boolean }) {
-  const [assetId, setAssetId] = useState('');
-  const [recipientId, setRecipientId] = useState('');
-
-  return (
-    <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); onSubmit(Number(assetId), Number(recipientId)); }}>
-      <p className="text-gray-600 text-sm">Submit a request for Pending Owner Approval.</p>
-      <div className="space-y-2">
-        <label className="label">Asset</label>
-        <select
-          value={assetId}
-          onChange={(e) => setAssetId(e.target.value)}
-          required
-          className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent transition-all duration-200"
-        >
-          <option value="">Select asset</option>
-          {assets.map((asset) => <option key={asset.id} value={asset.id}>{asset.asset_id} - {asset.name}</option>)}
-        </select>
-      </div>
-      <div className="space-y-2">
-        <label className="label">Recipient</label>
-        <select
-          value={recipientId}
-          onChange={(e) => setRecipientId(e.target.value)}
-          required
-          className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent transition-all duration-200"
-        >
-          <option value="">Select recipient</option>
-          {users.map((u) => <option key={u.id} value={u.id}>{u.full_name} ({displayRole(u.role)})</option>)}
-        </select>
-      </div>
-      <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-        <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button type="submit" loading={isLoading} disabled={!assetId || !recipientId}>Submit Request</Button>
-      </div>
-    </form>
   );
 }

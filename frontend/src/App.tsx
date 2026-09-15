@@ -16,14 +16,15 @@ const IdentitiesPage = getLazyPage('IdentitiesPage');
 const BlockchainPage = getLazyPage('BlockchainPage');
 const AuditPage = getLazyPage('AuditPage');
 const SecurityCenterPage = getLazyPage('SecurityCenterPage');
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: UserRole[] }) {
   const { isLoading, isAuthenticated, hasRole } = useAuth();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8FAFC' }}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#2563EB' }} />
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     );
   }
@@ -44,8 +45,8 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8FAFC' }}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#2563EB' }} />
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     );
   }
@@ -67,13 +68,14 @@ function App() {
 
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-          <Route path="/users" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}><UsersPage /></ProtectedRoute>} />
-          <Route path="/assets" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'USER']}><AssetsPage /></ProtectedRoute>} />
-          <Route path="/requests" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}><RequestsPage /></ProtectedRoute>} />
-          <Route path="/identity" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'USER']}><IdentitiesPage /></ProtectedRoute>} />
-          <Route path="/blockchain" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'USER']}><BlockchainPage /></ProtectedRoute>} />
+          <Route path="/users" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'AUDITOR']}><UsersPage /></ProtectedRoute>} />
+          <Route path="/assets" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'USER', 'AUDITOR']}><AssetsPage /></ProtectedRoute>} />
+          <Route path="/requests" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'USER']}><RequestsPage /></ProtectedRoute>} />
+          <Route path="/identity" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'USER', 'AUDITOR']}><IdentitiesPage /></ProtectedRoute>} />
+          <Route path="/blockchain" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'USER', 'AUDITOR']}><BlockchainPage /></ProtectedRoute>} />
           <Route path="/audit" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'AUDITOR']}><AuditPage /></ProtectedRoute>} />
-          <Route path="/security" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'USER']}><SecurityCenterPage /></ProtectedRoute>} />
+          <Route path="/security" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'USER', 'AUDITOR']}><SecurityCenterPage /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'USER', 'AUDITOR']}><SettingsPage /></ProtectedRoute>} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

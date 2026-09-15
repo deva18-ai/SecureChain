@@ -82,6 +82,9 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  previewRole: UserRole | null;
+  activeRole: UserRole;
+  setPreviewRole: (role: UserRole | null) => void;
   login: (email: string, password: string) => Promise<void>;
   register: (data: { email: string; full_name: string; password: string; wallet_address?: string; role?: UserRole }) => Promise<void>;
   logout: () => Promise<void>;
@@ -95,6 +98,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [previewRole, setPreviewRole] = useState<UserRole | null>(null);
+
+  const activeRole: UserRole = previewRole || user?.role || 'USER';
 
   const refreshUser = useCallback(async () => {
     const storedToken = localStorage.getItem('access_token');
@@ -113,6 +119,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (e) {}
     }
 
+    // Skip remote /auth/me call if running on demo token
+    if (storedToken.startsWith('demo_token_')) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await authApi.me();
       if (response.data) {
@@ -120,7 +132,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('user', JSON.stringify(response.data));
       }
     } catch {
-      // Keep cached user if network fails so demo doesn't log out
       if (!storedUserStr) {
         localStorage.removeItem('access_token');
         setToken(null);
@@ -136,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refreshUser]);
 
   const login = async (email: string, password: string) => {
+    setPreviewRole(null);
     try {
       const response = await authApi.login({ email, password });
       const { access_token } = response.data;
@@ -143,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(access_token);
       await refreshUser();
     } catch (error) {
-      // Presentation Fallback: Allow instant login with mock demo credentials if backend API fails
+      // Demo authentication fallback
       const matchedMock = MOCK_DEMO_USERS[email.toLowerCase()] || {
         id: 99,
         email: email,
@@ -166,6 +178,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (data: { email: string; full_name: string; password: string; wallet_address?: string; role?: UserRole }) => {
+    setPreviewRole(null);
     try {
       await authApi.register(data);
       await login(data.email, data.password);
@@ -198,11 +211,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('user');
     setToken(null);
     setUser(null);
+    setPreviewRole(null);
   };
 
   const hasRole = (roles: UserRole[]) => {
     if (!user) return false;
-    return roles.includes(user.role);
+    const effectiveRole = previewRole || user.role;
+    return roles.includes(effectiveRole);
   };
 
   return (
@@ -212,6 +227,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         token,
         isLoading,
         isAuthenticated: !!user,
+        previewRole,
+        activeRole,
+        setPreviewRole,
         login,
         register,
         logout,

@@ -1,319 +1,184 @@
 import { useState, useRef, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { Shield, ChevronDown, LogOut, Settings, User, Bell, Search, Wallet, Globe, Link as LinkIcon } from 'lucide-react';
+import { ShieldCheck, ChevronDown, LogOut, Settings, Bell, Search, Wallet, Globe } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useWallet } from '../../context/WalletContext';
 import { displayRole, formatAddress } from '../../utils/helpers';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
-import toast from 'react-hot-toast';
-import { cn } from '../../utils/helpers';
-
-function getBreadcrumbs(pathname: string) {
-  const parts = pathname.split('/').filter(Boolean);
-  const crumbs: { label: string; href: string }[] = [{ label: 'Dashboard', href: '/dashboard' }];
-
-  const routeLabels: Record<string, string> = {
-    '/dashboard': 'Dashboard',
-    '/users': 'Users',
-    '/assets': 'Assets',
-    '/requests': 'Requests',
-    '/identity': 'Digital Identity',
-    '/blockchain': 'Blockchain',
-    '/audit': 'Audit Trail',
-    '/security': 'Security Center',
-    '/settings': 'Settings',
-  };
-
-  let currentPath = '';
-  for (const part of parts) {
-    currentPath += `/${part}`;
-    const label = routeLabels[currentPath] || part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' ');
-    crumbs.push({ label, href: currentPath });
-  }
-  return crumbs;
-}
+import { WalletModal } from '../ui/WalletModal';
 
 export function Header() {
-  const { user, logout } = useAuth();
-  const { isConnected, account, chainId, connect, disconnect } = useWallet();
-  const location = useLocation();
+  const { user, logout, previewRole, setPreviewRole } = useAuth();
+  const { isConnected, account } = useWallet();
 
   const [profileOpen, setProfileOpen] = useState(false);
-  const [walletOpen, setWalletOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
 
   const profileRef = useRef<HTMLDivElement>(null);
-  const walletRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) setProfileOpen(false);
-      if (walletRef.current && !walletRef.current.contains(event.target as Node)) setWalletOpen(false);
       if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) setNotificationsOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
-    await logout();
-    setProfileOpen(false);
-  };
-
-  const handleConnectWallet = async () => {
-    try {
-      await connect();
-      setWalletOpen(false);
-      toast.success('Wallet connected successfully');
-    } catch (error: any) {
-      console.error('Wallet connection error:', error);
-      if (error.message?.includes('not installed')) {
-        toast.error('MetaMask is not installed. Please install MetaMask extension.');
-      } else if (error.code === 4001) {
-        toast.error('Connection request rejected');
-      } else {
-        toast.error('Failed to connect wallet');
-      }
-    }
-  };
-
-  const handleDisconnectWallet = () => {
-    disconnect();
-    setWalletOpen(false);
-    toast.success('Wallet disconnected');
-  };
-
-  const breadcrumbs = getBreadcrumbs(location.pathname);
-
-  const getNetworkName = (chainId: number | null) => {
-    switch (chainId) {
-      case 1: return 'Ethereum Mainnet';
-      case 5: return 'Goerli Testnet';
-      case 11155111: return 'Sepolia Testnet';
-      case 31337: return 'Hardhat Localhost';
-      default: return chainId ? `Chain ${chainId}` : 'Unknown Network';
-    }
-  };
-
-  const getNetworkBadgeVariant = (chainId: number | null) => {
-    switch (chainId) {
-      case 1: return 'network-mainnet';
-      case 11155111: return 'network-sepolia';
-      case 31337: return 'network-hardhat';
-      default: return 'network-badge';
-    }
-  };
-
   return (
-    <header className="sticky top-0 z-30 bg-white border-b border-gray-200">
-      <div className="flex items-center justify-between h-16 px-4 lg:px-6 max-w-[1400px] mx-auto w-full">
-        {/* Mobile Brand */}
-        <div className="lg:hidden flex items-center gap-3 flex-1">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-primary-blue flex items-center justify-center">
-              <Shield className="h-5 w-5 text-white" />
+    <>
+      <header className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm">
+        <div className="flex items-center justify-between h-16 px-6 max-w-[1400px] mx-auto w-full">
+          
+          {/* Left: Brand Tagline / Status Badges */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-full">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs font-semibold text-emerald-800">System Secure</span>
             </div>
-            <span className="font-heading font-bold text-lg text-gray-900">SecureChain</span>
+
+            <div className="hidden md:flex items-center gap-2 px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-full">
+              <Globe className="w-3.5 h-3.5 text-blue-600" />
+              <span className="text-xs font-semibold text-blue-800">Ethereum Sepolia Connected</span>
+            </div>
           </div>
-        </div>
 
-        {/* Desktop Breadcrumbs & Search */}
-        <div className="hidden lg:flex lg:flex-1 lg:items-center lg:gap-4 lg:px-8 min-w-0">
-          <nav className="flex items-center gap-4 flex-1 min-w-0" aria-label="Breadcrumb">
-            <ol className="flex items-center gap-2 overflow-x-auto pb-1 pr-4">
-              {breadcrumbs.map((crumb, index) => (
-                <li key={crumb.href} className="flex items-center gap-2 whitespace-nowrap flex-shrink-0">
-                  {index > 0 && <ChevronDown className="w-3 h-3 text-gray-500 flex-shrink-0" />}
-                  {index === breadcrumbs.length - 1 ? (
-                    <span className="font-medium truncate max-w-[200px] text-gray-900">{crumb.label}</span>
-                  ) : (
-                    <a
-                      href={crumb.href}
-                      className="text-sm truncate max-w-[150px] text-gray-600 hover:text-primary-blue transition-colors"
-                    >
-                      {crumb.label}
-                    </a>
-                  )}
-                </li>
-              ))}
-            </ol>
-          </nav>
-
-          <div className="relative w-[280px]">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          {/* Right: Search, Notifications, Connect Wallet, User Profile */}
+          <div className="flex items-center gap-3">
+            {/* Search Input */}
+            <div className="relative hidden lg:block w-60">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="search"
-                placeholder="Search..."
-                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent transition-all duration-200 text-sm"
+                placeholder="Search system..."
+                className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
               />
             </div>
-          </div>
-        </div>
 
-        {/* Right Side Actions */}
-        <div className="hidden lg:flex lg:items-center lg:gap-3">
-          {/* Network Indicator */}
-          {chainId && (
-            <div className={cn(getNetworkBadgeVariant(chainId), 'hidden sm:inline-flex')}>
-              <Globe className="h-3.5 w-3.5" />
-              {getNetworkName(chainId)}
+            {/* Notifications Dropdown */}
+            <div className="relative" ref={notificationsRef}>
+              <button
+                onClick={() => setNotificationsOpen(!notificationsOpen)}
+                className="relative p-2 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-xl transition-colors"
+                aria-label="Notifications"
+              >
+                <Bell className="w-5 h-5" />
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white" />
+              </button>
+              {notificationsOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-xl py-2 z-50 animate-in fade-in duration-150">
+                  <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">System Alerts</span>
+                    <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">3 New</span>
+                  </div>
+                  <div className="divide-y divide-slate-100 max-h-64 overflow-y-auto">
+                    <div className="px-4 py-2.5 hover:bg-slate-50">
+                      <p className="text-xs font-semibold text-slate-900">Asset Transferred</p>
+                      <p className="text-[11px] text-slate-500">SC-001 Laptop transferred to Devavardhan</p>
+                      <span className="text-[10px] text-slate-400">2 mins ago</span>
+                    </div>
+                    <div className="px-4 py-2.5 hover:bg-slate-50">
+                      <p className="text-xs font-semibold text-slate-900">DID Verification Complete</p>
+                      <p className="text-[11px] text-slate-500">did:sc:170b verified on Sepolia block #48291</p>
+                      <span className="text-[10px] text-slate-400">15 mins ago</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
 
-          {/* Notifications */}
-          <div className="relative" ref={notificationsRef}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setNotificationsOpen(!notificationsOpen)}
-              className="relative p-2"
-              aria-label="Notifications"
+            {/* Demo Role Preview Switcher */}
+            <div className="relative">
+              <select
+                value={previewRole || user?.role || 'ADMIN'}
+                onChange={(e) => {
+                  const selectedRole = e.target.value as any;
+                  if (selectedRole === user?.role) {
+                    setPreviewRole(null);
+                  } else {
+                    setPreviewRole(selectedRole);
+                  }
+                }}
+                className={`px-2.5 py-1 text-xs font-bold rounded-xl border transition-all cursor-pointer focus:outline-none ${
+                  previewRole
+                    ? 'bg-amber-50 text-amber-800 border-amber-300 ring-2 ring-amber-400/30'
+                    : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
+                }`}
+                title="Demo Role Preview Mode (UI Presentation Only)"
+              >
+                <option value="ADMIN">Owner</option>
+                <option value="MANAGER">Manager</option>
+                <option value="USER">Employee</option>
+              </select>
+            </div>
+
+            {/* Wallet Button */}
+            <button
+              onClick={() => setWalletModalOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 hover:bg-blue-600 text-white rounded-xl text-xs font-semibold transition-all shadow-sm cursor-pointer"
             >
-              <Bell className="h-5 w-5 text-gray-600" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-danger text-white text-[10px] font-bold flex items-center justify-center">3</span>
-            </Button>
-            {notificationsOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg py-2 animate-in z-50">
-                <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-                  <span className="font-medium text-gray-900">Notifications</span>
-                  <span className="text-xs text-gray-600">3 new</span>
+              <Wallet className="w-3.5 h-3.5" />
+              <span>Wallet</span>
+            </button>
+
+            {/* Profile Dropdown */}
+            <div className="relative" ref={profileRef}>
+              <button
+                onClick={() => setProfileOpen(!profileOpen)}
+                className="flex items-center gap-2 p-1 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
+                  {user?.full_name?.charAt(0).toUpperCase() || 'O'}
                 </div>
-                <div className="max-h-64 overflow-y-auto">
-                  <div className="px-4 py-3 hover:bg-gray-50 border-b border-gray-200/50">
-                    <p className="text-sm text-gray-900">Transfer request approved</p>
-                    <p className="text-xs text-gray-600 mt-0.5">Asset SC-ASSET-042 transferred to John Doe</p>
-                    <p className="text-xs text-gray-600 mt-1">2 minutes ago</p>
-                  </div>
-                  <div className="px-4 py-3 hover:bg-gray-50 border-b border-gray-200/50">
-                    <p className="text-sm text-gray-900">New user registered</p>
-                    <p className="text-xs text-gray-600 mt-0.5">Alice Chen added as Employee</p>
-                    <p className="text-xs text-gray-600 mt-1">15 minutes ago</p>
-                  </div>
-                  <div className="px-4 py-3 hover:bg-gray-50">
-                    <p className="text-sm text-gray-900">Security alert</p>
-                    <p className="text-xs text-gray-600 mt-0.5">Failed login attempt blocked</p>
-                    <p className="text-xs text-gray-600 mt-1">1 hour ago</p>
-                  </div>
+                <div className="text-left hidden sm:block">
+                  <p className="text-xs font-bold text-slate-900 leading-tight">{user?.full_name || 'Devavardhan'}</p>
+                  <p className="text-[10px] text-slate-500 font-semibold">
+                    {displayRole(previewRole || user?.role)}
+                  </p>
                 </div>
-                <div className="px-4 py-2 border-t border-gray-200">
-                  <a href="/audit" className="text-sm text-primary-blue hover:text-primary-blue-hover font-medium">View all</a>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              </button>
+
+              {profileOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl py-2 z-50 animate-in fade-in duration-150">
+                  <div className="px-4 py-2 border-b border-slate-100">
+                    <p className="text-xs font-bold text-slate-900">{user?.full_name}</p>
+                    <p className="text-[11px] text-slate-500 truncate">{user?.email}</p>
+                  </div>
+                  <a
+                    href="/settings"
+                    className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    onClick={() => setProfileOpen(false)}
+                  >
+                    <Settings className="w-4 h-4 text-slate-400" />
+                    Account Settings
+                  </a>
+                  <a
+                    href="/identity"
+                    className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    onClick={() => setProfileOpen(false)}
+                  >
+                    <ShieldCheck className="w-4 h-4 text-slate-400" />
+                    Digital Identity
+                  </a>
+                  <hr className="my-1 border-slate-100" />
+                  <button
+                    onClick={() => logout()}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 text-left cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </button>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
-          {/* Wallet Connection */}
-          <div className="relative" ref={walletRef}>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setWalletOpen(!walletOpen)}
-              className="gap-2 px-3 border border-gray-200 bg-white"
-              leftIcon={<Wallet className="h-4 w-4" />}
-            >
-              <div className="flex items-center gap-2">
-                <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-success' : 'bg-gray-400'}`} />
-                <span className="text-gray-900 hidden sm:inline">{isConnected ? 'Connected' : 'Disconnected'}</span>
-              </div>
-            </Button>
-            {walletOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-lg py-2 animate-in z-50">
-                {!isConnected ? (
-                  <Button variant="outline" size="sm" onClick={handleConnectWallet} className="w-full px-4 py-2 mx-2 justify-start" leftIcon={<LinkIcon className="h-4 w-4" />}>
-                    Connect Wallet
-                  </Button>
-                ) : (
-                  <>
-                    <div className="px-4 py-3 border-b border-gray-200">
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Connected Account</p>
-                      <p className="font-mono text-sm text-gray-900">{formatAddress(account || '')}</p>
-                    </div>
-                    <div className="px-4 py-3 border-b border-gray-200">
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Network</p>
-                      <p className="text-sm text-gray-900">{getNetworkName(chainId)}</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleDisconnectWallet}
-                      className="w-full px-4 py-2 mx-2 justify-start"
-                      leftIcon={<LogOut className="h-4 w-4" />}
-                    >
-                      Disconnect
-                    </Button>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* User Profile */}
-          <div className="relative" ref={profileRef}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setProfileOpen(!profileOpen)}
-              className="hidden lg:flex items-center gap-3 px-2.5 py-1.5"
-            >
-              <div className="w-9 h-9 rounded-full bg-primary-blue flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
-                  {user?.full_name?.charAt(0).toUpperCase() || 'U'}
-                </span>
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-medium text-gray-900">{user?.full_name}</p>
-                <p className="text-xs text-gray-500">{displayRole(user?.role)}</p>
-              </div>
-              <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setProfileOpen(!profileOpen)}
-              className="lg:hidden gap-2 p-2"
-            >
-              <User className="h-5 w-5 text-gray-600" />
-            </Button>
-
-            {profileOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-lg py-2 animate-in z-50">
-                <div className="px-4 py-3 border-b border-gray-200">
-                  <p className="text-sm font-medium text-gray-900">{user?.full_name}</p>
-                  <p className="text-xs text-gray-600 truncate">{user?.email}</p>
-                </div>
-                <a
-                  href="/settings"
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
-                  onClick={() => setProfileOpen(false)}
-                >
-                  <Settings className="h-4 w-4" />
-                  Settings
-                </a>
-                <a
-                  href="/identity"
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
-                  onClick={() => setProfileOpen(false)}
-                >
-                  <Shield className="h-4 w-4" />
-                  My Identity
-                </a>
-                <hr className="my-2 border-gray-200" />
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-danger hover:bg-danger/5 text-left"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Screen 15 Wallet Modal */}
+      <WalletModal isOpen={walletModalOpen} onClose={() => setWalletModalOpen(false)} />
+    </>
   );
 }

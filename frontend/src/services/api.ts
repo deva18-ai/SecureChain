@@ -26,6 +26,10 @@ api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<ErrorResponse>) => {
     if (error.response?.status === 401) {
+      const token = localStorage.getItem('access_token');
+      if (token && token.startsWith('demo_token_')) {
+        return Promise.reject(error);
+      }
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
       if (window.location.pathname !== '/login') {
